@@ -1,0 +1,10 @@
+set(LLVM_TARGET_DEFINITIONS FuriosaOps.td)
+mlir_tablegen(FuriosaOps.h.inc -gen-op-decls)
+mlir_tablegen(FuriosaOps.cpp.inc -gen-op-defs)
+mlir_tablegen(FuriosaDialect.h.inc -gen-dialect-decls -dialect=furiosa)
+mlir_tablegen(FuriosaDialect.cpp.inc -gen-dialect-defs -dialect=furiosa)
+add_public_tablegen_target(FuriosaMLIRFuriosaOpsIncGen)
+add_dependencies(mlir-headers FuriosaMLIRFuriosaOpsIncGen)
+
+add_mlir_doc(FuriosaDialect FuriosaDialect Furiosa/ -gen-dialect-doc)
+add_mlir_doc(FuriosaOps FuriosaOps Furiosa/ -gen-op-doc)
