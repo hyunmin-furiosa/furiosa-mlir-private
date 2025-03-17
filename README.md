@@ -45,3 +45,19 @@ cmake -GNinja -Bbuild . \
   -DTORCH_MLIR_ENABLE_REFBACKEND=OFF \
   -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
 ```
+
+## Using Furiosa-MLIR
+
+Run generated binaries in `build/bin`.
+
+```llvm
+// example.mlir
+module {
+  furiosa.exec { context = 0 : i1, context_id = 0 : i1, subunit_bitmap = 1 : i32 }
+  furiosa.wait { context = 0 : i1 }
+}
+```
+
+```shell
+furiosa-mlir-opt example.mlir
+```
