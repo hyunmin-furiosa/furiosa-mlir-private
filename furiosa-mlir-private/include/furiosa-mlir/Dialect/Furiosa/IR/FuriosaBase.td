@@ -14,7 +14,7 @@ include "mlir/IR/OpBase.td"
 
 def Furiosa_Dialect : Dialect {
   let name = "furiosa";
-  let cppNamespace = "::mlir::furiosa::Furiosa";
+  let cppNamespace = "::mlir::furiosa";
   let description = [{}];
 }
 

@@ -1,0 +1,29 @@
+#include "mlir/Dialect/EmitC/IR/EmitC.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/LLVMIR/LLVMDialect.h"
+#include "mlir/Target/LLVMIR/Dialect/All.h"
+#include "mlir/Target/LLVMIR/Export.h"
+#include "mlir/Tools/mlir-translate/Translation.h"
+
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
+#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
+
+using namespace mlir;
+
+namespace mlir::furiosa {
+
+void registerFuriosaToBinary() {
+  TranslateFromMLIRRegistration reg(
+      "furiosa-to-binary", "translate furiosa to binary",
+      [](Operation *op, llvm::raw_ostream &os) -> LogicalResult {
+        return translateFuriosaToBinary(op, os);
+      },
+      [](DialectRegistry &registry) {
+        // clang-format off
+        registry.insert<mlir::furiosa::FuriosaDialect,
+                        mlir::func::FuncDialect>();
+        // clang-format on
+      });
+}
+
+} // namespace mlir::furiosa

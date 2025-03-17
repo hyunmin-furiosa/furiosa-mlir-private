@@ -18,7 +18,7 @@
 #include "llvm/Support/SourceMgr.h"
 
 using namespace mlir;
-using namespace mlir::furiosa::Furiosa;
+using namespace mlir::furiosa;
 
 void FuriosaDialect::initialize() {
 #define GET_OP_LIST

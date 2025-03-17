@@ -1,9 +1,12 @@
-//===- torch-mlir-opt.cpp - MLIR Optimizer Driver -------------------------===//
+//===- mlir-opt.cpp - MLIR Optimizer Driver -------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-// Also available under a BSD-style license. See LICENSE.
+//
+//===----------------------------------------------------------------------===//
+//
+// Main entry function for mlir-opt for when built as standalone binary.
 //
 //===----------------------------------------------------------------------===//
 

@@ -1,6 +1,7 @@
 torch_mlir_enable_werror()
 
 add_subdirectory(Dialect)
+add_subdirectory(Target)
 
 set(LinkedLibs
   MLIRComplexDialect
