@@ -38,7 +38,6 @@
 
 using namespace mlir;
 using namespace mlir::furiosa;
-using namespace mlir::furiosa::Furiosa;
 
 #define GET_OP_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.cpp.inc"

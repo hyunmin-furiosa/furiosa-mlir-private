@@ -2,6 +2,9 @@ add_mlir_library(FuriosaMLIRFuriosaDialect
   FuriosaDialect.cpp
   FuriosaOps.cpp
 
+  ADDITIONAL_HEADER_DIRS
+  ${PROJECT_SOURCE_DIR}/include/furiosa-mlir/Dialect/Furiosa
+
   DEPENDS
   FuriosaMLIRFuriosaOpsIncGen
 
