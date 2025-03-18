@@ -1,5 +1,5 @@
 # The Furiosa-MLIR Project
-The Furiosa-MLIR project is based on [torch-mlir](https://github.com/llvm/torch-mlir).
+The Furiosa-MLIR project aims to provide a compilation flow that converts arbitrary MLIR code into optimized hardware code that can run on [FuriosaAI Renegade](https://furiosa.ai/rngd).  
 
 ## Building Furiosa-MLIR
 
@@ -20,30 +20,12 @@ cmake -G Ninja -B build llvm \
   -DCMAKE_EXE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
   -DCMAKE_MODULE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
   -DCMAKE_SHARED_LINKER_FLAGS_INIT="--ld-path=ld.lld"
+cmake -B build
 ```
 
 Build Furiosa-MLIR project.
 ```shell
-export $LLVM_INSTALL_DIR=<llvm-project>/build
-
-cmake -GNinja -Bbuild . \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DMLIR_DIR="$LLVM_INSTALL_DIR/lib/cmake/mlir/" \
-  -DLLVM_DIR="$LLVM_INSTALL_DIR/lib/cmake/llvm/" \
-  -DLLVM_TARGETS_TO_BUILD=host \
-  `# use clang`\
-  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-  `# use ccache to cache build results` \
-  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-  `# use LLD to link in seconds, rather than minutes` \
-  `# if using clang <= 13, replace --ld-path=ld.lld with -fuse-ld=lld` \
-  -DCMAKE_EXE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
-  -DCMAKE_MODULE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
-  -DCMAKE_SHARED_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
-  `# other options` \
-  -DTORCH_MLIR_ENABLE_STABLEHLO=OFF \
-  -DTORCH_MLIR_ENABLE_REFBACKEND=OFF \
-  -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
+make LLVM_BUILD_DIR=<llvm-project>/build
 ```
 
 ## Using Furiosa-MLIR
@@ -53,11 +35,15 @@ Run generated binaries in `build/bin`.
 ```llvm
 // example.mlir
 module {
-  furiosa.exec { context = 0 : i1, context_id = 0 : i1, subunit_bitmap = 1 : i32 }
-  furiosa.wait { context = 0 : i1 }
+  func.func @kernel() -> () attributes { target = "renegade" } {
+    furiosa.exec { context = 0 : i1, context_id = 0 : i1, subunit_bitmap = 1 : i32 }
+    furiosa.wait { context = 0 : i1 }
+    return
+  }
 }
+
 ```
 
 ```shell
-furiosa-mlir-opt example.mlir
+furiosa-mlir-opt example.mlir | furiosa-mlir-translate -furiosa-to-binary
 ```
