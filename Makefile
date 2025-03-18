@@ -8,7 +8,7 @@ NINJA := Ninja
 BUILD_DIR ?= $(CURDIR)/build
 BUILD_TYPE ?= Release
 JOBS := 8
-LLVM_BUILD_DIR ?= $(CURDIR)/llvm-project/build
+LLVM_BUILD_DIR ?= $(LLVM_BUILD_DIR)
 TARGETS := $(shell find . -path ./build -prune -type f -o -iname "*.h" -o -iname "*.cpp" -o -iname "*.td")
 
 # CMake flags
@@ -32,7 +32,7 @@ FLAGS += -DTORCH_MLIR_ENABLE_REFBACKEND=OFF
 FLAGS += -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
 
 furiosa-mlir: configure
-	$(CMAKE) -B $(BUILD_DIR) --parallel $(JOBS)
+	$(CMAKE) --build $(BUILD_DIR) --parallel $(JOBS)
 
 configure:
 	mkdir -p $(BUILD_DIR)
