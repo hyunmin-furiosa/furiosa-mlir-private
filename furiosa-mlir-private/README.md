@@ -20,7 +20,7 @@ cmake -G Ninja -B build llvm \
   -DCMAKE_EXE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
   -DCMAKE_MODULE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
   -DCMAKE_SHARED_LINKER_FLAGS_INIT="--ld-path=ld.lld"
-cmake -B build
+cmake --build build
 ```
 
 Build Furiosa-MLIR project.
