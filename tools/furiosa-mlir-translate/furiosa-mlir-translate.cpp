@@ -14,8 +14,8 @@
 #include "mlir/InitAllTranslations.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Tools/mlir-translate/MlirTranslateMain.h"
-#include <mlir/IR/DialectRegistry.h>
 #include <furiosa-mlir/InitAll.h>
+#include <mlir/IR/DialectRegistry.h>
 
 #ifdef TORCH_MLIR_ENABLE_STABLEHLO
 #include "stablehlo/dialect/Register.h"

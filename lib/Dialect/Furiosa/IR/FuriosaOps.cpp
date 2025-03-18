@@ -9,6 +9,7 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
@@ -29,7 +30,6 @@
 #include "mlir/IR/Value.h"
 #include "mlir/Support/LLVM.h"
 #include "mlir/Support/LogicalResult.h"
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallVector.h"
