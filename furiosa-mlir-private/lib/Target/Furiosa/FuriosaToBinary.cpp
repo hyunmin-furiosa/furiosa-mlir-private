@@ -33,13 +33,15 @@ private:
   raw_indented_ostream os;
 };
 
-static LogicalResult printOperation(ArmCEmitter &emitter, furiosa::ExecutionOp executionOp) {
+static LogicalResult printOperation(ArmCEmitter &emitter,
+                                    furiosa::ExecutionOp executionOp) {
   raw_ostream &os = emitter.ostream();
   os << "furiosa::exec();\n";
   return success();
 }
 
-static LogicalResult printOperation(ArmCEmitter &emitter, furiosa::WaitOp waitOp) {
+static LogicalResult printOperation(ArmCEmitter &emitter,
+                                    furiosa::WaitOp waitOp) {
   raw_ostream &os = emitter.ostream();
   os << "furiosa::wait();\n";
   return success();
@@ -87,10 +89,10 @@ static LogicalResult printOperation(ArmCEmitter &emitter, ModuleOp moduleOp) {
   return success();
 }
 
-ArmCEmitter::ArmCEmitter(raw_ostream &os)
-    : os(os) {}
+ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {}
 
-LogicalResult ArmCEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
+LogicalResult ArmCEmitter::emitOperation(Operation &op,
+                                         bool trailingSemicolon) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
           // Builtin ops.
@@ -103,15 +105,14 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op, bool trailingSemicolon) 
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");
           });
-  
+
   if (failed(status))
     return failure();
 
   return success();
 }
 
-LogicalResult translateFuriosaToBinary(
-    Operation *op, llvm::raw_ostream &os) {
+LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os) {
   ArmCEmitter emitter(os);
   return emitter.emitOperation(*op, /*trailingSemicolon=*/false);
 }

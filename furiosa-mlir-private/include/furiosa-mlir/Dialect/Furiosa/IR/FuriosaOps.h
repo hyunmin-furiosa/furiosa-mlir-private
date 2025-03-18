@@ -10,12 +10,12 @@
 #ifndef FURIOSA_OPS_H
 #define FURIOSA_OPS_H
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "mlir/Bytecode/BytecodeOpInterface.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 
 #define GET_OP_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h.inc"

@@ -10,12 +10,12 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "furiosa-mlir/InitAll.h"
 #include "mlir/Dialect/MemRef/Transforms/Passes.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 #include "mlir/Transforms/Passes.h"
-#include "furiosa-mlir/InitAll.h"
 
 #ifdef TORCH_MLIR_ENABLE_STABLEHLO
 #include "stablehlo/dialect/Register.h"

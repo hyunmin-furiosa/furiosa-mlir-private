@@ -13,6 +13,4 @@
 #include "mlir/Pass/PassRegistry.h"
 #include "mlir/Transforms/Passes.h"
 
-void mlir::furiosa::registerFuriosaPasses() {
-  mlir::furiosa::registerPasses();
-}
+void mlir::furiosa::registerFuriosaPasses() { mlir::furiosa::registerPasses(); }
