@@ -17,28 +17,25 @@ include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 
-class Furiosa_Op<string mnemonic, list<Trait> traits = []>
-    : Op<Furiosa_Dialect, mnemonic, !listconcat(traits, [Pure])> {}
-
 //===----------------------------------------------------------------------===//
 // Tensor unit commands.
 //===----------------------------------------------------------------------===//
 
-def Furiosa_ExecutionOp : Furiosa_Op<"exec"> {
+def Furiosa_ExecutionOp : Furiosa_TensorUnitCommand<"exec"> {
   let summary = "Tensor unit execution";
   let description = [{}];
   let arguments = (ins I1Attr
-                   : $context, I1Attr
+                   : $target_context, I1Attr
                    : $context_id, I32Attr
                    : $subunit_bitmap);
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_WaitOp : Furiosa_Op<"wait"> {
+def Furiosa_WaitOp : Furiosa_TensorUnitCommand<"wait"> {
   let summary = "Wait";
   let description = [{}];
-  let arguments = (ins I1Attr : $context);
+  let arguments = (ins I1Attr : $target_context);
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
