@@ -6,9 +6,8 @@
 
 namespace mlir::furiosa {
 
-LogicalResult furiosaToBinary(Operation *op, llvm::raw_ostream &os);
-
 LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os);
+
 } // namespace mlir::furiosa
 
 #endif

@@ -9,6 +9,7 @@
 #include "llvm/ADT/TypeSwitch.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
 
 using namespace mlir;
 
@@ -33,24 +34,40 @@ private:
   raw_indented_ostream os;
 };
 
+static LogicalResult printCommand(ArmCEmitter &emitter, std::uint32_t command) {
+  raw_indented_ostream &os = emitter.ostream();
+  os << "TUC_COMMAND_QUEUE_ENTRY[tail] = 0x";
+  os.write_hex(command);
+  os << ";\n";
+  os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
+  os << "TUC_COMMAND_QUEUE_TAIL = tail";
+  return success();
+}
+
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     furiosa::ExecutionOp executionOp) {
-  raw_ostream &os = emitter.ostream();
-  os << "furiosa::exec();\n";
+  std::uint32_t command = *getCommand(*executionOp.getOperation());
+  return printCommand(emitter, command);
   return success();
 }
 
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     furiosa::WaitOp waitOp) {
-  raw_ostream &os = emitter.ostream();
-  os << "furiosa::wait();\n";
-  return success();
+  std::uint32_t command = *getCommand(*waitOp.getOperation());
+  return printCommand(emitter, command);
 }
+
 static LogicalResult printFunctionBody(ArmCEmitter &emitter,
                                        Operation *functionOp,
                                        Region::BlockListType &blocks) {
   raw_indented_ostream &os = emitter.ostream();
   os.indent();
+
+  // Initialize kernel
+  os << "uint32_t tail = *TUC_COMMAND_QUEUE_TAIL;\n";
+  os << "\n";
+
+  // Emit the body of the function.
   for (Block &block : blocks) {
     for (Operation &op : block.getOperations()) {
       if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
@@ -64,9 +81,26 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
 
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::FuncOp functionOp) {
-  raw_ostream &os = emitter.ostream();
+  raw_indented_ostream &os = emitter.ostream();
+
+  // Define constants
+  os << "#define TUC_BASE UINT64_C(0x000C000000)\n";
+  os << "#define TUC_COMMAND_QUEUE_HEAD ((volatile uint64_t *)(TUC_BASE + "
+        "0x020))\n";
+  os << "#define TUC_COMMAND_QUEUE_TAIL ((volatile uint64_t *)(TUC_BASE + "
+        "0x028))\n";
+  os << "#define TUC_COMMAND_QUEUE_ENTRY ((volatile uint32_t *)(TUC_BASE + "
+        "0x100))\n";
+  os << "#define TUC_GENERAL_REGISTERS ((volatile uint64_t *)(TUC_BASE + "
+        "0x200))\n";
+  os << "#define TUC_COMMAND_QUEUE_SIZE 64\n";
+  os << "#define TUC_REGISTER_COUNT 64\n";
+  os << "#define TRAMPOLINE_EXIT (0 << 8)\n";
+  os << "\n";
+
+  // Define function
+  os << "void " << functionOp.getName() << "() {\n";
   Operation *operation = functionOp.getOperation();
-  os << functionOp.getName() << "() {\n";
   if (failed(printFunctionBody(emitter, operation, functionOp.getBlocks())))
     return failure();
   os << "}\n";
@@ -76,8 +110,9 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
 
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::ReturnOp returnOp) {
-  raw_ostream &os = emitter.ostream();
-  os << "return\n";
+  raw_indented_ostream &os = emitter.ostream();
+  os << "\n";
+  os << "trampoline(TRAMPOLINE_EXIT, 0, 0);";
   return success();
 }
 
@@ -108,6 +143,8 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op,
 
   if (failed(status))
     return failure();
+
+  os << (trailingSemicolon ? ";\n" : "\n");
 
   return success();
 }

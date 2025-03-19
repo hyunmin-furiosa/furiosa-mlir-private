@@ -18,4 +18,10 @@ def Furiosa_Dialect : Dialect {
   let description = [{}];
 }
 
+class Furiosa_Op<string mnemonic, list<Trait> traits = []>
+    : Op<Furiosa_Dialect, mnemonic, !listconcat(traits, [Pure])> {}
+
+class Furiosa_TensorUnitCommand<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<mnemonic, traits> {}
+
 #endif // FURIOSA_BASE_TD
