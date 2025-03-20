@@ -148,10 +148,6 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
   command += "-o " + filepath_o.str() + " ";
   system(command.c_str());
 
-  // Read compiled binary
-  // auto buffer =
-  //     llvm::MemoryBuffer::getFile(filepath_o.str())->get()->getBuffer();
-
   return success();
 }
 
