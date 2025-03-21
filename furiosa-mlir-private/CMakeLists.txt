@@ -149,7 +149,7 @@ endif()
 
 set(FURIOSA_MLIR_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(FURIOSA_MLIR_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-message(STATUS "Building torch-mlir project at ${FURIOSA_MLIR_SOURCE_DIR} (into ${FURIOSA_MLIR_BINARY_DIR})")
+message(STATUS "Building furiosa-mlir project at ${FURIOSA_MLIR_SOURCE_DIR} (into ${FURIOSA_MLIR_BINARY_DIR})")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${MLIR_INCLUDE_DIRS})

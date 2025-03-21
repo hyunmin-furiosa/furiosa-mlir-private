@@ -1,11 +1,11 @@
-#include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
+
+#include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
 
 int main(int argc, char **argv) {
   assert(argc == 2);
   llvm::StringRef filename = argv[1];
-  // Read compiled binary
 
   auto status = llvm::MemoryBuffer::getFile(filename);
   if (!status) {
@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
                              status.getError().message());
   }
   auto buffer = status->get()->getBuffer();
-  llvm::outs() << buffer;
+  launchKernel(buffer);
 
   return 0;
 }
