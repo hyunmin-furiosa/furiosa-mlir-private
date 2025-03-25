@@ -1,6 +1,7 @@
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Target/LLVMIR/Dialect/All.h"
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
@@ -20,8 +21,9 @@ void registerFuriosaToBinary() {
       },
       [](DialectRegistry &registry) {
         // clang-format off
-        registry.insert<mlir::furiosa::FuriosaDialect,
-                        mlir::func::FuncDialect>();
+        registry.insert<mlir::func::FuncDialect,
+                        mlir::tensor::TensorDialect,
+                        mlir::furiosa::FuriosaDialect>();
         // clang-format on
       });
 }

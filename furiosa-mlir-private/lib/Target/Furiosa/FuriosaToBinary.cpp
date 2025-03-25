@@ -1,15 +1,23 @@
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/Support/IndentedOstream.h"
 #include "mlir/Support/LLVM.h"
 #include "mlir/Target/LLVMIR/Dialect/All.h"
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
 #include "llvm/ADT/TypeSwitch.h"
+#include "llvm/Support/BinaryByteStream.h"
+#include "llvm/Support/BinaryStreamWriter.h"
+#include "llvm/Support/Error.h"
+#include "llvm/Support/FileOutputBuffer.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/ToolOutputFile.h"
+
+#include "llvm/Support/Debug.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
@@ -22,12 +30,8 @@ namespace mlir::furiosa {
 struct ArmCEmitter {
   explicit ArmCEmitter(raw_ostream &os);
 
-  /// Emits operation 'op' with/without training semicolon or returns failure.
-  ///
-  /// For operations that should never be followed by a semicolon, like ForOp,
-  /// the `trailingSemicolon` argument is ignored and a semicolon is not
-  /// emitted.
-  LogicalResult emitOperation(Operation &op, bool trailingSemicolon);
+  /// Emits operation 'op' or returns failure.
+  LogicalResult emitOperation(Operation &op);
 
   /// Returns the output stream.
   raw_indented_ostream &ostream() { return os; };
@@ -44,7 +48,7 @@ static LogicalResult printCommand(ArmCEmitter &emitter, std::uint32_t command) {
   os << ";\n";
   os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
   os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
-  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {}";
+  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
   return success();
 }
 
@@ -52,13 +56,21 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
                                     furiosa::ExecutionOp executionOp) {
   std::uint32_t command = *getCommand(*executionOp.getOperation());
   return printCommand(emitter, command);
-  return success();
 }
 
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     furiosa::WaitOp waitOp) {
   std::uint32_t command = *getCommand(*waitOp.getOperation());
   return printCommand(emitter, command);
+}
+
+static LogicalResult printFunctionArgs(ArmCEmitter &emitter,
+                                       Operation *functionOp,
+                                       Region::BlockArgListType arguments) {
+  raw_indented_ostream &os = emitter.ostream();
+  os << "uint64_t *addrs, uint32_t len_addrs, uint16_t profile_base_uid";
+
+  return success();
 }
 
 static LogicalResult printFunctionBody(ArmCEmitter &emitter,
@@ -74,7 +86,7 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
   // Emit the body of the function.
   for (Block &block : blocks) {
     for (Operation &op : block.getOperations()) {
-      if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
+      if (failed(emitter.emitOperation(op)))
         return failure();
     }
   }
@@ -102,8 +114,8 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
 
     // Define constants
     os << R"""(#include <assert.h>
-#include <stdalign.h>)""";
-#include <stdint.h>
+#include <stdalign.h>
+#include <stdint.h>)""";
     os << "\n";
 
     os << R"""(
@@ -237,11 +249,16 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
     os << "\n";
 
     // Define function
-    os << "void " << functionOp.getName() << "() {\n";
+    os << "void " << functionOp.getName() << "(";
     Operation *operation = functionOp.getOperation();
+    if (failed(printFunctionArgs(armCEmitter, operation,
+                                 functionOp.getArguments())))
+      return failure();
+    os << ") {\n";
     if (failed(
             printFunctionBody(armCEmitter, operation, functionOp.getBlocks())))
       return failure();
+    os << "\n";
     os << "}\n";
 
     if (fd_os.has_error())
@@ -276,6 +293,71 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   command += filepath_bin.str() + " ";
   system(command.c_str());
 
+  llvm::AppendingBinaryByteStream stream{};
+  llvm::BinaryStreamWriter writer(stream);
+
+  SmallVector<std::uint32_t> sizes{};
+  for (auto arg : functionOp.getArgumentTypes()) {
+    if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
+      auto size = 1;
+      for (auto dimSize : tensorType.getShape()) {
+        size *= dimSize;
+      }
+      sizes.push_back(size);
+    }
+  }
+
+  for (auto res : functionOp.getResultTypes()) {
+    if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
+      auto size = 1;
+      for (auto dimSize : tensorType.getShape()) {
+        size *= dimSize;
+      }
+      sizes.push_back(size);
+    }
+  }
+
+  if (writer.writeInteger<std::uint32_t>(functionOp.getNumArguments())) {
+    return failure();
+  }
+  if (writer.writeInteger<std::uint32_t>(functionOp.getNumResults())) {
+    return failure();
+  }
+  if (writer.writeArray(ArrayRef(sizes))) {
+    return failure();
+  }
+
+  // read machine code
+  auto status = llvm::MemoryBuffer::getFile(filepath_bin);
+  if (!status) {
+    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
+                             status.getError().message());
+  }
+  llvm::StringRef binBuffer = status->get()->getBuffer();
+  if (writer.writeInteger<std::uint32_t>(binBuffer.size())) {
+    return failure();
+  }
+  if (writer.writeFixedString(binBuffer)) {
+    return failure();
+  }
+
+  llvm::Expected<std::unique_ptr<llvm::FileOutputBuffer>> fileBuffer =
+      llvm::FileOutputBuffer::create("furiosa.bin", stream.getLength());
+  if (!fileBuffer) {
+    llvm::report_fatal_error(
+        llvm::Twine(llvm::toString(fileBuffer.takeError())));
+    return failure();
+  }
+  llvm::FileBufferByteStream fileStream(std::move(fileBuffer.get()),
+                                        llvm::endianness::native);
+  llvm::BinaryStreamWriter fileWriter(fileStream);
+  if (fileWriter.writeStreamRef(stream)) {
+    return failure();
+  }
+  if (fileStream.commit()) {
+    return failure();
+  }
+
   return success();
 }
 
@@ -291,22 +373,23 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::ReturnOp returnOp) {
   raw_indented_ostream &os = emitter.ostream();
   os << "\n";
-  os << "shared->trampoline(TRAMPOLINE_EXIT, 0, 0)";
+  os << "shared->trampoline(TRAMPOLINE_EXIT, 0, 0);";
   return success();
 }
 
 static LogicalResult printOperation(ArmCEmitter &emitter, ModuleOp moduleOp) {
+  raw_indented_ostream &os = emitter.ostream();
   for (Operation &op : moduleOp) {
-    if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/false)))
+    if (failed(emitter.emitOperation(op)))
       return failure();
+    os << "\n";
   }
   return success();
 }
 
 ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {}
 
-LogicalResult ArmCEmitter::emitOperation(Operation &op,
-                                         bool trailingSemicolon) {
+LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
           // Builtin ops.
@@ -314,6 +397,7 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op,
           // Func ops.
           .Case<func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
+          .Case<tensor::EmptyOp>([&](auto op) { return success(); })
           .Case<furiosa::ExecutionOp, furiosa::WaitOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Default([&](Operation *) {
@@ -323,15 +407,12 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op,
   if (failed(status))
     return failure();
 
-  os << (trailingSemicolon ? ";\n" : "\n");
-
   return success();
 }
 
 LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os) {
   ArmCEmitter emitter(os);
-  LogicalResult status =
-      emitter.emitOperation(*op, /*trailingSemicolon=*/false);
+  LogicalResult status = emitter.emitOperation(*op);
   if (failed(status))
     return failure();
 
