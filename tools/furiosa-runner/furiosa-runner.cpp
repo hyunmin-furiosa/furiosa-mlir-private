@@ -1,5 +1,7 @@
+#include "llvm/Support/BinaryByteStream.h"
+#include "llvm/Support/BinaryStreamReader.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
 
@@ -12,8 +14,31 @@ int main(int argc, char **argv) {
     llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
                              status.getError().message());
   }
-  auto buffer = status->get()->getBuffer();
-  launchKernel(buffer);
+  llvm::BinaryByteStream stream(status->get()->getBuffer(),
+                                llvm::endianness::native);
+  llvm::BinaryStreamReader reader(stream);
+
+  std::uint32_t numArguments, numResults;
+  llvm::ArrayRef<std::uint32_t> sizes;
+  if (reader.readInteger(numArguments)) {
+    return -1;
+  }
+  if (reader.readInteger(numResults)) {
+    return -1;
+  }
+  if (reader.readArray(sizes, numArguments + numResults)) {
+    return -1;
+  }
+  std::uint32_t codeSize;
+  llvm::StringRef binBuffer;
+  if (reader.readInteger(codeSize)) {
+    return -1;
+  }
+  if (reader.readFixedString(binBuffer, codeSize)) {
+    return -1;
+  }
+
+  launchKernel(binBuffer);
 
   return 0;
 }
