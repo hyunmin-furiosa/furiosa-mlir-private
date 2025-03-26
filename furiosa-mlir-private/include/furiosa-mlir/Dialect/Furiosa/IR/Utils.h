@@ -1,5 +1,5 @@
-#ifndef FURIOSA_UTILS_H
-#define FURIOSA_UTILS_H
+#ifndef FURIOSA_DIALECT_UTILS_H
+#define FURIOSA_DIALECT_UTILS_H
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/Commands.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
