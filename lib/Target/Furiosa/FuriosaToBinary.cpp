@@ -21,6 +21,7 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
+#include "furiosa-mlir/Target/Furiosa/Utils.h"
 
 using namespace mlir;
 
@@ -99,8 +100,6 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
   int fd;
   llvm::Twine symName = functionOp.getSymName();
   llvm::Twine filepath_c = symName + ".c";
-  llvm::Twine filepath_o = symName + ".o";
-  llvm::Twine filepath_bin = symName + ".bin";
   if (std::error_code error = llvm::sys::fs::openFileForWrite(filepath_c, fd)) {
     llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
                              error.message());
@@ -112,13 +111,11 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
     ArmCEmitter armCEmitter(fd_os);
     raw_indented_ostream &os = armCEmitter.ostream();
 
-    // Define constants
+    // Necessary defines and includes
     os << R"""(#include <assert.h>
 #include <stdalign.h>
-#include <stdint.h>)""";
-    os << "\n";
+#include <stdint.h>
 
-    os << R"""(
 #define TRAMPOLINE_EXIT (0 << 8)
 #define TRAMPOLINE_RECV_MESSAGE (1 << 8)
 #define TRAMPOLINE_WAIT_FOR_TUC (2 << 8)
@@ -150,11 +147,8 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
 
 #define SHARED_AREA_SIZE (1 << 12)
 
-#define NUM_MAX_CLUSTERS 8)""";
-    os << "\n";
+#define NUM_MAX_CLUSTERS 8
 
-    // dma descriptor
-    os << R"""(
 /**
  * Tensor DMA Descriptor
  */
@@ -244,8 +238,8 @@ struct shared_field_t
 };
 
 /* Shared data structure */
-static volatile struct shared_field_t *const shared = (struct shared_field_t *)SHARED_FIELDS_ADDR;)""";
-    os << "\n";
+static volatile struct shared_field_t *const shared = (struct shared_field_t *)SHARED_FIELDS_ADDR;
+)""";
     os << "\n";
 
     // Define function
@@ -266,32 +260,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
                                filepath_c);
   }
 
-  // Compile the C code
-  std::string command = "aarch64-none-elf-gcc ";
-  command += "-r ";
-  command += "-fno-builtin ";
-  command += "-fno-zero-initialized-in-bss ";
-  static constexpr std::uint32_t MAX_STACK_USAGE = 1020 * 1024;
-  command += "-Werror=stack-usage=" + std::to_string(MAX_STACK_USAGE) + " ";
-  command += "-nostdlib ";
-  command += "-fwrapv ";
-  command += "-static ";
-  command += "-Wl,-n ";
-  command += "-xc ";
-  command += "-Werror ";
-  command += "-fno-omit-frame-pointer ";
-  command += "-O3 ";
-  command += "-std=c11 ";
-  command += filepath_c.str() + " ";
-  command += "-o " + filepath_o.str() + " ";
-  system(command.c_str());
-
-  // Convert elf into machine code
-  command = "aarch64-none-elf-objcopy ";
-  command += "-O binary ";
-  command += filepath_o.str() + " ";
-  command += filepath_bin.str() + " ";
-  system(command.c_str());
+  std::string filepath_o = *convertArmCToObject(filepath_c);
+  std::string binBuffer = *convertObjectToBinary(filepath_o);
 
   llvm::AppendingBinaryByteStream stream{};
   llvm::BinaryStreamWriter writer(stream);
@@ -326,14 +296,6 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   if (writer.writeArray(ArrayRef(sizes))) {
     return failure();
   }
-
-  // read machine code
-  auto status = llvm::MemoryBuffer::getFile(filepath_bin);
-  if (!status) {
-    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
-                             status.getError().message());
-  }
-  llvm::StringRef binBuffer = status->get()->getBuffer();
   if (writer.writeInteger<std::uint32_t>(binBuffer.size())) {
     return failure();
   }

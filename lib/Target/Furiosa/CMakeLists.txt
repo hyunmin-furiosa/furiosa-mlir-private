@@ -6,5 +6,6 @@ add_mlir_translation_library(FuriosaMLIRTargetFuriosa
     ${PROJECT_SOURCE_DIR}/include/furiosa-mlir/Target/Furiosa
 
     LINK_LIBS PUBLIC
+    LLVMObject
     FuriosaMLIRFuriosaDialect
 )
