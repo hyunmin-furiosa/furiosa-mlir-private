@@ -24,10 +24,11 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 def Furiosa_ItosfrOp : Furiosa_TensorUnitCommand<"itosfr"> {
   let summary = "Immediate to SFR";
   let description = [{}];
-  let arguments = (ins I32Attr
-                   : $value, I64Attr
-                   : $size, I64Attr
-                   : $sfr_address);
+  let arguments = (ins
+      I32Attr:$value,
+      I64Attr:$size,
+      I64Attr:$sfr_address
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
@@ -35,10 +36,11 @@ def Furiosa_ItosfrOp : Furiosa_TensorUnitCommand<"itosfr"> {
 def Furiosa_RtosfrOp : Furiosa_TensorUnitCommand<"rtosfr"> {
   let summary = "Register to SFR";
   let description = [{}];
-  let arguments = (ins I64Attr
-                   : $value, I64Attr
-                   : $size, I64Attr
-                   : $sfr_address);
+  let arguments = (ins
+      I64Attr:$value,
+      I64Attr:$size,
+      I64Attr:$sfr_address
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
@@ -46,10 +48,11 @@ def Furiosa_RtosfrOp : Furiosa_TensorUnitCommand<"rtosfr"> {
 def Furiosa_RtosfriOp : Furiosa_TensorUnitCommand<"rtosfri"> {
   let summary = "Register to SFR immediate";
   let description = [{}];
-  let arguments = (ins I64Attr
-                   : $value, I32Attr
-                   : $size, I32Attr
-                   : $sfr_address);
+  let arguments = (ins
+      I64Attr:$value,
+      I32Attr:$size,
+      I32Attr:$sfr_address
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
@@ -57,10 +60,11 @@ def Furiosa_RtosfriOp : Furiosa_TensorUnitCommand<"rtosfri"> {
 def Furiosa_MtosfrOp : Furiosa_TensorUnitCommand<"mtosfr"> {
   let summary = "Memory to SFR";
   let description = [{}];
-  let arguments = (ins I64Attr
-                   : $sfr_address, I64Attr
-                   : $size, I64Attr
-                   : $spm_address);
+  let arguments = (ins
+      I64Attr:$sfr_address,
+      I64Attr:$size,
+      I64Attr:$spm_address
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
@@ -68,10 +72,11 @@ def Furiosa_MtosfrOp : Furiosa_TensorUnitCommand<"mtosfr"> {
 def Furiosa_ExecutionOp : Furiosa_TensorUnitCommand<"exec"> {
   let summary = "Tensor unit execution";
   let description = [{}];
-  let arguments = (ins I1Attr
-                   : $target_context, I1Attr
-                   : $context_id, I32Attr
-                   : $subunit_bitmap);
+  let arguments = (ins
+      I1Attr:$target_context,
+      I1Attr:$context_id,
+      I32Attr:$subunit_bitmap
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
@@ -79,7 +84,9 @@ def Furiosa_ExecutionOp : Furiosa_TensorUnitCommand<"exec"> {
 def Furiosa_WaitOp : Furiosa_TensorUnitCommand<"wait"> {
   let summary = "Wait";
   let description = [{}];
-  let arguments = (ins I1Attr : $target_context);
+  let arguments = (ins
+      I1Attr:$target_context
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }

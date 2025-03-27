@@ -1,5 +1,5 @@
 # Tools
-CLANG_FORMAT := clang-format
+CLANG_FORMAT := clang-format-19
 CMAKE := cmake
 MAKE := make
 NINJA := Ninja
