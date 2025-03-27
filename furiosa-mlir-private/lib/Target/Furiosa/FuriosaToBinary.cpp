@@ -42,27 +42,23 @@ private:
   raw_indented_ostream os;
 };
 
-static LogicalResult printCommand(ArmCEmitter &emitter, std::uint32_t command) {
+static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
+  auto [command, registers] = *getCommand(*op);
   raw_indented_ostream &os = emitter.ostream();
+  for (auto [command_reg_idx, reg] : llvm::enumerate(registers)) {
+    std::uint32_t general_reg_idx = command_reg_idx;
+    os << "TUC_GENERAL_REGISTERS[" << general_reg_idx << "] = 0x";
+    os.write_hex(reg.value);
+    os << ";\n";
+    command.setReg(command_reg_idx, general_reg_idx);
+  }
   os << "TUC_COMMAND_QUEUE_ENTRY[tail] = 0x";
-  os.write_hex(command);
+  os.write_hex(command.value);
   os << ";\n";
   os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
   os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
   os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
   return success();
-}
-
-static LogicalResult printOperation(ArmCEmitter &emitter,
-                                    furiosa::ExecutionOp executionOp) {
-  std::uint32_t command = *getCommand(*executionOp.getOperation());
-  return printCommand(emitter, command);
-}
-
-static LogicalResult printOperation(ArmCEmitter &emitter,
-                                    furiosa::WaitOp waitOp) {
-  std::uint32_t command = *getCommand(*waitOp.getOperation());
-  return printCommand(emitter, command);
 }
 
 static LogicalResult printFunctionArgs(ArmCEmitter &emitter,
@@ -360,8 +356,16 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           .Case<func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Case<furiosa::ExecutionOp, furiosa::WaitOp>(
-              [&](auto op) { return printOperation(*this, op); })
+          .Case<furiosa::ItosfrOp, furiosa::RtosfrOp, furiosa::RtosfriOp,
+                furiosa::MtosfrOp, furiosa::StosfrOp, furiosa::SfrtosOp,
+                furiosa::StallOp, furiosa::ItosOp, furiosa::ItosiOp,
+                furiosa::StosOp, furiosa::StotabOp, furiosa::StotrfOp,
+                furiosa::StovrfOp, furiosa::ExecutionOp, furiosa::WaitOp,
+                furiosa::WaitiOp, furiosa::InterruptOp, furiosa::DmaOp,
+                furiosa::Dma1Op, furiosa::DmawOp, furiosa::ProfileOp,
+                furiosa::ProfileiOp, furiosa::PrflushOp>([&](auto op) {
+            return printFuriosaCommand(*this, op.getOperation());
+          })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");
           });
