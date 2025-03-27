@@ -10,21 +10,23 @@ namespace mlir::furiosa {
 FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
   // Compile the C code
   llvm::Twine filepath_out = filepath + ".o";
-  std::string command = "aarch64-none-elf-gcc ";
+  // std::string command = "aarch64-none-elf-gcc ";
+  // TODO: add -fno-asynchronous-unwind-tables to remove .eh_frame section
+  std::string command = "clang --target=aarch64-linux-gnu ";
   command += "-r ";
-  command += "-fno-builtin ";
-  command += "-fno-zero-initialized-in-bss ";
-  static constexpr std::uint32_t MAX_STACK_USAGE = 1020 * 1024;
-  command += "-Werror=stack-usage=" + std::to_string(MAX_STACK_USAGE) + " ";
-  command += "-nostdlib ";
-  command += "-fwrapv ";
-  command += "-static ";
-  command += "-Wl,-n ";
-  command += "-xc ";
-  command += "-Werror ";
-  command += "-fno-omit-frame-pointer ";
+  // command += "-fno-builtin ";
+  // command += "-fno-zero-initialized-in-bss ";
+  // static constexpr std::uint32_t MAX_STACK_USAGE = 1020 * 1024;
+  // command += "-Werror=stack-usage=" + std::to_string(MAX_STACK_USAGE) + " ";
+  // command += "-nostdlib ";
+  // command += "-fwrapv ";
+  // command += "-static ";
+  // command += "-Wl,-n ";
+  // command += "-xc ";
+  // command += "-Werror ";
+  // command += "-fno-omit-frame-pointer ";
   command += "-O3 ";
-  command += "-std=c11 ";
+  // command += "-std=c11 ";
   command += filepath.str() + " ";
   command += "-o " + filepath_out.str() + " ";
   system(command.c_str());
@@ -51,8 +53,12 @@ FailureOr<std::string> convertObjectToBinary(llvm::Twine filepath) {
   }
   std::string binBuffer;
   for (llvm::object::ELFSectionRef section : obj->sections()) {
-    if ((section.getFlags() & llvm::ELF::SHF_ALLOC) &&
-        section.getType() != llvm::ELF::SHT_NOBITS && section.getSize() > 0) {
+    // TODO: clang generates .note.gnu.build-id section which should not be
+    // included
+    // if ((section.getFlags() & llvm::ELF::SHF_ALLOC) &&
+    //     section.getType() != llvm::ELF::SHT_NOBITS && section.getSize() > 0)
+    //     {
+    if (section.getType() == llvm::ELF::SHT_PROGBITS) {
       llvm::Expected<llvm::StringRef> contents = section.getContents();
       if (!contents) {
         return failure();
