@@ -21,6 +21,50 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 // Tensor unit commands.
 //===----------------------------------------------------------------------===//
 
+def Furiosa_ItosfrOp : Furiosa_TensorUnitCommand<"itosfr"> {
+  let summary = "Immediate to SFR";
+  let description = [{}];
+  let arguments = (ins I32Attr
+                   : $value, I64Attr
+                   : $size, I64Attr
+                   : $sfr_address);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_RtosfrOp : Furiosa_TensorUnitCommand<"rtosfr"> {
+  let summary = "Register to SFR";
+  let description = [{}];
+  let arguments = (ins I64Attr
+                   : $value, I64Attr
+                   : $size, I64Attr
+                   : $sfr_address);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_RtosfriOp : Furiosa_TensorUnitCommand<"rtosfri"> {
+  let summary = "Register to SFR immediate";
+  let description = [{}];
+  let arguments = (ins I64Attr
+                   : $value, I32Attr
+                   : $size, I32Attr
+                   : $sfr_address);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_MtosfrOp : Furiosa_TensorUnitCommand<"mtosfr"> {
+  let summary = "Memory to SFR";
+  let description = [{}];
+  let arguments = (ins I64Attr
+                   : $sfr_address, I64Attr
+                   : $size, I64Attr
+                   : $spm_address);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
 def Furiosa_ExecutionOp : Furiosa_TensorUnitCommand<"exec"> {
   let summary = "Tensor unit execution";
   let description = [{}];
