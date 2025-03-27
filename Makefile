@@ -46,7 +46,7 @@ format-fix:
 _format-fix: $(addsuffix .format-fix, $(TARGETS))
 
 %.format-fix: %
-	$(CLANG_FORMAT) $< --verbose -i
+	$(CLANG_FORMAT) $< -i
 
 clean:
 	rm -rf $(BUILD_DIR)
