@@ -11,5 +11,4 @@ target_link_libraries(furiosa-mlir-opt PRIVATE
   FuriosaMLIRInitAll
   FuriosaMLIRFuriosaDialect
   FuriosaMLIRFuriosaPasses
-  ${dependency_libraries}
 )
