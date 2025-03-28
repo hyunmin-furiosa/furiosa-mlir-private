@@ -1,5 +1,4 @@
-#ifndef FURIOSA_DIALECT_UTILS_H
-#define FURIOSA_DIALECT_UTILS_H
+#pragma once
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/Commands.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
@@ -350,5 +349,3 @@ getCommand(Operation &op) {
 }
 
 } // namespace mlir::furiosa
-
-#endif

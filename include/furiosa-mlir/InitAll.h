@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_MLIR_INITALL_H
-#define FURIOSA_MLIR_INITALL_H
+#pragma once
 
 #include "mlir/IR/Dialect.h"
 
@@ -29,5 +28,3 @@ void registerAllPasses();
 
 } // namespace furiosa
 } // namespace mlir
-
-#endif // FURIOSA_MLIR_INITALL_H
