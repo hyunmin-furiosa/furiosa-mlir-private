@@ -8,9 +8,9 @@ Build [llvm-project](https://github.com/llvm/llvm-project) at [6d847b1](https://
 cmake -G Ninja -B build llvm \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_ASSERTIONS=ON \
-  -DLLVM_ENABLE_PROJECTS="mlir;llvm" \
+  -DLLVM_ENABLE_PROJECTS="clang;llvm;mlir" \
   -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
-  -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU" \
+  -DLLVM_TARGETS_TO_BUILD="host" \
   `# use clang`\
   -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
   `# use ccache to cache build results` \
@@ -20,7 +20,7 @@ cmake -G Ninja -B build llvm \
   -DCMAKE_EXE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
   -DCMAKE_MODULE_LINKER_FLAGS_INIT="--ld-path=ld.lld" \
   -DCMAKE_SHARED_LINKER_FLAGS_INIT="--ld-path=ld.lld"
-cmake --build build
+cmake --build build -j 16
 ```
 
 Build Furiosa-MLIR project.
