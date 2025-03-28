@@ -10,5 +10,4 @@ target_link_libraries(furiosa-mlir-translate PRIVATE
   FuriosaMLIRFuriosaDialect
   FuriosaMLIRFuriosaPasses
   FuriosaMLIRTargetFuriosa
-  ${dependency_libraries}
 )

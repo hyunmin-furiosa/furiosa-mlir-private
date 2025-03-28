@@ -8,5 +8,4 @@ COMPONENT furiosa-runner)
 target_link_libraries(furiosa-runner PRIVATE
   LLVMSupport
   FuriosaMLIRExecutionEngine
-  ${dependency_libraries}
 )

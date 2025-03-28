@@ -13,8 +13,9 @@ TARGETS := $(shell find . -path ./build -prune -type f -o -iname "*.h" -o -iname
 
 # CMake flags
 FLAGS := -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
-FLAGS += -DMLIR_DIR="$(LLVM_BUILD_DIR)/lib/cmake/mlir/"
+FLAGS += -DCLANG_DIR="$(LLVM_BUILD_DIR)/lib/cmake/clang/"
 FLAGS += -DLLVM_DIR="$(LLVM_BUILD_DIR)/lib/cmake/llvm/"
+FLAGS += -DMLIR_DIR="$(LLVM_BUILD_DIR)/lib/cmake/mlir/"
 FLAGS += -DLLVM_TARGETS_TO_BUILD=host
 # use clang
 FLAGS += -DCMAKE_C_COMPILER=clang
