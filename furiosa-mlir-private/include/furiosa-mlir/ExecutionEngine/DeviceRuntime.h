@@ -1,6 +1,3 @@
-#ifndef FURIOSA_DEVICE_RUNTIME_H
-#define FURIOSA_DEVICE_RUNTIME_H
+#pragma once
 
 void launchKernel(llvm::StringRef kernel);
-
-#endif

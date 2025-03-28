@@ -7,11 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_DIALECT_H
-#define FURIOSA_DIALECT_H
+#pragma once
 
 #include "mlir/IR/Dialect.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h.inc"
-
-#endif // FURIOSA_DIALECT_H

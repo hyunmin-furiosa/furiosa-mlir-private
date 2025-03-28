@@ -1,5 +1,4 @@
-#ifndef FURIOSA_COMMANDS_H
-#define FURIOSA_COMMANDS_H
+#pragma once
 
 namespace mlir::furiosa {
 
@@ -273,5 +272,3 @@ struct GeneralRegister {
 };
 
 } // namespace mlir::furiosa
-
-#endif

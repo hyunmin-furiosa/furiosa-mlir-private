@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_PASSES_H
-#define FURIOSA_PASSES_H
+#pragma once
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
@@ -34,5 +33,3 @@ void registerFuriosaPasses();
 
 } // namespace furiosa
 } // namespace mlir
-
-#endif // FURIOSA_PASSES_H

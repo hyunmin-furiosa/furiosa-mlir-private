@@ -1,5 +1,4 @@
-#ifndef FURIOSA_TARGET_UTILS_H
-#define FURIOSA_TARGET_UTILS_H
+#pragma once
 
 #include "llvm/Object/ELFObjectFile.h"
 #include "llvm/Support/MemoryBuffer.h"
@@ -71,5 +70,3 @@ FailureOr<std::string> convertObjectToBinary(llvm::Twine filepath) {
 }
 
 } // namespace mlir::furiosa
-
-#endif
