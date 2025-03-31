@@ -10,7 +10,7 @@ cmake -G Ninja -B build llvm \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_ENABLE_PROJECTS="clang;llvm;mlir" \
   -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
-  -DLLVM_TARGETS_TO_BUILD="host" \
+  -DLLVM_TARGETS_TO_BUILD="host;AArch64" \
   `# use clang`\
   -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
   `# use ccache to cache build results` \
