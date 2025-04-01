@@ -5,16 +5,10 @@ EXPORT TorchMLIRTargets
 RUNTIME DESTINATION ${LLVM_TOOLS_INSTALL_DIR}
 COMPONENT furiosa-mlir-opt)
 
-set(dependency_libraries)
-if(TORCH_MLIR_ENABLE_STABLEHLO)
-  list(APPEND dependency_libraries StablehloRegister)
-endif()
-
 target_link_libraries(furiosa-mlir-opt PRIVATE
   MLIROptLib
   MLIRTransforms
   FuriosaMLIRInitAll
   FuriosaMLIRFuriosaDialect
   FuriosaMLIRFuriosaPasses
-  ${dependency_libraries}
 )
