@@ -42,9 +42,10 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
       filepath_out.str(); // -o filepath_out
   invocation->getHeaderSearchOpts().UseStandardSystemIncludes =
       false; // -nostdsysteminc
-  invocation->getHeaderSearchOpts().AddPath(
-      CLANG_COMPILE_INCLUDE_DIRS, clang::frontend::Angled, false, true); // -I
-  invocation->getCodeGenOpts().OptimizationLevel = 3;                    // -O3
+  invocation->getHeaderSearchOpts().AddPath(CLANG_CROSS_COMPILE_INCLUDE_DIRS,
+                                            clang::frontend::Angled, false,
+                                            true);    // -I
+  invocation->getCodeGenOpts().OptimizationLevel = 3; // -O3
   compiler.setInvocation(std::move(invocation));
   std::unique_ptr<clang::FrontendAction> action =
       std::make_unique<clang::EmitObjAction>();
