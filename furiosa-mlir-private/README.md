@@ -35,15 +35,23 @@ Run generated binaries in `build/bin`.
 ```llvm
 // example.mlir
 module {
-  func.func @kernel() -> () attributes { target = "renegade" } {
-    furiosa.exec { context = 0 : i1, context_id = 0 : i1, subunit_bitmap = 1 : i32 }
-    furiosa.wait { context = 0 : i1 }
+  func.func @kernel(%arg0: tensor<1024xf32>, %arg1: tensor<1024xf32>) -> (tensor<1024xf32>, tensor<1024xf32>) attributes {target = "renegade"} {
+    furiosa.rtosfr {sfr_address = 0 : i64, size = 1 : i64, value = 12424 : i64}
+    furiosa.wait {dma_tag_id = 0 : i32, target_context = false, type = false}
+    %0 = tensor.empty() : tensor<1024xf32>
+    %1 = tensor.empty() : tensor<1024xf32>
+    return %0, %1 : tensor<1024xf32>, tensor<1024xf32>
+  }
+  func.func @main() {
+    %0 = tensor.empty() : tensor<1024xf32>
+    %1 = tensor.empty() : tensor<1024xf32>
+    %2:2 = call @kernel(%0, %1) : (tensor<1024xf32>, tensor<1024xf32>) -> (tensor<1024xf32>, tensor<1024xf32>)
     return
   }
 }
-
 ```
 
 ```shell
 furiosa-mlir-opt example.mlir | furiosa-mlir-translate -furiosa-to-binary
+furiosa-runner furiosa.bin
 ```
