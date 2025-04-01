@@ -7,8 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_OPS_H
-#define FURIOSA_OPS_H
+#pragma once
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "mlir/Bytecode/BytecodeOpInterface.h"
@@ -19,5 +18,3 @@
 
 #define GET_OP_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h.inc"
-
-#endif // FURIOSA_OPS_H
