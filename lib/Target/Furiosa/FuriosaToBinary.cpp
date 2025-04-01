@@ -108,8 +108,7 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
     raw_indented_ostream &os = armCEmitter.ostream();
 
     // Necessary defines and includes
-    os << R"""(#include <assert.h>
-#include <stdalign.h>
+    os << R"""(#include <stdalign.h>
 #include <stdint.h>
 
 #define TRAMPOLINE_EXIT (0 << 8)
