@@ -261,34 +261,38 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   llvm::AppendingBinaryByteStream stream{};
   llvm::BinaryStreamWriter writer(stream);
 
-  SmallVector<std::uint32_t> sizes{};
+  SmallVector<std::uint32_t> argumentSizes{};
   for (auto arg : functionOp.getArgumentTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
       auto size = 1;
       for (auto dimSize : tensorType.getShape()) {
         size *= dimSize;
       }
-      sizes.push_back(size);
+      argumentSizes.push_back(size);
     }
   }
 
+  SmallVector<std::uint32_t> resultSizes{};
   for (auto res : functionOp.getResultTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
       auto size = 1;
       for (auto dimSize : tensorType.getShape()) {
         size *= dimSize;
       }
-      sizes.push_back(size);
+      resultSizes.push_back(size);
     }
   }
 
-  if (writer.writeInteger<std::uint32_t>(functionOp.getNumArguments())) {
+  if (writer.writeInteger<std::uint32_t>(argumentSizes.size())) {
     return failure();
   }
-  if (writer.writeInteger<std::uint32_t>(functionOp.getNumResults())) {
+  if (writer.writeArray(ArrayRef(argumentSizes))) {
     return failure();
   }
-  if (writer.writeArray(ArrayRef(sizes))) {
+  if (writer.writeInteger<std::uint32_t>(resultSizes.size())) {
+    return failure();
+  }
+  if (writer.writeArray(ArrayRef(resultSizes))) {
     return failure();
   }
   if (writer.writeInteger<std::uint32_t>(binBuffer.size())) {

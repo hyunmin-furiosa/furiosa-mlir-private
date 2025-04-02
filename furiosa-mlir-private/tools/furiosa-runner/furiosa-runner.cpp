@@ -19,14 +19,18 @@ int main(int argc, char **argv) {
   llvm::BinaryStreamReader reader(stream);
 
   std::uint32_t numArguments, numResults;
-  llvm::ArrayRef<std::uint32_t> sizes;
+  llvm::ArrayRef<std::uint32_t> argumentSizes;
+  llvm::ArrayRef<std::uint32_t> resultSizes;
   if (reader.readInteger(numArguments)) {
+    return -1;
+  }
+  if (reader.readArray(argumentSizes, numArguments)) {
     return -1;
   }
   if (reader.readInteger(numResults)) {
     return -1;
   }
-  if (reader.readArray(sizes, numArguments + numResults)) {
+  if (reader.readArray(resultSizes, numResults)) {
     return -1;
   }
   std::uint32_t codeSize;
@@ -38,7 +42,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  launchKernel(binBuffer);
+  launchKernel(binBuffer, argumentSizes, resultSizes);
 
   return 0;
 }
