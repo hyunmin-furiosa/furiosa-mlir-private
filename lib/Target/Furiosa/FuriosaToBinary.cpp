@@ -8,19 +8,14 @@
 #include "mlir/Target/LLVMIR/Dialect/All.h"
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
-#include "llvm/ADT/TypeSwitch.h"
-#include "llvm/Support/BinaryByteStream.h"
-#include "llvm/Support/BinaryStreamWriter.h"
-#include "llvm/Support/Error.h"
-#include "llvm/Support/FileOutputBuffer.h"
-#include "llvm/Support/FileSystem.h"
-#include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/ToolOutputFile.h"
 
+#include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/Error.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
+#include "furiosa-mlir/Target/Furiosa/Binary.h"
 #include "furiosa-mlir/Target/Furiosa/Utils.h"
 
 using namespace mlir;
@@ -255,67 +250,32 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
                                filepath_c);
   }
 
+  FuriosaBinary furiosaBinary{};
+
   std::string filepath_o = *convertArmCToObject(filepath_c);
-  std::string binBuffer = *convertObjectToBinary(filepath_o);
+  furiosaBinary.binBuffer = *convertObjectToBinary(filepath_o);
 
-  llvm::AppendingBinaryByteStream stream{};
-  llvm::BinaryStreamWriter writer(stream);
-
-  SmallVector<std::uint32_t> argumentSizes{};
   for (auto arg : functionOp.getArgumentTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
       auto size = 1;
       for (auto dimSize : tensorType.getShape()) {
         size *= dimSize;
       }
-      argumentSizes.push_back(size);
+      furiosaBinary.argumentSizes.push_back(size);
     }
   }
 
-  SmallVector<std::uint32_t> resultSizes{};
   for (auto res : functionOp.getResultTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
       auto size = 1;
       for (auto dimSize : tensorType.getShape()) {
         size *= dimSize;
       }
-      resultSizes.push_back(size);
+      furiosaBinary.resultSizes.push_back(size);
     }
   }
 
-  if (writer.writeInteger<std::uint32_t>(argumentSizes.size())) {
-    return failure();
-  }
-  if (writer.writeArray(ArrayRef(argumentSizes))) {
-    return failure();
-  }
-  if (writer.writeInteger<std::uint32_t>(resultSizes.size())) {
-    return failure();
-  }
-  if (writer.writeArray(ArrayRef(resultSizes))) {
-    return failure();
-  }
-  if (writer.writeInteger<std::uint32_t>(binBuffer.size())) {
-    return failure();
-  }
-  if (writer.writeFixedString(binBuffer)) {
-    return failure();
-  }
-
-  llvm::Expected<std::unique_ptr<llvm::FileOutputBuffer>> fileBuffer =
-      llvm::FileOutputBuffer::create("furiosa.bin", stream.getLength());
-  if (!fileBuffer) {
-    llvm::report_fatal_error(
-        llvm::Twine(llvm::toString(fileBuffer.takeError())));
-    return failure();
-  }
-  llvm::FileBufferByteStream fileStream(std::move(fileBuffer.get()),
-                                        llvm::endianness::native);
-  llvm::BinaryStreamWriter fileWriter(fileStream);
-  if (fileWriter.writeStreamRef(stream)) {
-    return failure();
-  }
-  if (fileStream.commit()) {
+  if (failed(writeFuriosaBinary("furiosa.bin", furiosaBinary))) {
     return failure();
   }
 
