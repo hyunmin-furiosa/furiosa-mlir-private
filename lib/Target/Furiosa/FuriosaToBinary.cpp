@@ -42,17 +42,56 @@ static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
   raw_indented_ostream &os = emitter.ostream();
   for (auto [command_reg_idx, reg] : llvm::enumerate(registers)) {
     std::uint32_t general_reg_idx = command_reg_idx;
-    os << "TUC_GENERAL_REGISTERS[" << general_reg_idx << "] = 0x";
-    os.write_hex(reg.value);
-    os << ";\n";
+    os << "TUC_GENERAL_REGISTERS[" << general_reg_idx
+       << "] = " << llvm::format_hex(reg.value, 0) << ";\n";
     command.setReg(command_reg_idx, general_reg_idx);
   }
-  os << "TUC_COMMAND_QUEUE_ENTRY[tail] = 0x";
-  os.write_hex(command.value);
-  os << ";\n";
+  os << "TUC_COMMAND_QUEUE_ENTRY[tail] = " << llvm::format_hex(command.value, 0)
+     << ";\n";
   os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
   os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
   os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
+  return success();
+}
+
+static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
+                                        furiosa::DmaDescriptorOp op) {
+  raw_indented_ostream &os = emitter.ostream();
+  auto descriptor = *getDmaDescriptor(op);
+  os << "*(struct dma_desc_t *)" << llvm::format_hex(op.getDescAddr(), 0)
+     << " = (struct dma_desc_t) {";
+  os << descriptor.opcode << ",";
+  os << /*descriptor.indirect*/ "0" << ",";
+  os << llvm::format_hex(descriptor.source_base, 0) << ",";
+  os << llvm::format_hex(descriptor.destination_base, 0) << ",";
+  os << "{";
+  for (auto i = 0; i < DIMS; ++i) {
+    os << llvm::format_hex(descriptor.source_limit[i], 0)
+       << (i != DIMS - 1 ? "," : "");
+  }
+  os << "},";
+  os << "{";
+  for (auto i = 0; i < DIMS; ++i) {
+    os << llvm::format_hex(descriptor.source_stride[i], 0)
+       << (i != DIMS - 1 ? "," : "");
+  }
+  os << "},";
+  os << "{";
+  for (auto i = 0; i < DIMS; ++i) {
+    os << llvm::format_hex(descriptor.destination_limit[i], 0)
+       << (i != DIMS - 1 ? "," : "");
+  }
+  os << "},";
+  os << "{";
+  for (auto i = 0; i < DIMS; ++i) {
+    os << llvm::format_hex(descriptor.destination_stride[i], 0)
+       << (i != DIMS - 1 ? "," : "");
+  }
+  os << "}";
+  os << "};\n";
+  os << "flush_cache((void *)" << llvm::format_hex(op.getDescAddr(), 0)
+     << ", sizeof(struct dma_desc_t));\n";
+
   return success();
 }
 
@@ -104,6 +143,7 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
 
     // Necessary defines and includes
     os << R"""(#include <stdalign.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define TRAMPOLINE_EXIT (0 << 8)
@@ -138,6 +178,83 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
 #define SHARED_AREA_SIZE (1 << 12)
 
 #define NUM_MAX_CLUSTERS 8
+
+/**
+ * Flushes data cache to scratchpad memory.
+ *
+ * Given memory range, begin..begin + size must be accessed under volatile
+ * qualifier to ensure stores to the range are written to the physical memory
+ * (either cache or main data memory).
+ *
+ * This function only ensures modifications on cache will be applied to the data
+ * memory.
+ */
+static inline void flush_cache(volatile void *begin, size_t size)
+{
+  /**
+   * Arm Cortex-A55 has L1 data cache which has 64-byte cache line length.
+   * Refer to:
+   * https://developer.arm.com/documentation/100442/0100/functional-description/level-1-memory-system/about-the-l1-memory-system
+   */
+  const size_t cache_line_size = 64;
+
+  uintptr_t begin_aligned = (uintptr_t)begin & ~(cache_line_size - 1);
+
+  /* inclusive */
+  uintptr_t end_aligned =
+      ((uintptr_t)begin + size - 1) & ~(cache_line_size - 1);
+
+  /* Before flushing, ensure all previous stores are committed to cache. */
+  __asm__ __volatile__("dsb sy");
+
+  for (uintptr_t address = begin_aligned; address <= end_aligned;
+       address += cache_line_size)
+  {
+    __asm__ __volatile__("dc cvac, %0" : : "r"(address));
+  }
+
+  /* Ensure that flushing cache completes. */
+  __asm__ __volatile__("dsb sy");
+}
+
+/**
+ * Invalidates data cache.
+ *
+ * Given memory range, begin..begin + size must be accessed under volatile
+ * qualifier to ensure loads from the range are read from the physical memory
+ * (either cache or main data memory).
+ *
+ * This function only ensures modifications on data memory will be applited to
+ * cache.
+ */
+static inline void invalidate_cache(volatile void *begin, size_t size)
+{
+  /**
+   * Arm Cortex-A55 has L1 data cache which has 64-byte cache line length.
+   * Refer to:
+   * https://developer.arm.com/documentation/100442/0100/functional-description/level-1-memory-system/about-the-l1-memory-system
+   */
+  const size_t cache_line_size = 64;
+
+  uintptr_t begin_aligned = (uintptr_t)begin & ~(cache_line_size - 1);
+
+  /* inclusive */
+  uintptr_t end_aligned =
+      ((uintptr_t)begin + size - 1) & ~(cache_line_size - 1);
+
+  /* Ensure that data invalidation of cache starts after all memory accesses are
+   * finished. */
+  __asm__ __volatile__("dsb sy");
+
+  for (uintptr_t address = begin_aligned; address <= end_aligned;
+       address += cache_line_size)
+  {
+    __asm__ __volatile__("dc ivac, %0" : : "r"(address));
+  }
+
+  /* Ensure that invalidation of cache completes. */
+  __asm__ __volatile__("dsb sy");
+}
 
 /**
  * Tensor DMA Descriptor
@@ -299,11 +416,11 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
 }
 
 static LogicalResult printOperation(ArmCEmitter &emitter, ModuleOp moduleOp) {
-  raw_indented_ostream &os = emitter.ostream();
+  // raw_indented_ostream &os = emitter.ostream();
   for (Operation &op : moduleOp) {
     if (failed(emitter.emitOperation(op)))
       return failure();
-    os << "\n";
+    // os << "\n";
   }
   return success();
 }
@@ -329,6 +446,8 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
                 furiosa::ProfileiOp, furiosa::PrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
+          .Case<furiosa::DmaDescriptorOp>(
+              [&](auto op) { return printDmaDescriptor(*this, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");
           });

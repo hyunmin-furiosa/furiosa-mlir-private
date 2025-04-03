@@ -271,4 +271,25 @@ struct GeneralRegister {
   };
 };
 
+static constexpr auto INDIRECT_INDEXES = 32;
+static constexpr auto DIMS = 8;
+
+struct TensorDmaDescriptor {
+  std::uint64_t opcode;
+  struct {
+    std::uint64_t dimension : 8;
+    std::uint64_t entry_type : 1;
+    std::uint64_t : 23;
+    std::uint64_t indirect_descriptor_access_count : 24;
+    std::uint64_t : 8;
+  } indirect;
+  std::uint64_t source_base;
+  std::uint64_t destination_base;
+  std::uint16_t source_limit[DIMS];
+  std::int32_t source_stride[DIMS];
+  std::uint16_t destination_limit[DIMS];
+  std::int32_t destination_stride[DIMS];
+  std::array<std::uint32_t, INDIRECT_INDEXES> indirect_indexes;
+};
+
 } // namespace mlir::furiosa

@@ -335,4 +335,33 @@ def Furiosa_PrflushOp : Furiosa_TensorUnitCommand<"prflush"> {
   let assemblyFormat = "attr-dict";
 }
 
+//===----------------------------------------------------------------------===//
+// Task binary helpers.
+//===----------------------------------------------------------------------===//
+
+def Furiosa_SfrOp : Furiosa_TensorUnitCommand<"sfr"> {
+  let summary = "Special function register";
+  let description = [{}];
+  let arguments = (ins);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_DmaDescriptorOp : Furiosa_TensorUnitCommand<"dma_descriptor"> {
+  let summary = "Direct memory access descriptor";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$desc_addr,
+      I64Attr:$opcode,
+      I64Attr:$source_base,
+      I64Attr:$destination_base,
+      ArrayAttr:$source_limit,
+      ArrayAttr:$source_stride,
+      ArrayAttr:$destination_limit,
+      ArrayAttr:$destination_stride
+  );
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
 #endif // FURIOSA_OPS_TD

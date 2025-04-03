@@ -10,6 +10,7 @@ add_mlir_translation_library(FuriosaMLIRTargetFuriosa
 target_link_libraries(FuriosaMLIRTargetFuriosa PRIVATE
   clangCodeGen
   clangFrontend
+  LLVMAArch64AsmParser
   LLVMAArch64CodeGen
   LLVMObject
 )
