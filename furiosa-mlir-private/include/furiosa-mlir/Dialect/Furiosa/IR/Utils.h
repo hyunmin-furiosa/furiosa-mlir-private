@@ -348,4 +348,27 @@ getCommand(Operation &op) {
       });
 }
 
+FailureOr<TensorDmaDescriptor> getDmaDescriptor(furiosa::DmaDescriptorOp &op) {
+  TensorDmaDescriptor descriptor{};
+  descriptor.opcode = op.getOpcode();
+  // descriptor.indirect = op.getIndirect();
+  descriptor.source_base = op.getSourceBase();
+  descriptor.destination_base = op.getDestinationBase();
+  auto source_limit = op.getSourceLimit();
+  auto source_stride = op.getSourceStride();
+  auto destination_limit = op.getDestinationLimit();
+  auto destination_stride = op.getDestinationStride();
+  for (auto i = 0; i < DIMS; ++i) {
+    descriptor.source_limit[i] =
+        dyn_cast_or_null<IntegerAttr>(source_limit[i]).getInt();
+    descriptor.source_stride[i] =
+        dyn_cast_or_null<IntegerAttr>(source_stride[i]).getInt();
+    descriptor.destination_limit[i] =
+        dyn_cast_or_null<IntegerAttr>(destination_limit[i]).getInt();
+    descriptor.destination_stride[i] =
+        dyn_cast_or_null<IntegerAttr>(destination_stride[i]).getInt();
+  }
+  return descriptor;
+}
+
 } // namespace mlir::furiosa

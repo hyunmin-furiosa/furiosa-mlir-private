@@ -12,10 +12,11 @@
 namespace mlir::furiosa {
 
 LogicalResult InitializeAArch64() {
+  LLVMInitializeAArch64AsmParser();
+  LLVMInitializeAArch64AsmPrinter();
   LLVMInitializeAArch64TargetInfo();
   LLVMInitializeAArch64Target();
   LLVMInitializeAArch64TargetMC();
-  LLVMInitializeAArch64AsmPrinter();
   return success();
 }
 
