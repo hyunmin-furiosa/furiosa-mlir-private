@@ -69,11 +69,10 @@ FailureOr<FuriosaBinary> readFuriosaBinary(llvm::Twine filepath) {
                                 llvm::endianness::native);
   llvm::BinaryStreamReader reader(stream);
 
-  FuriosaBinary furiosaBinary{};
   std::uint32_t numArguments, numResults;
-  auto argumentSizes = ArrayRef(furiosaBinary.argumentSizes);
-  auto resultSizes = ArrayRef(furiosaBinary.resultSizes);
-  auto binBuffer = StringRef(furiosaBinary.binBuffer);
+  auto argumentSizes = ArrayRef<std::uint32_t>();
+  auto resultSizes = ArrayRef<std::uint32_t>();
+  auto binBuffer = StringRef();
   if (reader.readInteger(numArguments)) {
     return failure();
   }
@@ -94,6 +93,9 @@ FailureOr<FuriosaBinary> readFuriosaBinary(llvm::Twine filepath) {
     return failure();
   }
 
+  FuriosaBinary furiosaBinary = {SmallVector<std::uint32_t>(argumentSizes),
+                                 SmallVector<std::uint32_t>(resultSizes),
+                                 SmallString<MIN_BINARY_SIZE>(binBuffer)};
   return furiosaBinary;
 }
 
