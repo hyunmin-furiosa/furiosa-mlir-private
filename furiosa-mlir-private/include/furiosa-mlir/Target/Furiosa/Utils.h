@@ -127,6 +127,9 @@ FailureOr<std::string> convertObjectToBinary(llvm::Twine filepath) {
       if (!contents) {
         return failure();
       }
+      if (binBuffer.size() < section.getAddress()) {
+        binBuffer.resize(section.getAddress());
+      }
       binBuffer += contents->str();
     }
   }

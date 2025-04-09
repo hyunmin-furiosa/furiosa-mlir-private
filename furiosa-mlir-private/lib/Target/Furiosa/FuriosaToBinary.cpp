@@ -59,8 +59,9 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
-  os << "*(struct dma_desc_t *)" << llvm::format_hex(op.getDescAddr(), 0)
-     << " = (struct dma_desc_t){ ";
+  os << "{\n";
+  os.indent();
+  os << "static const struct dma_desc_t _desc = { ";
   os << descriptor.opcode << ", ";
   os << 0 << ", ";
   os << llvm::format_hex(descriptor.source_base, 0) << ", ";
@@ -94,8 +95,12 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   }
   os << " } ";
   os << "};\n";
+  os << "memcpy((void *)" << llvm::format_hex(op.getDescAddr(), 0)
+     << ", &_desc, sizeof(struct dma_desc_t));\n";
   os << "flush_cache((void *)" << llvm::format_hex(op.getDescAddr(), 0)
      << ", sizeof(struct dma_desc_t));\n";
+  os.unindent();
+  os << "}\n";
 
   return success();
 }
@@ -151,7 +156,8 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
 #include <stddef.h>
 #include <stdint.h>
 
-#include <printf.c>
+#include "builtin.c"
+#include "printf.c"
 
 #define TRAMPOLINE_EXIT (0 << 8)
 #define TRAMPOLINE_RECV_MESSAGE (1 << 8)
@@ -268,28 +274,28 @@ static inline void invalidate_cache(volatile void *begin, size_t size)
  */
 struct dma_desc_t
 {
-    /**
-     * [1:0] : opcode (0: TensorLoop, 1: SourceIndirect, 2: DestinationIndirect)
-     */
-    alignas(256) uint64_t metadata;
+  /**
+   * [1:0] : opcode (0: TensorLoop, 1: SourceIndirect, 2: DestinationIndirect)
+   */
+  alignas(256) uint64_t metadata;
 
-    /**
-     * [2:0] : dimension
-     * [8:8] : indirect entry type
-     *   (0: indirect address, 1: indirect list address)
-     */
-    uint64_t indirect_access;
+  /**
+   * [2:0] : dimension
+   * [8:8] : indirect entry type
+   *   (0: indirect address, 1: indirect list address)
+   */
+  uint64_t indirect_access;
 
-    uint64_t source_base;
-    uint64_t destination_base;
+  uint64_t source_base;
+  uint64_t destination_base;
 
-    uint16_t source_limits[NUM_ITERATOR_INDEXERS];
-    int32_t source_strides[NUM_ITERATOR_INDEXERS];
+  uint16_t source_limits[NUM_ITERATOR_INDEXERS];
+  int32_t source_strides[NUM_ITERATOR_INDEXERS];
 
-    uint16_t destination_limits[NUM_ITERATOR_INDEXERS];
-    int32_t destination_strides[NUM_ITERATOR_INDEXERS];
+  uint16_t destination_limits[NUM_ITERATOR_INDEXERS];
+  int32_t destination_strides[NUM_ITERATOR_INDEXERS];
 
-    int32_t indirect_indices[32];
+  int32_t indirect_indices[32];
 };
 
 typedef uint64_t tuc_dma_desc_bitmap_t;
@@ -300,8 +306,8 @@ typedef uint32_t tuc_timestamp_t;
 
 struct __attribute((packed)) commit_info_t
 {
-    uint64_t address;
-    uint32_t size;
+  uint64_t address;
+  uint32_t size;
 };
 
 /**
@@ -313,13 +319,13 @@ struct __attribute((packed)) commit_info_t
  */
 struct tuc_block_t
 {
-    uint32_t interrupt_index;
-    tuc_register_bitmap_t used_registers;
-    tuc_dma_desc_bitmap_t used_descs;
-    tuc_timestamp_t current_timestamp;
+  uint32_t interrupt_index;
+  tuc_register_bitmap_t used_registers;
+  tuc_dma_desc_bitmap_t used_descs;
+  tuc_timestamp_t current_timestamp;
 
-    struct commit_info_t commits[TUC_INTERRUPT_PERIOD];
-    uint32_t num_commits;
+  struct commit_info_t commits[TUC_INTERRUPT_PERIOD];
+  uint32_t num_commits;
 };
 
 /**
@@ -327,28 +333,28 @@ struct tuc_block_t
  */
 struct shared_field_t
 {
-    // shared fields between tasks
-    alignas(256) volatile uint8_t shared_area[SHARED_AREA_SIZE];
-    struct dma_desc_t dma_desc_arena[TUC_COMMAND_QUEUE_SIZE][TDMA_DESC_PER_REQUEST];
-    struct tuc_block_t blocks[TUC_COMMAND_QUEUE_SIZE];
-    struct commit_info_t commits_to_be_sent[TUC_INTERRUPT_PERIOD];
-    uint64_t cluster_timestamps[NUM_MAX_CLUSTERS];
-    uint64_t dummy[211];
-    // shared fields between task and PERT
-    void (*msg_send)(uint64_t, uint64_t, uint64_t);
-    uint64_t tuc_profile_level;
-    // `panic_message_ptr`, `panic_lr` is considered unstable implementation detail
-    const char *panic_message_ptr;
-    uint64_t panic_lr;
-    __attribute__((noreturn)) void (*panic)(const char *);
-    uint64_t (*trampoline)(uint64_t, uint64_t, uint64_t);
-    struct span_handle_t (*span_enter)(const char *, uint64_t);
-    void (*span_leave)(struct span_handle_t);
-    uint64_t npu_id;                       // F_FFD8
-    uint64_t npu_vid;                      // F_FFE0
-    uint64_t pe_id;                        // F_FFE8
-    void (*commit_fn)(uint64_t, uint32_t); // F_FFF0
-    void (*pert_isr)(uint32_t);            // F_FFF8
+  // shared fields between tasks
+  alignas(256) volatile uint8_t shared_area[SHARED_AREA_SIZE];
+  struct dma_desc_t dma_desc_arena[TUC_COMMAND_QUEUE_SIZE][TDMA_DESC_PER_REQUEST];
+  struct tuc_block_t blocks[TUC_COMMAND_QUEUE_SIZE];
+  struct commit_info_t commits_to_be_sent[TUC_INTERRUPT_PERIOD];
+  uint64_t cluster_timestamps[NUM_MAX_CLUSTERS];
+  uint64_t dummy[211];
+  // shared fields between task and PERT
+  void (*msg_send)(uint64_t, uint64_t, uint64_t);
+  uint64_t tuc_profile_level;
+  // `panic_message_ptr`, `panic_lr` is considered unstable implementation detail
+  const char *panic_message_ptr;
+  uint64_t panic_lr;
+  __attribute__((noreturn)) void (*panic)(const char *);
+  uint64_t (*trampoline)(uint64_t, uint64_t, uint64_t);
+  struct span_handle_t (*span_enter)(const char *, uint64_t);
+  void (*span_leave)(struct span_handle_t);
+  uint64_t npu_id;                       // F_FFD8
+  uint64_t npu_vid;                      // F_FFE0
+  uint64_t pe_id;                        // F_FFE8
+  void (*commit_fn)(uint64_t, uint32_t); // F_FFF0
+  void (*pert_isr)(uint32_t);            // F_FFF8
 };
 
 /* Shared data structure */
