@@ -273,7 +273,6 @@ struct GeneralRegister {
 
 static constexpr auto INDIRECT_INDEXES = 32;
 static constexpr auto DIMS = 8;
-
 struct TensorDmaDescriptor {
   std::uint64_t opcode;
   struct {

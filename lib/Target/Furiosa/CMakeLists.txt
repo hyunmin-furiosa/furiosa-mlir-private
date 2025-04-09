@@ -16,5 +16,5 @@ target_link_libraries(FuriosaMLIRTargetFuriosa PRIVATE
 )
 
 target_compile_definitions(obj.FuriosaMLIRTargetFuriosa PRIVATE
-  CLANG_CROSS_COMPILE_INCLUDE_DIRS="${LLVM_BUILD_DIR}/lib/clang/${LLVM_VERSION_MAJOR}/include"
+  CLANG_CROSS_COMPILE_INCLUDE_DIRS="${LLVM_BUILD_DIR}/lib/clang/${LLVM_VERSION_MAJOR}/include:${CMAKE_SOURCE_DIR}/include/furiosa-mlir/Target/Furiosa/libpe"
 )
