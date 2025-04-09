@@ -271,7 +271,7 @@ struct GeneralRegister {
   };
 };
 
-static constexpr auto INDIRECT_INDEXES = 32;
+static constexpr auto NUM_INDIRECT_INDICES = 32;
 static constexpr auto DIMS = 8;
 struct TensorDmaDescriptor {
   std::uint64_t opcode;
@@ -288,7 +288,7 @@ struct TensorDmaDescriptor {
   std::int32_t source_stride[DIMS];
   std::uint16_t destination_limit[DIMS];
   std::int32_t destination_stride[DIMS];
-  std::array<std::uint32_t, INDIRECT_INDEXES> indirect_indexes;
+  std::array<std::uint32_t, NUM_INDIRECT_INDICES> indirect_indices;
 };
 
 } // namespace mlir::furiosa
