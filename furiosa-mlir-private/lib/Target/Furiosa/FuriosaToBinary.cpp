@@ -58,36 +58,41 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
                                         furiosa::DmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
+
   os << "*(struct dma_desc_t *)" << llvm::format_hex(op.getDescAddr(), 0)
-     << " = (struct dma_desc_t) {";
-  os << descriptor.opcode << ",";
-  os << /*descriptor.indirect*/ "0" << ",";
-  os << llvm::format_hex(descriptor.source_base, 0) << ",";
-  os << llvm::format_hex(descriptor.destination_base, 0) << ",";
-  os << "{";
-  for (auto i = 0; i < DIMS; ++i) {
-    os << llvm::format_hex(descriptor.source_limit[i], 0)
-       << (i != DIMS - 1 ? "," : "");
+     << " = (struct dma_desc_t){ ";
+  os << descriptor.opcode << ", ";
+  os << 0 << ", ";
+  os << llvm::format_hex(descriptor.source_base, 0) << ", ";
+  os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.source_limit[i];
+    if (i != DIMS - 1)
+      os << ", ";
   }
-  os << "},";
-  os << "{";
-  for (auto i = 0; i < DIMS; ++i) {
-    os << llvm::format_hex(descriptor.source_stride[i], 0)
-       << (i != DIMS - 1 ? "," : "");
+  os << " }, ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.source_stride[i];
+    if (i != DIMS - 1)
+      os << ", ";
   }
-  os << "},";
-  os << "{";
-  for (auto i = 0; i < DIMS; ++i) {
-    os << llvm::format_hex(descriptor.destination_limit[i], 0)
-       << (i != DIMS - 1 ? "," : "");
+  os << " }, ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.destination_limit[i];
+    if (i != DIMS - 1)
+      os << ", ";
   }
-  os << "},";
-  os << "{";
-  for (auto i = 0; i < DIMS; ++i) {
-    os << llvm::format_hex(descriptor.destination_stride[i], 0)
-       << (i != DIMS - 1 ? "," : "");
+  os << " }, ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.destination_stride[i];
+    if (i != DIMS - 1)
+      os << ", ";
   }
-  os << "}";
+  os << " } ";
   os << "};\n";
   os << "flush_cache((void *)" << llvm::format_hex(op.getDescAddr(), 0)
      << ", sizeof(struct dma_desc_t));\n";
@@ -145,6 +150,8 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
     os << R"""(#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <printf.c>
 
 #define TRAMPOLINE_EXIT (0 << 8)
 #define TRAMPOLINE_RECV_MESSAGE (1 << 8)
@@ -350,7 +357,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
     os << "\n";
 
     // Define function
-    os << "void " << functionOp.getName() << "(";
+    os << "__attribute__ ((section (\".text.main\"))) void "
+       << functionOp.getName() << "(";
     Operation *operation = functionOp.getOperation();
     if (failed(printFunctionArgs(armCEmitter, operation,
                                  functionOp.getArguments())))
@@ -370,7 +378,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   FuriosaBinary furiosaBinary{};
 
   std::string filepath_o = *convertArmCToObject(filepath_c);
-  furiosaBinary.binBuffer = *convertObjectToBinary(filepath_o);
+  std::string filepath_link = *linkObject(filepath_o);
+  furiosaBinary.binBuffer = *convertObjectToBinary(filepath_link);
 
   for (auto arg : functionOp.getArgumentTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {

@@ -5,6 +5,7 @@
 #include "clang/Frontend/CompilerInvocation.h"
 
 #include "llvm/Object/ELFObjectFile.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
@@ -43,10 +44,31 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
       filepath_out.str(); // -o filepath_out
   invocation->getHeaderSearchOpts().UseStandardSystemIncludes =
       false; // -nostdsysteminc
-  invocation->getHeaderSearchOpts().AddPath(CLANG_CROSS_COMPILE_INCLUDE_DIRS,
-                                            clang::frontend::Angled, false,
-                                            true);    // -I
+  SmallVector<StringRef> includeDirs;
+  StringRef(CLANG_CROSS_COMPILE_INCLUDE_DIRS).split(includeDirs, ":");
+  for (auto includeDir : includeDirs) {
+    invocation->getHeaderSearchOpts().AddPath(includeDir,
+                                              clang::frontend::Angled, false,
+                                              true); // -I
+  } // -I
   invocation->getCodeGenOpts().OptimizationLevel = 3; // -O3
+  invocation->getCodeGenOpts().setInlining(
+      clang::CodeGenOptions::NormalInlining);
+  invocation->getCodeGenOpts().RelocationModel = llvm::Reloc::PIC_; // -fPIC
+  invocation->getLangOpts().PICLevel = 2;     // -pic-level 2
+  invocation->getLangOpts().PIE = 1;          // -pic-is-pie
+  invocation->getLangOpts().NoBuiltin = 1;    // -fno-builtin
+  invocation->getLangOpts().Freestanding = 1; // -ffreestanding
+
+  // Check compile command
+  auto command = invocation->getCC1CommandLine();
+  llvm::dbgs() << "clang ";
+  for (auto arg : command) {
+    llvm::dbgs() << arg << " ";
+  }
+  llvm::dbgs() << "\n";
+
+  // Compile
   compiler.setInvocation(std::move(invocation));
   std::unique_ptr<clang::FrontendAction> action =
       std::make_unique<clang::EmitObjAction>();
@@ -54,11 +76,28 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
 
   // Check if object file exists
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> bufferOrErr =
-      llvm::MemoryBuffer::getFile("kernel.c.o");
+      llvm::MemoryBuffer::getFile(filepath_out);
   if (!bufferOrErr) {
     llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
                              bufferOrErr.getError().message());
   }
+
+  return filepath_out.str();
+}
+
+FailureOr<std::string> linkObject(llvm::Twine filepath) {
+  llvm::Twine filepath_out = filepath + ".o";
+
+  // Link the object file
+  std::string command = "aarch64-none-elf-ld ";
+  command += "-T/root/furiosa-mlir/include/furiosa-mlir/Target/Furiosa/libpe/"
+             "linker.ld ";
+  command += filepath.str() + " ";
+  command += "-o " + filepath_out.str() + " ";
+
+  llvm::dbgs() << command << "\n";
+
+  system(command.c_str());
 
   return filepath_out.str();
 }
