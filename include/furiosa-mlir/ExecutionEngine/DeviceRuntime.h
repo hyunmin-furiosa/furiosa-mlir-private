@@ -1,3 +1,7 @@
 #pragma once
 
-void launchKernel(llvm::StringRef kernel);
+#include "llvm/ADT/ArrayRef.h"
+
+#include "furiosa-mlir/Target/Furiosa/Binary.h"
+
+void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary);

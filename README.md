@@ -35,18 +35,15 @@ Run generated binaries in `build/bin`.
 ```llvm
 // example.mlir
 module {
-  func.func @kernel(%arg0: tensor<1024xf32>, %arg1: tensor<1024xf32>) -> (tensor<1024xf32>, tensor<1024xf32>) attributes {target = "renegade"} {
+  func.func @kernel(%arg0: tensor<1024xf32, #furiosa.address<0x10000>>) -> (tensor<1024xf32, #furiosa.address<0x20000>>) attributes {address = #furiosa.address<0x0>, target = #furiosa.target<npu 0 pe 0:0>} {
     furiosa.rtosfr {sfr_address = 0 : i64, size = 1 : i64, value = 12424 : i64}
     furiosa.wait {dma_tag_id = 0 : i32, target_context = false, type = false}
-    %0 = tensor.empty() : tensor<1024xf32>
-    %1 = tensor.empty() : tensor<1024xf32>
-    return %0, %1 : tensor<1024xf32>, tensor<1024xf32>
-  }
-  func.func @main() {
-    %0 = tensor.empty() : tensor<1024xf32>
-    %1 = tensor.empty() : tensor<1024xf32>
-    %2:2 = call @kernel(%0, %1) : (tensor<1024xf32>, tensor<1024xf32>) -> (tensor<1024xf32>, tensor<1024xf32>)
-    return
+    furiosa.dma_descriptor {desc_addr = 0x110000, opcode = 0, source_base = 0xC000010000, destination_base = 0x0010000000, source_limit = [4,1,1,1,1,1,1,1], source_stride = [256,0,0,0,0,0,0,0], destination_limit = [4,1,1,1,1,1,1,1], destination_stride = [256,0,0,0,0,0,0,0]}
+    furiosa.dma {pe0_desc_addr = 0x110000, pe1_desc_addr = 0x110000, pe2_desc_addr = 0x110000, pe3_desc_addr = 0x110000, dma_tag_id = 0, profile = false, profile_id = 0}
+    furiosa.dma_descriptor {desc_addr = 0x110100, opcode = 0, source_base = 0x0010000000, destination_base = 0xC000020000, source_limit = [4,1,1,1,1,1,1,1], source_stride = [256,0,0,0,0,0,0,0], destination_limit = [4,1,1,1,1,1,1,1], destination_stride = [256,0,0,0,0,0,0,0]}
+    furiosa.dma {pe0_desc_addr = 0x110100, pe1_desc_addr = 0x110100, pe2_desc_addr = 0x110100, pe3_desc_addr = 0x110100, dma_tag_id = 0, profile = false, profile_id = 0}
+    %0 = tensor.empty() : tensor<1024xf32, #furiosa.address<0x20000>>
+    return %0 : tensor<1024xf32, #furiosa.address<0x20000>>
   }
 }
 ```

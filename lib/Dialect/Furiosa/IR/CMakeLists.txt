@@ -7,6 +7,7 @@ add_mlir_library(FuriosaMLIRFuriosaDialect
 
   DEPENDS
   FuriosaMLIRFuriosaOpsIncGen
+  FuriosaMLIRFuriosaTypesIncGen
 
   LINK_LIBS PUBLIC
   MLIRAffineDialect
