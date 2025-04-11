@@ -384,9 +384,18 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
 
   FuriosaBinary furiosaBinary{};
 
+  auto targetAttr = functionOp->getAttrOfType<furiosa::TargetAttr>("target");
+  furiosaBinary.metadata.npu = targetAttr.getNpu();
+  furiosaBinary.metadata.peBegin = targetAttr.getPeBegin();
+  furiosaBinary.metadata.peEnd = targetAttr.getPeEnd();
+
+  auto addressAttr = functionOp->getAttrOfType<furiosa::AddressAttr>("address");
+  furiosaBinary.metadata.binaryAddress = addressAttr.getAddress();
+
   std::string filepath_o = *convertArmCToObject(filepath_c);
   std::string filepath_link = *linkObject(filepath_o);
   furiosaBinary.binary = *convertObjectToBinary(filepath_link);
+  furiosaBinary.metadata.binarySize = furiosaBinary.binary.size();
 
   for (auto arg : functionOp.getArgumentTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
@@ -401,6 +410,7 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
       }
     }
   }
+  furiosaBinary.metadata.argumentSize = furiosaBinary.arguments.size();
 
   for (auto res : functionOp.getResultTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
@@ -415,6 +425,7 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
       }
     }
   }
+  furiosaBinary.metadata.resultSize = furiosaBinary.results.size();
 
   if (failed(writeFuriosaBinary("furiosa.bin", furiosaBinary))) {
     return failure();
@@ -425,7 +436,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
 
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::FuncOp functionOp) {
-  if (functionOp.getSymName() == "kernel") {
+  if (auto targetAttr =
+          functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
     return printKernelFunction(functionOp);
   }
   return success();

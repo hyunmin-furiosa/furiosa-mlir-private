@@ -9,7 +9,7 @@ void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
   // generate pe program
   std::vector<furiosa_torch::PeProgram *> pe_programs;
   pe_programs.push_back(furiosa_torch::pe_program_load_inst(
-      0x0, 0x0, furiosaBinary.binary.size()));
+      furiosaBinary.metadata.binaryAddress, 0x0, furiosaBinary.binary.size()));
   pe_programs.push_back(furiosa_torch::pe_program_launch(0x0, nullptr));
   auto pe_program =
       furiosa_torch::pe_program_seq(pe_programs.data(), pe_programs.size());
@@ -17,8 +17,8 @@ void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
   // generate hal program for kernel
   std::vector<furiosa_torch::HalProgram *> hal_programs;
   hal_programs.push_back(furiosa_torch::hal_program_write_at(
-      reinterpret_cast<const std::uint64_t>(furiosaBinary.binary.data()), 0x0,
-      furiosaBinary.binary.size()));
+      reinterpret_cast<const std::uint64_t>(furiosaBinary.binary.data()),
+      furiosaBinary.metadata.binaryAddress, furiosaBinary.binary.size()));
 
   // write arguments
   std::vector<std::vector<std::uint8_t>> argumentsBuffer;
@@ -48,6 +48,15 @@ void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
   // initialize device and execute hal program
   auto hal_program =
       furiosa_torch::hal_program_seq(hal_programs.data(), hal_programs.size());
-  auto device = furiosa_torch::device_new(0, 0, 0);
+  auto device = furiosa_torch::device_new(furiosaBinary.metadata.npu,
+                                          furiosaBinary.metadata.peBegin,
+                                          furiosaBinary.metadata.peEnd);
   furiosa_torch::device_execute(device, hal_program);
+
+  // compare results
+  if (argumentsBuffer[0] == resultsBuffer[0]) {
+    llvm::dbgs() << "Results match!\n";
+  } else {
+    llvm::dbgs() << "Results do not match!\n";
+  }
 }
