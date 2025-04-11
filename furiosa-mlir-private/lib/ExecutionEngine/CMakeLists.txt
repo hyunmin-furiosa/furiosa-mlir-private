@@ -6,5 +6,5 @@ add_mlir_library(FuriosaMLIRExecutionEngine
 )
 
 target_link_libraries(FuriosaMLIRExecutionEngine PRIVATE
-  device_runtime
+  furiosa_torch
 )
