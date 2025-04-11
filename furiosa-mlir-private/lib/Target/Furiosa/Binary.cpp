@@ -20,7 +20,7 @@ LogicalResult writeFuriosaBinary(llvm::Twine filepath,
   llvm::AppendingBinaryByteStream stream{};
   llvm::BinaryStreamWriter writer(stream);
 
-  if (writer.writeInteger<std::uint32_t>(furiosaBinary.arguments.size())) {
+  if (writer.writeObject(furiosaBinary.metadata)) {
     return failure();
   }
   if (writer.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
@@ -29,16 +29,7 @@ LogicalResult writeFuriosaBinary(llvm::Twine filepath,
   if (writer.writeArray(ArrayRef(furiosaBinary.arguments))) {
     return failure();
   }
-  if (writer.writeInteger<std::uint32_t>(furiosaBinary.results.size())) {
-    return failure();
-  }
-  if (writer.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
-    return failure();
-  }
   if (writer.writeArray(ArrayRef(furiosaBinary.results))) {
-    return failure();
-  }
-  if (writer.writeInteger<std::uint32_t>(furiosaBinary.binary.size())) {
     return failure();
   }
   if (writer.writeFixedString(furiosaBinary.binary)) {
@@ -75,37 +66,29 @@ FailureOr<FuriosaBinary> readFuriosaBinary(llvm::Twine filepath) {
                                 llvm::endianness::native);
   llvm::BinaryStreamReader reader(stream);
 
-  std::uint32_t numArguments, numResults;
+  const FuriosaBinaryMetadata *metadataPtr = nullptr;
+  if (reader.readObject(metadataPtr)) {
+    return failure();
+  }
+  FuriosaBinaryMetadata metadata = *metadataPtr;
+  if (reader.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
+    return failure();
+  }
   ArrayRef<address_size_t> arguments;
   ArrayRef<address_size_t> results;
   auto binary = StringRef();
-  if (reader.readInteger(numArguments)) {
+  if (reader.readArray(arguments, metadata.argumentSize)) {
     return failure();
   }
-  if (reader.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
+  if (reader.readArray(results, metadata.resultSize)) {
     return failure();
   }
-  if (reader.readArray(arguments, numArguments)) {
-    return failure();
-  }
-  if (reader.readInteger(numResults)) {
-    return failure();
-  }
-  if (reader.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
-    return failure();
-  }
-  if (reader.readArray(results, numResults)) {
-    return failure();
-  }
-  std::uint32_t codeSize;
-  if (reader.readInteger(codeSize)) {
-    return failure();
-  }
-  if (reader.readFixedString(binary, codeSize)) {
+  if (reader.readFixedString(binary, metadata.binarySize)) {
     return failure();
   }
 
-  FuriosaBinary furiosaBinary = {SmallVector<address_size_t>(arguments),
+  FuriosaBinary furiosaBinary = {metadata,
+                                 SmallVector<address_size_t>(arguments),
                                  SmallVector<address_size_t>(results),
                                  SmallString<MIN_BINARY_SIZE>(binary)};
   return furiosaBinary;
