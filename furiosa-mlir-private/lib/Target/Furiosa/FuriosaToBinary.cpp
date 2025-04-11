@@ -402,10 +402,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
       if (auto addressAttr =
               llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
         std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = 1;
-        for (auto dimSize : tensorType.getShape()) {
-          size *= dimSize;
-        }
+        std::uint64_t size = tensorType.getNumElements() *
+                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
         furiosaBinary.arguments.push_back(std::make_pair(address, size));
       }
     }
@@ -417,10 +415,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
       if (auto addressAttr =
               llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
         std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = 1;
-        for (auto dimSize : tensorType.getShape()) {
-          size *= dimSize;
-        }
+        std::uint64_t size = tensorType.getNumElements() *
+                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
         furiosaBinary.results.push_back(std::make_pair(address, size));
       }
     }
