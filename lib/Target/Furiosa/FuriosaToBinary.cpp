@@ -14,6 +14,7 @@
 #include "llvm/Support/Error.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
 #include "furiosa-mlir/Target/Furiosa/Binary.h"
 #include "furiosa-mlir/Target/Furiosa/Utils.h"
@@ -385,25 +386,33 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
 
   std::string filepath_o = *convertArmCToObject(filepath_c);
   std::string filepath_link = *linkObject(filepath_o);
-  furiosaBinary.binBuffer = *convertObjectToBinary(filepath_link);
+  furiosaBinary.binary = *convertObjectToBinary(filepath_link);
 
   for (auto arg : functionOp.getArgumentTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
-      auto size = 1;
-      for (auto dimSize : tensorType.getShape()) {
-        size *= dimSize;
+      if (auto addressAttr =
+              llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
+        std::uint64_t address = addressAttr.getAddress();
+        std::uint64_t size = 1;
+        for (auto dimSize : tensorType.getShape()) {
+          size *= dimSize;
+        }
+        furiosaBinary.arguments.push_back(std::make_pair(address, size));
       }
-      furiosaBinary.argumentSizes.push_back(size);
     }
   }
 
   for (auto res : functionOp.getResultTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
-      auto size = 1;
-      for (auto dimSize : tensorType.getShape()) {
-        size *= dimSize;
+      if (auto addressAttr =
+              llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
+        std::uint64_t address = addressAttr.getAddress();
+        std::uint64_t size = 1;
+        for (auto dimSize : tensorType.getShape()) {
+          size *= dimSize;
+        }
+        furiosaBinary.results.push_back(std::make_pair(address, size));
       }
-      furiosaBinary.resultSizes.push_back(size);
     }
   }
 

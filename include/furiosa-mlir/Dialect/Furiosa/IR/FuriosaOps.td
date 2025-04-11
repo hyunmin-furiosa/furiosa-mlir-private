@@ -15,6 +15,7 @@ include "mlir/IR/OpAsmInterface.td"
 include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
+
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 
 //===----------------------------------------------------------------------===//

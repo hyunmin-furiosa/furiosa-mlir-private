@@ -10,10 +10,11 @@ namespace mlir::furiosa {
 
 static constexpr auto MIN_BINARY_SIZE = 256;
 
+using address_size_t = std::pair<std::uint64_t, std::uint64_t>;
 struct FuriosaBinary {
-  llvm::SmallVector<std::uint32_t> argumentSizes;
-  llvm::SmallVector<std::uint32_t> resultSizes;
-  llvm::SmallString<MIN_BINARY_SIZE> binBuffer;
+  llvm::SmallVector<address_size_t> arguments;
+  llvm::SmallVector<address_size_t> results;
+  llvm::SmallString<MIN_BINARY_SIZE> binary;
 };
 
 LogicalResult writeFuriosaBinary(llvm::Twine filepath,

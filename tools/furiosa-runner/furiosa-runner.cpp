@@ -8,8 +8,7 @@ int main(int argc, char **argv) {
   mlir::furiosa::FuriosaBinary furiosaBinary =
       *mlir::furiosa::readFuriosaBinary(filename);
 
-  launchKernel(furiosaBinary.binBuffer, furiosaBinary.argumentSizes,
-               furiosaBinary.resultSizes);
+  launchKernel(furiosaBinary);
 
   return 0;
 }

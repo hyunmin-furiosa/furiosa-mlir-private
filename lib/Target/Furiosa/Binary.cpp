@@ -20,22 +20,28 @@ LogicalResult writeFuriosaBinary(llvm::Twine filepath,
   llvm::AppendingBinaryByteStream stream{};
   llvm::BinaryStreamWriter writer(stream);
 
-  if (writer.writeInteger<std::uint32_t>(furiosaBinary.argumentSizes.size())) {
+  if (writer.writeInteger<std::uint32_t>(furiosaBinary.arguments.size())) {
     return failure();
   }
-  if (writer.writeArray(ArrayRef(furiosaBinary.argumentSizes))) {
+  if (writer.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
     return failure();
   }
-  if (writer.writeInteger<std::uint32_t>(furiosaBinary.resultSizes.size())) {
+  if (writer.writeArray(ArrayRef(furiosaBinary.arguments))) {
     return failure();
   }
-  if (writer.writeArray(ArrayRef(furiosaBinary.resultSizes))) {
+  if (writer.writeInteger<std::uint32_t>(furiosaBinary.results.size())) {
     return failure();
   }
-  if (writer.writeInteger<std::uint32_t>(furiosaBinary.binBuffer.size())) {
+  if (writer.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
     return failure();
   }
-  if (writer.writeFixedString(furiosaBinary.binBuffer)) {
+  if (writer.writeArray(ArrayRef(furiosaBinary.results))) {
+    return failure();
+  }
+  if (writer.writeInteger<std::uint32_t>(furiosaBinary.binary.size())) {
+    return failure();
+  }
+  if (writer.writeFixedString(furiosaBinary.binary)) {
     return failure();
   }
 
@@ -70,32 +76,38 @@ FailureOr<FuriosaBinary> readFuriosaBinary(llvm::Twine filepath) {
   llvm::BinaryStreamReader reader(stream);
 
   std::uint32_t numArguments, numResults;
-  auto argumentSizes = ArrayRef<std::uint32_t>();
-  auto resultSizes = ArrayRef<std::uint32_t>();
-  auto binBuffer = StringRef();
+  ArrayRef<address_size_t> arguments;
+  ArrayRef<address_size_t> results;
+  auto binary = StringRef();
   if (reader.readInteger(numArguments)) {
     return failure();
   }
-  if (reader.readArray(argumentSizes, numArguments)) {
+  if (reader.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
+    return failure();
+  }
+  if (reader.readArray(arguments, numArguments)) {
     return failure();
   }
   if (reader.readInteger(numResults)) {
     return failure();
   }
-  if (reader.readArray(resultSizes, numResults)) {
+  if (reader.padToAlignment(llvm::Align::Of<address_size_t>().value())) {
+    return failure();
+  }
+  if (reader.readArray(results, numResults)) {
     return failure();
   }
   std::uint32_t codeSize;
   if (reader.readInteger(codeSize)) {
     return failure();
   }
-  if (reader.readFixedString(binBuffer, codeSize)) {
+  if (reader.readFixedString(binary, codeSize)) {
     return failure();
   }
 
-  FuriosaBinary furiosaBinary = {SmallVector<std::uint32_t>(argumentSizes),
-                                 SmallVector<std::uint32_t>(resultSizes),
-                                 SmallString<MIN_BINARY_SIZE>(binBuffer)};
+  FuriosaBinary furiosaBinary = {SmallVector<address_size_t>(arguments),
+                                 SmallVector<address_size_t>(results),
+                                 SmallString<MIN_BINARY_SIZE>(binary)};
   return furiosaBinary;
 }
 
