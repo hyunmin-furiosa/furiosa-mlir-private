@@ -2,6 +2,7 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/Commands.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/Sfr.h"
 
 namespace mlir::furiosa {
 
@@ -348,25 +349,109 @@ getCommand(Operation &op) {
       });
 }
 
+FailureOr<sfr::SubFetchUnit>
+getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
+  sfr::SubFetchUnit sfr = sfr::SubFetchUnit();
+  sfr.base = op.getBase();
+  sfr.type_conversion = op.getTypeConversion();
+  sfr.num_zero_points = op.getNumZeroPoints();
+  sfr.zero_point0 = op.getZeroPoint0();
+  sfr.zero_point1 = op.getZeroPoint1();
+  auto limits = op.getLimits();
+  sfr.limits_element0 = dyn_cast_or_null<IntegerAttr>(limits[0]).getInt();
+  sfr.limits_element1 = dyn_cast_or_null<IntegerAttr>(limits[1]).getInt();
+  sfr.limits_element2 = dyn_cast_or_null<IntegerAttr>(limits[2]).getInt();
+  sfr.limits_element3 = dyn_cast_or_null<IntegerAttr>(limits[3]).getInt();
+  sfr.limits_element4 = dyn_cast_or_null<IntegerAttr>(limits[4]).getInt();
+  sfr.limits_element5 = dyn_cast_or_null<IntegerAttr>(limits[5]).getInt();
+  sfr.limits_element6 = dyn_cast_or_null<IntegerAttr>(limits[6]).getInt();
+  sfr.limits_element7 = dyn_cast_or_null<IntegerAttr>(limits[7]).getInt();
+  auto strides = op.getStrides();
+  sfr.strides_element0 = dyn_cast_or_null<IntegerAttr>(strides[0]).getInt();
+  sfr.strides_element1 = dyn_cast_or_null<IntegerAttr>(strides[1]).getInt();
+  sfr.strides_element2 = dyn_cast_or_null<IntegerAttr>(strides[2]).getInt();
+  sfr.strides_element3 = dyn_cast_or_null<IntegerAttr>(strides[3]).getInt();
+  sfr.strides_element4 = dyn_cast_or_null<IntegerAttr>(strides[4]).getInt();
+  sfr.strides_element5 = dyn_cast_or_null<IntegerAttr>(strides[5]).getInt();
+  sfr.strides_element6 = dyn_cast_or_null<IntegerAttr>(strides[6]).getInt();
+  sfr.strides_element7 = dyn_cast_or_null<IntegerAttr>(strides[7]).getInt();
+  sfr.flit_count = op.getFlitCount();
+  sfr.words_per_packet = op.getWordsPerPacket();
+  sfr.topology = op.getTopology();
+  sfr.outer_slice_log_size = op.getOuterSliceLogSize();
+  sfr.outer_dim0_log_size = op.getOuterDim0LogSize();
+  sfr.outer_dim1_log_size = op.getOuterDim1LogSize();
+  sfr.outer_dim0_chunk_size = op.getOuterDim0ChunkSize();
+  sfr.outer_dim1_chunk_size = op.getOuterDim1ChunkSize();
+  sfr.sub_fetch_unit_custom_snoop_bitmap0 =
+      op.getCustomSnoopBitmapMaskElement0();
+  sfr.sub_fetch_unit_custom_snoop_bitmap1 =
+      op.getCustomSnoopBitmapMaskElement1();
+  sfr.sub_fetch_unit_custom_snoop_bitmap2 =
+      op.getCustomSnoopBitmapMaskElement2();
+  sfr.sub_fetch_unit_custom_snoop_bitmap3 =
+      op.getCustomSnoopBitmapMaskElement3();
+
+  return sfr;
+}
+
+FailureOr<sfr::SubCommitUnit>
+getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
+  sfr::SubCommitUnit sfr = sfr::SubCommitUnit();
+  sfr.mode = op.getMode();
+  sfr.packet_valid_count = op.getPacketValidCount();
+  sfr.base = op.getBase();
+  sfr.commit_in_size = op.getCommitInSize();
+  sfr.sub_commit_unit_commit_data = op.getCommitData();
+  auto limits = op.getLimits();
+  sfr.limits_element0 = dyn_cast_or_null<IntegerAttr>(limits[0]).getInt();
+  sfr.limits_element1 = dyn_cast_or_null<IntegerAttr>(limits[1]).getInt();
+  sfr.limits_element2 = dyn_cast_or_null<IntegerAttr>(limits[2]).getInt();
+  sfr.limits_element3 = dyn_cast_or_null<IntegerAttr>(limits[3]).getInt();
+  sfr.limits_element4 = dyn_cast_or_null<IntegerAttr>(limits[4]).getInt();
+  sfr.limits_element5 = dyn_cast_or_null<IntegerAttr>(limits[5]).getInt();
+  sfr.limits_element6 = dyn_cast_or_null<IntegerAttr>(limits[6]).getInt();
+  sfr.limits_element7 = dyn_cast_or_null<IntegerAttr>(limits[7]).getInt();
+  auto strides = op.getStrides();
+  sfr.strides_element0 = dyn_cast_or_null<IntegerAttr>(strides[0]).getInt();
+  sfr.strides_element1 = dyn_cast_or_null<IntegerAttr>(strides[1]).getInt();
+  sfr.strides_element2 = dyn_cast_or_null<IntegerAttr>(strides[2]).getInt();
+  sfr.strides_element3 = dyn_cast_or_null<IntegerAttr>(strides[3]).getInt();
+  sfr.strides_element4 = dyn_cast_or_null<IntegerAttr>(strides[4]).getInt();
+  sfr.strides_element5 = dyn_cast_or_null<IntegerAttr>(strides[5]).getInt();
+  sfr.strides_element6 = dyn_cast_or_null<IntegerAttr>(strides[6]).getInt();
+  sfr.strides_element7 = dyn_cast_or_null<IntegerAttr>(strides[7]).getInt();
+  sfr.sub_commit_unit_slice_enable_bitmap0 =
+      op.getSliceEnableBitmapMaskElement0();
+  sfr.sub_commit_unit_slice_enable_bitmap1 =
+      op.getSliceEnableBitmapMaskElement1();
+  sfr.sub_commit_unit_slice_enable_bitmap2 =
+      op.getSliceEnableBitmapMaskElement2();
+  sfr.sub_commit_unit_slice_enable_bitmap3 =
+      op.getSliceEnableBitmapMaskElement3();
+
+  return sfr;
+}
+
 FailureOr<TensorDmaDescriptor> getDmaDescriptor(furiosa::DmaDescriptorOp &op) {
   TensorDmaDescriptor descriptor{};
   descriptor.opcode = op.getOpcode();
   // descriptor.indirect = op.getIndirect();
   descriptor.source_base = op.getSourceBase();
   descriptor.destination_base = op.getDestinationBase();
-  auto source_limit = op.getSourceLimit();
-  auto source_stride = op.getSourceStride();
-  auto destination_limit = op.getDestinationLimit();
-  auto destination_stride = op.getDestinationStride();
+  auto source_limits = op.getSourceLimits();
+  auto source_strides = op.getSourceStrides();
+  auto destination_limits = op.getDestinationLimits();
+  auto destination_strides = op.getDestinationStrides();
   for (auto i = 0; i < DIMS; ++i) {
-    descriptor.source_limit[i] =
-        dyn_cast_or_null<IntegerAttr>(source_limit[i]).getInt();
-    descriptor.source_stride[i] =
-        dyn_cast_or_null<IntegerAttr>(source_stride[i]).getInt();
-    descriptor.destination_limit[i] =
-        dyn_cast_or_null<IntegerAttr>(destination_limit[i]).getInt();
-    descriptor.destination_stride[i] =
-        dyn_cast_or_null<IntegerAttr>(destination_stride[i]).getInt();
+    descriptor.source_limits[i] =
+        dyn_cast_or_null<IntegerAttr>(source_limits[i]).getInt();
+    descriptor.source_strides[i] =
+        dyn_cast_or_null<IntegerAttr>(source_strides[i]).getInt();
+    descriptor.destination_limits[i] =
+        dyn_cast_or_null<IntegerAttr>(destination_limits[i]).getInt();
+    descriptor.destination_strides[i] =
+        dyn_cast_or_null<IntegerAttr>(destination_strides[i]).getInt();
   }
   return descriptor;
 }
