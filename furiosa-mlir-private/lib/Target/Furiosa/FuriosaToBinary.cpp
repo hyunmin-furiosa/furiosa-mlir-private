@@ -55,49 +55,22 @@ static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
   return success();
 }
 
-static LogicalResult printSfr(ArmCEmitter &emitter,
-                              furiosa::SubFetchUnitSfrOp op) {
+static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
   raw_indented_ostream &os = emitter.ostream();
-  auto sfr = *getSubFetchUnitSfr(op);
-  std::size_t len = sfr.get_size() / sizeof(sfr::SubFetchUnit::data_type);
+  auto [sfr_address, sfr_vector] = *getSfr(*op);
 
   os << "{\n";
   os.indent();
   os << "static const uint64_t _sfr[] = { ";
-  for (std::size_t i = 0; i < len; i++) {
-    os << llvm::format_hex(sfr[i], 0);
-    if (i != len - 1)
+  for (auto it = sfr_vector.begin(); it != sfr_vector.end(); ++it) {
+    os << llvm::format_hex(*it, 0);
+    if (it != sfr_vector.end() - 1)
       os << ", ";
   }
   os << " };\n";
-  os << "memcpy((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
+  os << "memcpy((void *)" << llvm::format_hex(sfr_address, 0)
      << ", &_sfr, sizeof(_sfr));\n";
-  os << "flush_cache((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
-     << ", sizeof(_sfr));\n";
-  os.unindent();
-  os << "}\n";
-
-  return success();
-}
-
-static LogicalResult printSfr(ArmCEmitter &emitter,
-                              furiosa::SubCommitUnitSfrOp op) {
-  raw_indented_ostream &os = emitter.ostream();
-  auto sfr = *getSubCommitUnitSfr(op);
-  std::size_t len = sfr.get_size() / sizeof(sfr::SubCommitUnit::data_type);
-
-  os << "{\n";
-  os.indent();
-  os << "static const uint64_t _sfr[] = { ";
-  for (std::size_t i = 0; i < len; i++) {
-    os << llvm::format_hex(sfr[i], 0);
-    if (i != len - 1)
-      os << ", ";
-  }
-  os << " };\n";
-  os << "memcpy((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
-     << ", &_sfr, sizeof(_sfr));\n";
-  os << "flush_cache((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
+  os << "flush_cache((void *)" << llvm::format_hex(sfr_address, 0)
      << ", sizeof(_sfr));\n";
   os.unindent();
   os << "}\n";
@@ -528,8 +501,9 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
                 furiosa::ProfileiOp, furiosa::PrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
-          .Case<furiosa::SubFetchUnitSfrOp, furiosa::SubCommitUnitSfrOp>(
-              [&](auto op) { return printSfr(*this, op); })
+          .Case<furiosa::SubFetchUnitSfrOp, furiosa::SubCommitUnitSfrOp,
+                furiosa::SubDataPathUnitSfrOp>(
+              [&](auto op) { return printSfr(*this, op.getOperation()); })
           .Case<furiosa::DmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
           .Default([&](Operation *) {

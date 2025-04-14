@@ -349,8 +349,7 @@ getCommand(Operation &op) {
       });
 }
 
-FailureOr<sfr::SubFetchUnit>
-getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
+std::vector<sfr_data_t> getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
   sfr::SubFetchUnit sfr = sfr::SubFetchUnit();
   sfr.base = op.getBase();
   sfr.type_conversion = op.getTypeConversion();
@@ -383,20 +382,20 @@ getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
   sfr.outer_dim1_log_size = op.getOuterDim1LogSize();
   sfr.outer_dim0_chunk_size = op.getOuterDim0ChunkSize();
   sfr.outer_dim1_chunk_size = op.getOuterDim1ChunkSize();
+  auto custom_snoop_bitmap = op.getCustomSnoopBitmap();
   sfr.sub_fetch_unit_custom_snoop_bitmap0 =
-      op.getCustomSnoopBitmapMaskElement0();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[0]).getInt();
   sfr.sub_fetch_unit_custom_snoop_bitmap1 =
-      op.getCustomSnoopBitmapMaskElement1();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[1]).getInt();
   sfr.sub_fetch_unit_custom_snoop_bitmap2 =
-      op.getCustomSnoopBitmapMaskElement2();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[2]).getInt();
   sfr.sub_fetch_unit_custom_snoop_bitmap3 =
-      op.getCustomSnoopBitmapMaskElement3();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[3]).getInt();
 
-  return sfr;
+  return sfr.get_blocks();
 }
 
-FailureOr<sfr::SubCommitUnit>
-getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
+std::vector<sfr_data_t> getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
   sfr::SubCommitUnit sfr = sfr::SubCommitUnit();
   sfr.mode = op.getMode();
   sfr.packet_valid_count = op.getPacketValidCount();
@@ -421,16 +420,48 @@ getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
   sfr.strides_element5 = dyn_cast_or_null<IntegerAttr>(strides[5]).getInt();
   sfr.strides_element6 = dyn_cast_or_null<IntegerAttr>(strides[6]).getInt();
   sfr.strides_element7 = dyn_cast_or_null<IntegerAttr>(strides[7]).getInt();
+  auto slice_enable_bitmap = op.getSliceEnableBitmap();
   sfr.sub_commit_unit_slice_enable_bitmap0 =
-      op.getSliceEnableBitmapMaskElement0();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[0]).getInt();
   sfr.sub_commit_unit_slice_enable_bitmap1 =
-      op.getSliceEnableBitmapMaskElement1();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[1]).getInt();
   sfr.sub_commit_unit_slice_enable_bitmap2 =
-      op.getSliceEnableBitmapMaskElement2();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[2]).getInt();
   sfr.sub_commit_unit_slice_enable_bitmap3 =
-      op.getSliceEnableBitmapMaskElement3();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[3]).getInt();
 
-  return sfr;
+  return sfr.get_blocks();
+}
+
+std::vector<sfr_data_t>
+getSubDataPathUnitSfr(furiosa::SubDataPathUnitSfrOp &op) {
+  sfr::SubDataPathUnit sfr = sfr::SubDataPathUnit();
+  sfr.data_path_route_sub_context = op.getRoute();
+
+  return sfr.get_blocks();
+}
+
+FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>
+getSfr(Operation &op) {
+  return llvm::TypeSwitch<
+             Operation *,
+             FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>>(&op)
+      .Case<SubFetchUnitSfrOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSubFetchUnitSfr(op));
+      })
+      .Case<SubCommitUnitSfrOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSubCommitUnitSfr(op));
+      })
+      .Case<SubDataPathUnitSfrOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSubDataPathUnitSfr(op));
+      })
+      .Default([&](Operation *) {
+        return op.emitOpError(
+            "unable to interpret as furiosa dialect operator");
+      });
 }
 
 FailureOr<TensorDmaDescriptor> getDmaDescriptor(furiosa::DmaDescriptorOp &op) {
