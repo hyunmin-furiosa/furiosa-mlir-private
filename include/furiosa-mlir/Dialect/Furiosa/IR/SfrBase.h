@@ -103,6 +103,7 @@ public:
 
   std::uint32_t get_base() { return base_; }
   std::uint32_t get_size() { return size_; }
+  std::vector<DT> &get_blocks() { return block_; }
 
   // offset address, not index
   bool is_valid(const std::uint32_t &offset) {

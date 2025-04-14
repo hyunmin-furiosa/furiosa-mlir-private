@@ -368,10 +368,7 @@ def Furiosa_SubFetchUnitSfrOp : Furiosa_TensorUnitCommand<"subfetchunit_sfr"> {
       I64Attr:$outer_dim1_log_size,
       I64Attr:$outer_dim0_chunk_size,
       I64Attr:$outer_dim1_chunk_size,
-      I64Attr:$custom_snoop_bitmap_mask_element0,
-      I64Attr:$custom_snoop_bitmap_mask_element1,
-      I64Attr:$custom_snoop_bitmap_mask_element2,
-      I64Attr:$custom_snoop_bitmap_mask_element3
+      ArrayAttr:$custom_snoop_bitmap
   );
   let results = (outs);
   let assemblyFormat = "attr-dict";
@@ -390,10 +387,19 @@ def Furiosa_SubCommitUnitSfrOp
       I64Attr:$commit_data,
       ArrayAttr:$limits,
       ArrayAttr:$strides,
-      I64Attr:$slice_enable_bitmap_mask_element0,
-      I64Attr:$slice_enable_bitmap_mask_element1,
-      I64Attr:$slice_enable_bitmap_mask_element2,
-      I64Attr:$slice_enable_bitmap_mask_element3
+      ArrayAttr:$slice_enable_bitmap
+  );
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_SubDataPathUnitSfrOp
+    : Furiosa_TensorUnitCommand<"subdatapathunit_sfr"> {
+  let summary = "Sub data path unit special function register";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$sfr_addr,
+      I64Attr:$route
   );
   let results = (outs);
   let assemblyFormat = "attr-dict";

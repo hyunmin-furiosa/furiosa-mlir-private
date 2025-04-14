@@ -2,9 +2,13 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/SfrBase.h"
 
-namespace mlir::furiosa::sfr {
+namespace mlir::furiosa {
 
-using DT = std::uint64_t;
+using sfr_data_t = std::uint64_t;
+
+namespace sfr {
+
+using DT = sfr_data_t;
 
 class SubFetchUnit : public sfr::Block<DT> {
 public:
@@ -164,4 +168,17 @@ public:
       "sub_commit_unit_slice_enable_bitmap3", *this, 0x60, 0x0};
 };
 
-} // namespace mlir::furiosa::sfr
+class SubDataPathUnit : public sfr::Block<DT> {
+public:
+  SubDataPathUnit() : sfr::Block<DT>::Block(0x170, 0x10) {}
+
+public:
+  sfr::Register<DT> operation_data_path_route{"operation_data_path_route",
+                                              *this, 0x0, 0x0};
+  sfr::Bitfield<DT> data_path_route_sub_context{
+      "data_path_route_sub_context", operation_data_path_route, 7, 0};
+};
+
+} // namespace sfr
+
+} // namespace mlir::furiosa
