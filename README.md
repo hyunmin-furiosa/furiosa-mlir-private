@@ -8,7 +8,7 @@ Build [llvm-project](https://github.com/llvm/llvm-project) at [6d847b1](https://
 cmake -G Ninja -B build llvm \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_ASSERTIONS=ON \
-  -DLLVM_ENABLE_PROJECTS="clang;llvm;mlir" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;llvm;mlir" \
   -DMLIR_ENABLE_BINDINGS_PYTHON=OFF \
   -DLLVM_TARGETS_TO_BUILD="host;AArch64" \
   `# use clang`\
