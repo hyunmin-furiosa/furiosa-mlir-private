@@ -55,6 +55,29 @@ static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
   return success();
 }
 
+static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
+  raw_indented_ostream &os = emitter.ostream();
+  auto [sfr_address, sfr_vector] = *getSfr(*op);
+
+  os << "{\n";
+  os.indent();
+  os << "static const uint64_t _sfr[] = { ";
+  for (auto it = sfr_vector.begin(); it != sfr_vector.end(); ++it) {
+    os << llvm::format_hex(*it, 0);
+    if (it != sfr_vector.end() - 1)
+      os << ", ";
+  }
+  os << " };\n";
+  os << "memcpy((void *)" << llvm::format_hex(sfr_address, 0)
+     << ", &_sfr, sizeof(_sfr));\n";
+  os << "flush_cache((void *)" << llvm::format_hex(sfr_address, 0)
+     << ", sizeof(_sfr));\n";
+  os.unindent();
+  os << "}\n";
+
+  return success();
+}
+
 static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
                                         furiosa::DmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
@@ -69,28 +92,28 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
   os << "{ ";
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.source_limit[i];
+    os << descriptor.source_limits[i];
     if (i != DIMS - 1)
       os << ", ";
   }
   os << " }, ";
   os << "{ ";
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.source_stride[i];
+    os << descriptor.source_strides[i];
     if (i != DIMS - 1)
       os << ", ";
   }
   os << " }, ";
   os << "{ ";
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.destination_limit[i];
+    os << descriptor.destination_limits[i];
     if (i != DIMS - 1)
       os << ", ";
   }
   os << " }, ";
   os << "{ ";
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.destination_stride[i];
+    os << descriptor.destination_strides[i];
     if (i != DIMS - 1)
       os << ", ";
   }
@@ -402,10 +425,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
       if (auto addressAttr =
               llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
         std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = 1;
-        for (auto dimSize : tensorType.getShape()) {
-          size *= dimSize;
-        }
+        std::uint64_t size = tensorType.getNumElements() *
+                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
         furiosaBinary.arguments.push_back(std::make_pair(address, size));
       }
     }
@@ -417,10 +438,8 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
       if (auto addressAttr =
               llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
         std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = 1;
-        for (auto dimSize : tensorType.getShape()) {
-          size *= dimSize;
-        }
+        std::uint64_t size = tensorType.getNumElements() *
+                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
         furiosaBinary.results.push_back(std::make_pair(address, size));
       }
     }
@@ -482,6 +501,9 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
                 furiosa::ProfileiOp, furiosa::PrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
+          .Case<furiosa::SubFetchUnitSfrOp, furiosa::SubCommitUnitSfrOp,
+                furiosa::SubDataPathUnitSfrOp>(
+              [&](auto op) { return printSfr(*this, op.getOperation()); })
           .Case<furiosa::DmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
           .Default([&](Operation *) {
