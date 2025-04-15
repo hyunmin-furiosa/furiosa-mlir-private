@@ -348,6 +348,63 @@ def Furiosa_SfrOp : Furiosa_TensorUnitCommand<"sfr"> {
   let assemblyFormat = "attr-dict";
 }
 
+def Furiosa_SubFetchUnitSfrOp : Furiosa_TensorUnitCommand<"subfetchunit_sfr"> {
+  let summary = "Sub fetch unit special function register";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$sfr_addr,
+      I64Attr:$base,
+      I64Attr:$type_conversion,
+      I64Attr:$num_zero_points,
+      I64Attr:$zero_point0,
+      I64Attr:$zero_point1,
+      ArrayAttr:$limits,
+      ArrayAttr:$strides,
+      I64Attr:$flit_count,
+      I64Attr:$words_per_packet,
+      I64Attr:$topology,
+      I64Attr:$outer_slice_log_size,
+      I64Attr:$outer_dim0_log_size,
+      I64Attr:$outer_dim1_log_size,
+      I64Attr:$outer_dim0_chunk_size,
+      I64Attr:$outer_dim1_chunk_size,
+      ArrayAttr:$custom_snoop_bitmap
+  );
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_SubCommitUnitSfrOp
+    : Furiosa_TensorUnitCommand<"subcommitunit_sfr"> {
+  let summary = "Sub commit unit special function register";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$sfr_addr,
+      I64Attr:$mode,
+      I64Attr:$packet_valid_count,
+      I64Attr:$base,
+      I64Attr:$commit_in_size,
+      I64Attr:$commit_data,
+      ArrayAttr:$limits,
+      ArrayAttr:$strides,
+      ArrayAttr:$slice_enable_bitmap
+  );
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def Furiosa_SubDataPathUnitSfrOp
+    : Furiosa_TensorUnitCommand<"subdatapathunit_sfr"> {
+  let summary = "Sub data path unit special function register";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$sfr_addr,
+      I64Attr:$route
+  );
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
 def Furiosa_DmaDescriptorOp : Furiosa_TensorUnitCommand<"dma_descriptor"> {
   let summary = "Direct memory access descriptor";
   let description = [{}];
@@ -356,10 +413,10 @@ def Furiosa_DmaDescriptorOp : Furiosa_TensorUnitCommand<"dma_descriptor"> {
       I64Attr:$opcode,
       I64Attr:$source_base,
       I64Attr:$destination_base,
-      ArrayAttr:$source_limit,
-      ArrayAttr:$source_stride,
-      ArrayAttr:$destination_limit,
-      ArrayAttr:$destination_stride
+      ArrayAttr:$source_limits,
+      ArrayAttr:$source_strides,
+      ArrayAttr:$destination_limits,
+      ArrayAttr:$destination_strides
   );
   let results = (outs);
   let assemblyFormat = "attr-dict";
