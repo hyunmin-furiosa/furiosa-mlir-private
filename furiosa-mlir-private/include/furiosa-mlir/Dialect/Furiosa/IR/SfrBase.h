@@ -10,7 +10,10 @@
 
 #include "llvm/ADT/bit.h"
 
-namespace mlir::furiosa::sfr {
+namespace mlir::furiosa {
+using sfr_data_t = std::uint64_t;
+
+namespace sfr {
 
 template <typename DT> inline DT get_bit_mask(unsigned int size) {
   using DT_U = std::make_unsigned_t<DT>;
@@ -351,4 +354,5 @@ private:
   std::vector<Bitfield<DT> *> bitfields_;
 };
 
-} // namespace mlir::furiosa::sfr
+} // namespace sfr
+} // namespace mlir::furiosa

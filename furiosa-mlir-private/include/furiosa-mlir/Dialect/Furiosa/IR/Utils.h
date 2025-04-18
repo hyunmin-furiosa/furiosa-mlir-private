@@ -350,7 +350,8 @@ getCommand(Operation &op) {
 }
 
 std::vector<sfr_data_t> getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
-  sfr::SubFetchUnit sfr = sfr::SubFetchUnit();
+  sfr::slice::SubFetchUnit<sfr_data_t> sfr =
+      sfr::slice::SubFetchUnit<sfr_data_t>();
   sfr.base = op.getBase();
   sfr.type_conversion = op.getTypeConversion();
   sfr.num_zero_points = op.getNumZeroPoints();
@@ -396,7 +397,8 @@ std::vector<sfr_data_t> getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
 }
 
 std::vector<sfr_data_t> getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
-  sfr::SubCommitUnit sfr = sfr::SubCommitUnit();
+  sfr::slice::SubCommitUnit<sfr_data_t> sfr =
+      sfr::slice::SubCommitUnit<sfr_data_t>();
   sfr.mode = op.getMode();
   sfr.packet_valid_count = op.getPacketValidCount();
   sfr.base = op.getBase();
@@ -435,7 +437,8 @@ std::vector<sfr_data_t> getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
 
 std::vector<sfr_data_t>
 getSubDataPathUnitSfr(furiosa::SubDataPathUnitSfrOp &op) {
-  sfr::SubDataPathUnit sfr = sfr::SubDataPathUnit();
+  sfr::slice::OperationDataPath<sfr_data_t> sfr =
+      sfr::slice::OperationDataPath<sfr_data_t>();
   sfr.data_path_route_sub_context = op.getRoute();
 
   return sfr.get_blocks();
