@@ -78,6 +78,14 @@ static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
   return success();
 }
 
+static LogicalResult printStaticSfr(ArmCEmitter &emitter, Operation *op) {
+  raw_indented_ostream &os = emitter.ostream();
+
+  os << "// static sfr\n";
+
+  return success();
+}
+
 static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
                                         furiosa::TaskDmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
@@ -125,6 +133,15 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
      << ", sizeof(struct dma_desc_t));\n";
   os.unindent();
   os << "}\n";
+
+  return success();
+}
+
+static LogicalResult printStaticMtosfr(ArmCEmitter &emitter,
+                                       TaskStaticMtosfrOp op) {
+  raw_indented_ostream &os = emitter.ostream();
+
+  os << "// static mtosfr\n";
 
   return success();
 }
@@ -505,8 +522,12 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           .Case<furiosa::TaskSfrSubFetchOp, furiosa::TaskSfrSubCommitOp,
                 furiosa::TaskSfrSubDataPathOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
+          .Case<furiosa::TaskStaticSfrSubDataPathOp>(
+              [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
           .Case<furiosa::TaskDmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
+          .Case<furiosa::TaskStaticMtosfrOp>(
+              [&](auto op) { return printStaticMtosfr(*this, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");
           });
