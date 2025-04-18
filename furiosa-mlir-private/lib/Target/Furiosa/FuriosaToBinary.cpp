@@ -491,14 +491,15 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           .Case<func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Case<furiosa::ItosfrOp, furiosa::RtosfrOp, furiosa::RtosfriOp,
-                furiosa::MtosfrOp, furiosa::StosfrOp, furiosa::SfrtosOp,
-                furiosa::StallOp, furiosa::ItosOp, furiosa::ItosiOp,
-                furiosa::StosOp, furiosa::StotabOp, furiosa::StotrfOp,
-                furiosa::StovrfOp, furiosa::ExecutionOp, furiosa::WaitOp,
-                furiosa::WaitiOp, furiosa::InterruptOp, furiosa::DmaOp,
-                furiosa::Dma1Op, furiosa::DmawOp, furiosa::ProfileOp,
-                furiosa::ProfileiOp, furiosa::PrflushOp>([&](auto op) {
+          .Case<
+              furiosa::TucItosfrOp, furiosa::TucRtosfrOp, furiosa::TucRtosfriOp,
+              furiosa::TucMtosfrOp, furiosa::TucStosfrOp, furiosa::TucSfrtosOp,
+              furiosa::TucStallOp, furiosa::TucItosOp, furiosa::TucItosiOp,
+              furiosa::TucStosOp, furiosa::TucStotabOp, furiosa::TucStotrfOp,
+              furiosa::TucStovrfOp, furiosa::TucExecutionOp, furiosa::TucWaitOp,
+              furiosa::TucWaitiOp, furiosa::TucInterruptOp, furiosa::TucDmaOp,
+              furiosa::TucDma1Op, furiosa::TucDmawOp, furiosa::TucProfileOp,
+              furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
           .Case<furiosa::SubFetchUnitSfrOp, furiosa::SubCommitUnitSfrOp,
