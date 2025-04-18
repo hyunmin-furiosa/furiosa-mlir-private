@@ -63,7 +63,6 @@ class Furiosa_Type<string name, string typeMnemonic, list<Trait> traits = [],
 def SfrType : Furiosa_Type<"Sfr", "sfr"> {
   let summary = "Special function register type";
   let description = [{}];
-  let assemblyFormat = "";
 }
 
 #endif
