@@ -79,7 +79,7 @@ static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
 }
 
 static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
-                                        furiosa::DmaDescriptorOp op) {
+                                        furiosa::TaskDmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
@@ -502,10 +502,10 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
               furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
-          .Case<furiosa::SubFetchUnitSfrOp, furiosa::SubCommitUnitSfrOp,
-                furiosa::SubDataPathUnitSfrOp>(
+          .Case<furiosa::TaskSfrSubFetchOp, furiosa::TaskSfrSubCommitOp,
+                furiosa::TaskSfrSubDataPathOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
-          .Case<furiosa::DmaDescriptorOp>(
+          .Case<furiosa::TaskDmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");

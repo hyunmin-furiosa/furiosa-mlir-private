@@ -349,7 +349,7 @@ getCommand(Operation &op) {
       });
 }
 
-std::vector<sfr_data_t> getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
+std::vector<sfr_data_t> getSfrSubFetch(TaskSfrSubFetchOp &op) {
   sfr::slice::SubFetchUnit<sfr_data_t> sfr =
       sfr::slice::SubFetchUnit<sfr_data_t>();
   sfr.base = op.getBase();
@@ -396,7 +396,7 @@ std::vector<sfr_data_t> getSubFetchUnitSfr(furiosa::SubFetchUnitSfrOp &op) {
   return sfr.get_blocks();
 }
 
-std::vector<sfr_data_t> getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
+std::vector<sfr_data_t> getSfrSubCommit(TaskSfrSubCommitOp &op) {
   sfr::slice::SubCommitUnit<sfr_data_t> sfr =
       sfr::slice::SubCommitUnit<sfr_data_t>();
   sfr.mode = op.getMode();
@@ -435,8 +435,7 @@ std::vector<sfr_data_t> getSubCommitUnitSfr(furiosa::SubCommitUnitSfrOp &op) {
   return sfr.get_blocks();
 }
 
-std::vector<sfr_data_t>
-getSubDataPathUnitSfr(furiosa::SubDataPathUnitSfrOp &op) {
+std::vector<sfr_data_t> getSfrSubDataPath(TaskSfrSubDataPathOp &op) {
   sfr::slice::OperationDataPath<sfr_data_t> sfr =
       sfr::slice::OperationDataPath<sfr_data_t>();
   sfr.data_path_route_sub_context = op.getRoute();
@@ -449,17 +448,17 @@ getSfr(Operation &op) {
   return llvm::TypeSwitch<
              Operation *,
              FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>>(&op)
-      .Case<SubFetchUnitSfrOp>([&](auto op) {
+      .Case<TaskSfrSubFetchOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSubFetchUnitSfr(op));
+            op.getSfrAddr(), getSfrSubFetch(op));
       })
-      .Case<SubCommitUnitSfrOp>([&](auto op) {
+      .Case<TaskSfrSubCommitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSubCommitUnitSfr(op));
+            op.getSfrAddr(), getSfrSubCommit(op));
       })
-      .Case<SubDataPathUnitSfrOp>([&](auto op) {
+      .Case<TaskSfrSubDataPathOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSubDataPathUnitSfr(op));
+            op.getSfrAddr(), getSfrSubDataPath(op));
       })
       .Default([&](Operation *) {
         return op.emitOpError(
@@ -467,7 +466,7 @@ getSfr(Operation &op) {
       });
 }
 
-FailureOr<TensorDmaDescriptor> getDmaDescriptor(furiosa::DmaDescriptorOp &op) {
+FailureOr<TensorDmaDescriptor> getDmaDescriptor(TaskDmaDescriptorOp &op) {
   TensorDmaDescriptor descriptor{};
   descriptor.opcode = op.getOpcode();
   // descriptor.indirect = op.getIndirect();

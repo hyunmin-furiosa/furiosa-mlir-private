@@ -22,13 +22,13 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 // Tensor unit commands.
 //===----------------------------------------------------------------------===//
 
-class Furiosa_TensorUnitCommand<string mnemonic, list<Trait> traits = []>
+class TensorUnitCommandOp<string mnemonic, list<Trait> traits = []>
     : Furiosa_Op<mnemonic, traits> {
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
 
-def TucItosfrOp : Furiosa_TensorUnitCommand<"tuc.itosfr"> {
+def TucItosfrOp : TensorUnitCommandOp<"tuc.itosfr"> {
   let summary = "Immediate to special register file";
   let description = [{}];
   let arguments = (ins
@@ -38,7 +38,7 @@ def TucItosfrOp : Furiosa_TensorUnitCommand<"tuc.itosfr"> {
   );
 }
 
-def TucRtosfrOp : Furiosa_TensorUnitCommand<"tuc.rtosfr"> {
+def TucRtosfrOp : TensorUnitCommandOp<"tuc.rtosfr"> {
   let summary = "Register to special register file";
   let description = [{}];
   let arguments = (ins
@@ -48,7 +48,7 @@ def TucRtosfrOp : Furiosa_TensorUnitCommand<"tuc.rtosfr"> {
   );
 }
 
-def TucRtosfriOp : Furiosa_TensorUnitCommand<"tuc.rtosfri"> {
+def TucRtosfriOp : TensorUnitCommandOp<"tuc.rtosfri"> {
   let summary = "Register to special register file immediate";
   let description = [{}];
   let arguments = (ins
@@ -58,7 +58,7 @@ def TucRtosfriOp : Furiosa_TensorUnitCommand<"tuc.rtosfri"> {
   );
 }
 
-def TucMtosfrOp : Furiosa_TensorUnitCommand<"tuc.mtosfr"> {
+def TucMtosfrOp : TensorUnitCommandOp<"tuc.mtosfr"> {
   let summary = "Memory to special register file";
   let description = [{}];
   let arguments = (ins
@@ -68,7 +68,7 @@ def TucMtosfrOp : Furiosa_TensorUnitCommand<"tuc.mtosfr"> {
   );
 }
 
-def TucStosfrOp : Furiosa_TensorUnitCommand<"tuc.stosfr"> {
+def TucStosfrOp : TensorUnitCommandOp<"tuc.stosfr"> {
   let summary = "SRAM to special register file";
   let description = [{}];
   let arguments = (ins
@@ -85,7 +85,7 @@ def TucStosfrOp : Furiosa_TensorUnitCommand<"tuc.stosfr"> {
   );
 }
 
-def TucSfrtosOp : Furiosa_TensorUnitCommand<"tuc.sfrtos"> {
+def TucSfrtosOp : TensorUnitCommandOp<"tuc.sfrtos"> {
   let summary = "special register file to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -95,7 +95,7 @@ def TucSfrtosOp : Furiosa_TensorUnitCommand<"tuc.sfrtos"> {
   );
 }
 
-def TucStallOp : Furiosa_TensorUnitCommand<"tuc.stall"> {
+def TucStallOp : TensorUnitCommandOp<"tuc.stall"> {
   let summary = "Stall";
   let description = [{}];
   let arguments = (ins
@@ -103,7 +103,7 @@ def TucStallOp : Furiosa_TensorUnitCommand<"tuc.stall"> {
   );
 }
 
-def TucItosOp : Furiosa_TensorUnitCommand<"tuc.itos"> {
+def TucItosOp : TensorUnitCommandOp<"tuc.itos"> {
   let summary = "Immediate to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -116,7 +116,7 @@ def TucItosOp : Furiosa_TensorUnitCommand<"tuc.itos"> {
   );
 }
 
-def TucItosiOp : Furiosa_TensorUnitCommand<"tuc.itosi"> {
+def TucItosiOp : TensorUnitCommandOp<"tuc.itosi"> {
   let summary = "Immediate to SRAM immediate";
   let description = [{}];
   let arguments = (ins
@@ -126,7 +126,7 @@ def TucItosiOp : Furiosa_TensorUnitCommand<"tuc.itosi"> {
   );
 }
 
-def TucStosOp : Furiosa_TensorUnitCommand<"tuc.stos"> {
+def TucStosOp : TensorUnitCommandOp<"tuc.stos"> {
   let summary = "SRAM to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -139,7 +139,7 @@ def TucStosOp : Furiosa_TensorUnitCommand<"tuc.stos"> {
   );
 }
 
-def TucStotabOp : Furiosa_TensorUnitCommand<"tuc.stotab"> {
+def TucStotabOp : TensorUnitCommandOp<"tuc.stotab"> {
   let summary = "SRAM to table";
   let description = [{}];
   let arguments = (ins
@@ -155,7 +155,7 @@ def TucStotabOp : Furiosa_TensorUnitCommand<"tuc.stotab"> {
   );
 }
 
-def TucStotrfOp : Furiosa_TensorUnitCommand<"tuc.stotrf"> {
+def TucStotrfOp : TensorUnitCommandOp<"tuc.stotrf"> {
   let summary = "SRAM to tensor register file";
   let description = [{}];
   let arguments = (ins
@@ -179,7 +179,7 @@ def TucStotrfOp : Furiosa_TensorUnitCommand<"tuc.stotrf"> {
   );
 }
 
-def TucStovrfOp : Furiosa_TensorUnitCommand<"tuc.stovrf"> {
+def TucStovrfOp : TensorUnitCommandOp<"tuc.stovrf"> {
   let summary = "SRAM to vector register file";
   let description = [{}];
   let arguments = (ins
@@ -198,7 +198,7 @@ def TucStovrfOp : Furiosa_TensorUnitCommand<"tuc.stovrf"> {
   );
 }
 
-def TucExecutionOp : Furiosa_TensorUnitCommand<"tuc.exec"> {
+def TucExecutionOp : TensorUnitCommandOp<"tuc.exec"> {
   let summary = "Tensor unit execution";
   let description = [{}];
   let arguments = (ins
@@ -208,7 +208,7 @@ def TucExecutionOp : Furiosa_TensorUnitCommand<"tuc.exec"> {
   );
 }
 
-def TucWaitOp : Furiosa_TensorUnitCommand<"tuc.wait"> {
+def TucWaitOp : TensorUnitCommandOp<"tuc.wait"> {
   let summary = "Wait";
   let description = [{}];
   let arguments = (ins
@@ -218,7 +218,7 @@ def TucWaitOp : Furiosa_TensorUnitCommand<"tuc.wait"> {
   );
 }
 
-def TucWaitiOp : Furiosa_TensorUnitCommand<"tuc.waiti"> {
+def TucWaitiOp : TensorUnitCommandOp<"tuc.waiti"> {
   let summary = "Wait interrupt";
   let description = [{}];
   let arguments = (ins
@@ -228,13 +228,13 @@ def TucWaitiOp : Furiosa_TensorUnitCommand<"tuc.waiti"> {
   );
 }
 
-def TucInterruptOp : Furiosa_TensorUnitCommand<"tuc.interrupt"> {
+def TucInterruptOp : TensorUnitCommandOp<"tuc.interrupt"> {
   let summary = "SRAM to tensor register file";
   let description = [{}];
   let arguments = (ins);
 }
 
-def TucDmaOp : Furiosa_TensorUnitCommand<"tuc.dma"> {
+def TucDmaOp : TensorUnitCommandOp<"tuc.dma"> {
   let summary = "Direct memory access";
   let description = [{}];
   let arguments = (ins
@@ -248,7 +248,7 @@ def TucDmaOp : Furiosa_TensorUnitCommand<"tuc.dma"> {
   );
 }
 
-def TucDma1Op : Furiosa_TensorUnitCommand<"tuc.dma1"> {
+def TucDma1Op : TensorUnitCommandOp<"tuc.dma1"> {
   let summary = "Direct memory access 1";
   let description = [{}];
   let arguments = (ins
@@ -260,7 +260,7 @@ def TucDma1Op : Furiosa_TensorUnitCommand<"tuc.dma1"> {
   );
 }
 
-def TucDmawOp : Furiosa_TensorUnitCommand<"tuc.dmaw"> {
+def TucDmawOp : TensorUnitCommandOp<"tuc.dmaw"> {
   let summary = "Direct memory access wide";
   let description = [{}];
   let arguments = (ins
@@ -274,7 +274,7 @@ def TucDmawOp : Furiosa_TensorUnitCommand<"tuc.dmaw"> {
   );
 }
 
-def TucProfileOp : Furiosa_TensorUnitCommand<"tuc.profile"> {
+def TucProfileOp : TensorUnitCommandOp<"tuc.profile"> {
   let summary = "Profile";
   let description = [{}];
   let arguments = (ins
@@ -282,7 +282,7 @@ def TucProfileOp : Furiosa_TensorUnitCommand<"tuc.profile"> {
   );
 }
 
-def TucProfileiOp : Furiosa_TensorUnitCommand<"tuc.profilei"> {
+def TucProfileiOp : TensorUnitCommandOp<"tuc.profilei"> {
   let summary = "Profile immediate";
   let description = [{}];
   let arguments = (ins
@@ -290,17 +290,20 @@ def TucProfileiOp : Furiosa_TensorUnitCommand<"tuc.profilei"> {
   );
 }
 
-def TucPrflushOp : Furiosa_TensorUnitCommand<"tuc.prflush"> {
+def TucPrflushOp : TensorUnitCommandOp<"tuc.prflush"> {
   let summary = "Profile flush";
   let description = [{}];
   let arguments = (ins);
 }
 
 //===----------------------------------------------------------------------===//
-// Task binary helpers.
+// Task operations.
 //===----------------------------------------------------------------------===//
 
-def Furiosa_SfrOp : Furiosa_Op<"sfr"> {
+class TaskOp<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<mnemonic, traits> {}
+
+def TaskSfrOp : TaskOp<"task.sfr"> {
   let summary = "Special function register";
   let description = [{}];
   let arguments = (ins);
@@ -308,7 +311,7 @@ def Furiosa_SfrOp : Furiosa_Op<"sfr"> {
   let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_SubFetchUnitSfrOp : Furiosa_Op<"subfetchunit_sfr"> {
+def TaskSfrSubFetchOp : TaskOp<"task.sfr.subfetch"> {
   let summary = "Sub fetch unit special function register";
   let description = [{}];
   let arguments = (ins
@@ -334,7 +337,7 @@ def Furiosa_SubFetchUnitSfrOp : Furiosa_Op<"subfetchunit_sfr"> {
   let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_SubCommitUnitSfrOp : Furiosa_Op<"subcommitunit_sfr"> {
+def TaskSfrSubCommitOp : TaskOp<"task.sfr.subcommit"> {
   let summary = "Sub commit unit special function register";
   let description = [{}];
   let arguments = (ins
@@ -352,7 +355,7 @@ def Furiosa_SubCommitUnitSfrOp : Furiosa_Op<"subcommitunit_sfr"> {
   let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_SubDataPathUnitSfrOp : Furiosa_Op<"subdatapathunit_sfr"> {
+def TaskSfrSubDataPathOp : TaskOp<"task.sfr.subdatapath"> {
   let summary = "Sub data path unit special function register";
   let description = [{}];
   let arguments = (ins
@@ -363,7 +366,7 @@ def Furiosa_SubDataPathUnitSfrOp : Furiosa_Op<"subdatapathunit_sfr"> {
   let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_DmaDescriptorOp : Furiosa_Op<"dma_descriptor"> {
+def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
   let summary = "Direct memory access descriptor";
   let description = [{}];
   let arguments = (ins
