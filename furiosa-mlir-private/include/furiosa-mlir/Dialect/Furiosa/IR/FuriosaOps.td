@@ -312,7 +312,7 @@ def TaskSfrOp : TaskOp<"task.sfr"> {
 }
 
 def TaskSfrSubFetchOp : TaskOp<"task.sfr.subfetch"> {
-  let summary = "Sub fetch unit special function register";
+  let summary = "Special function register for sub fetch unit";
   let description = [{}];
   let arguments = (ins
       I64Attr:$sfr_addr,
@@ -338,7 +338,7 @@ def TaskSfrSubFetchOp : TaskOp<"task.sfr.subfetch"> {
 }
 
 def TaskSfrSubCommitOp : TaskOp<"task.sfr.subcommit"> {
-  let summary = "Sub commit unit special function register";
+  let summary = "Special function register for sub commit unit";
   let description = [{}];
   let arguments = (ins
       I64Attr:$sfr_addr,
@@ -356,7 +356,7 @@ def TaskSfrSubCommitOp : TaskOp<"task.sfr.subcommit"> {
 }
 
 def TaskSfrSubDataPathOp : TaskOp<"task.sfr.subdatapath"> {
-  let summary = "Sub data path unit special function register";
+  let summary = "Special function register for sub data path unit";
   let description = [{}];
   let arguments = (ins
       I64Attr:$sfr_addr,
