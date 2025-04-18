@@ -17,6 +17,7 @@ include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
+include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 
 //===----------------------------------------------------------------------===//
 // Tensor unit commands.
@@ -303,15 +304,21 @@ def TucPrflushOp : TensorUnitCommandOp<"tuc.prflush"> {
 class TaskOp<string mnemonic, list<Trait> traits = []>
     : Furiosa_Op<mnemonic, traits> {}
 
-def TaskSfrOp : TaskOp<"task.sfr"> {
-  let summary = "Special function register";
-  let description = [{}];
-  let arguments = (ins);
+class TaskSfrOp<string mnemonic, list<Trait> traits = []>
+    : TaskOp<mnemonic, traits> {
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
 
-def TaskSfrSubFetchOp : TaskOp<"task.sfr.subfetch"> {
+class TaskStaticSfrOp<string mnemonic, list<Trait> traits = []>
+    : TaskOp<mnemonic, traits> {
+  let results = (outs
+      SfrType:$sfr
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def TaskSfrSubFetchOp : TaskSfrOp<"task.sfr.sub_fetch"> {
   let summary = "Special function register for sub fetch unit";
   let description = [{}];
   let arguments = (ins
@@ -333,11 +340,9 @@ def TaskSfrSubFetchOp : TaskOp<"task.sfr.subfetch"> {
       I64Attr:$outer_dim1_chunk_size,
       ArrayAttr:$custom_snoop_bitmap
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def TaskSfrSubCommitOp : TaskOp<"task.sfr.subcommit"> {
+def TaskSfrSubCommitOp : TaskSfrOp<"task.sfr.sub_commit"> {
   let summary = "Special function register for sub commit unit";
   let description = [{}];
   let arguments = (ins
@@ -351,19 +356,25 @@ def TaskSfrSubCommitOp : TaskOp<"task.sfr.subcommit"> {
       ArrayAttr:$strides,
       ArrayAttr:$slice_enable_bitmap
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def TaskSfrSubDataPathOp : TaskOp<"task.sfr.subdatapath"> {
+def TaskSfrSubDataPathOp : TaskSfrOp<"task.sfr.sub_data_path"> {
   let summary = "Special function register for sub data path unit";
   let description = [{}];
   let arguments = (ins
       I64Attr:$sfr_addr,
       I64Attr:$route
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
+}
+
+def TaskStaticSfrSubDataPathOp
+    : TaskStaticSfrOp<"task.static.sfr.sub_data_path"> {
+  let summary = "Static special function register for sub data path unit";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$sfr_addr,
+      I64Attr:$route
+  );
 }
 
 def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
@@ -381,6 +392,18 @@ def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
   );
   let results = (outs);
   let assemblyFormat = "attr-dict";
+}
+
+def TaskStaticMtosfrOp : TaskOp<"task.static.mtosfr"> {
+  let summary = "Static memory to special register file";
+  let description = [{}];
+  let arguments = (ins
+      SfrType:$sfr,
+      I64Attr:$size,
+      I64Attr:$sfr_address
+  );
+  let results = (outs);
+  let assemblyFormat = "$sfr attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD
