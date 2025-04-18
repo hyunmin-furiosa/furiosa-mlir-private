@@ -8,29 +8,29 @@ namespace mlir::furiosa {
 
 FailureOr<std::uint32_t> getOpcode(Operation &op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::uint32_t>>(&op)
-      .Case<ItosfrOp>([&](auto op) { return 0x01; })
-      .Case<RtosfrOp>([&](auto op) { return 0x02; })
-      .Case<RtosfriOp>([&](auto op) { return 0x03; })
-      .Case<MtosfrOp>([&](auto op) { return 0x04; })
-      .Case<StosfrOp>([&](auto op) { return 0x05; })
-      .Case<SfrtosOp>([&](auto op) { return 0x06; })
-      .Case<StallOp>([&](auto op) { return 0x07; })
-      .Case<ItosOp>([&](auto op) { return 0x08; })
-      .Case<ItosiOp>([&](auto op) { return 0x09; })
-      .Case<StosOp>([&](auto op) { return 0x0a; })
-      .Case<StotabOp>([&](auto op) { return 0x0b; })
-      .Case<StotrfOp>([&](auto op) { return 0x0c; })
-      .Case<StovrfOp>([&](auto op) { return 0x0d; })
-      .Case<ExecutionOp>([&](auto op) { return 0x10; })
-      .Case<WaitOp>([&](auto op) { return 0x11; })
-      .Case<WaitiOp>([&](auto op) { return 0x15; })
-      .Case<InterruptOp>([&](auto op) { return 0x12; })
-      .Case<DmaOp>([&](auto op) { return 0x13; })
-      .Case<Dma1Op>([&](auto op) { return 0x14; })
-      .Case<DmawOp>([&](auto op) { return 0x16; })
-      .Case<ProfileOp>([&](auto op) { return 0x18; })
-      .Case<ProfileiOp>([&](auto op) { return 0x19; })
-      .Case<PrflushOp>([&](auto op) { return 0x1a; })
+      .Case<TucItosfrOp>([&](auto op) { return 0x01; })
+      .Case<TucRtosfrOp>([&](auto op) { return 0x02; })
+      .Case<TucRtosfriOp>([&](auto op) { return 0x03; })
+      .Case<TucMtosfrOp>([&](auto op) { return 0x04; })
+      .Case<TucStosfrOp>([&](auto op) { return 0x05; })
+      .Case<TucSfrtosOp>([&](auto op) { return 0x06; })
+      .Case<TucStallOp>([&](auto op) { return 0x07; })
+      .Case<TucItosOp>([&](auto op) { return 0x08; })
+      .Case<TucItosiOp>([&](auto op) { return 0x09; })
+      .Case<TucStosOp>([&](auto op) { return 0x0a; })
+      .Case<TucStotabOp>([&](auto op) { return 0x0b; })
+      .Case<TucStotrfOp>([&](auto op) { return 0x0c; })
+      .Case<TucStovrfOp>([&](auto op) { return 0x0d; })
+      .Case<TucExecutionOp>([&](auto op) { return 0x10; })
+      .Case<TucWaitOp>([&](auto op) { return 0x11; })
+      .Case<TucWaitiOp>([&](auto op) { return 0x15; })
+      .Case<TucInterruptOp>([&](auto op) { return 0x12; })
+      .Case<TucDmaOp>([&](auto op) { return 0x13; })
+      .Case<TucDma1Op>([&](auto op) { return 0x14; })
+      .Case<TucDmawOp>([&](auto op) { return 0x16; })
+      .Case<TucProfileOp>([&](auto op) { return 0x18; })
+      .Case<TucProfileiOp>([&](auto op) { return 0x19; })
+      .Case<TucPrflushOp>([&](auto op) { return 0x1a; })
       .Default([&](Operation *) {
         return op.emitOpError(
             "unable to interpret as furiosa dialect operator");
@@ -45,7 +45,7 @@ getCommand(Operation &op) {
                           FailureOr<std::tuple<TensorUnitCommand,
                                                SmallVector<GeneralRegister>>>>(
              &op)
-      .Case<ItosfrOp>([&](auto op) {
+      .Case<TucItosfrOp>([&](auto op) {
         command.itosfr.value = op.getValue();
         {
           GeneralRegister reg;
@@ -55,7 +55,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<RtosfrOp>([&](auto op) {
+      .Case<TucRtosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.rtosfr_0.value = op.getValue();
@@ -69,7 +69,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<RtosfriOp>([&](auto op) {
+      .Case<TucRtosfriOp>([&](auto op) {
         command.rtosfri.log_size = op.getLogSize();
         command.rtosfri.sfr_address = op.getSfrAddress();
         {
@@ -79,7 +79,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<MtosfrOp>([&](auto op) {
+      .Case<TucMtosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.mtosfr_0.spm_address = op.getSpmAddress();
@@ -89,7 +89,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<StosfrOp>([&](auto op) {
+      .Case<TucStosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stosfr_0.fetch_base = op.getFetchBase();
@@ -110,7 +110,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<SfrtosOp>([&](auto op) {
+      .Case<TucSfrtosOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.sfrtos_0.commit_base = op.getCommitBase();
@@ -120,7 +120,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<StallOp>([&](auto op) {
+      .Case<TucStallOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stall_0.cycle = op.getCycle();
@@ -128,7 +128,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<ItosOp>([&](auto op) {
+      .Case<TucItosOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.itos_0.address_begin = op.getAddressBegin();
@@ -149,7 +149,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<ItosiOp>([&](auto op) {
+      .Case<TucItosiOp>([&](auto op) {
         command.value = op.getValue();
         {
           GeneralRegister reg;
@@ -159,7 +159,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<StosOp>([&](auto op) {
+      .Case<TucStosOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stos_0.address_begin = op.getAddressBegin();
@@ -176,7 +176,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<StotabOp>([&](auto op) {
+      .Case<TucStotabOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stotab_0.fetch_base = op.getFetchBase();
@@ -196,7 +196,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<StotrfOp>([&](auto op) {
+      .Case<TucStotrfOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stotrf_0.fetch_base = op.getFetchBase();
@@ -228,7 +228,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<StovrfOp>([&](auto op) {
+      .Case<TucStovrfOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stovrf_0.fetch_base = op.getFetchBase();
@@ -255,21 +255,21 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<ExecutionOp>([&](auto op) {
+      .Case<TucExecutionOp>([&](auto op) {
         command.execution.subunit_bitmap = op.getSubunitBitmap();
         command.execution.context_id = op.getContextId();
         command.execution.target_context = op.getTargetContext();
         return std::make_tuple(command, registers);
       })
-      .Case<WaitOp, WaitiOp>([&](auto op) {
+      .Case<TucWaitOp, TucWaitiOp>([&](auto op) {
         command.wait.dma_tag_id = op.getDmaTagId();
         command.wait.type = op.getType();
         command.wait.target_context = op.getTargetContext();
         return std::make_tuple(command, registers);
       })
-      .Case<InterruptOp>(
+      .Case<TucInterruptOp>(
           [&](auto op) { return std::make_tuple(command, registers); })
-      .Case<DmaOp>([&](auto op) {
+      .Case<TucDmaOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dma_0.pe0_desc_addr = op.getPe0DescAddr();
@@ -291,7 +291,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<Dma1Op>([&](auto op) {
+      .Case<TucDma1Op>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dma1_0.desc_addr = op.getDescAddr();
@@ -303,7 +303,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<DmawOp>([&](auto op) {
+      .Case<TucDmawOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dmaw_0.desc_addr = op.getPe0DescAddr();
@@ -329,7 +329,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<ProfileOp>([&](auto op) {
+      .Case<TucProfileOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.profile_0.profile_id = op.getProfileId();
@@ -337,11 +337,11 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<ProfileiOp>([&](auto op) {
+      .Case<TucProfileiOp>([&](auto op) {
         command.profilei.profile_id = op.getProfileId();
         return std::make_tuple(command, registers);
       })
-      .Case<PrflushOp>(
+      .Case<TucPrflushOp>(
           [&](auto op) { return std::make_tuple(command, registers); })
       .Default([&](Operation *) {
         return op.emitOpError(
