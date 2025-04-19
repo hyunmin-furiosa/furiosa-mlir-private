@@ -12,6 +12,7 @@ FailureOr<std::uint32_t> getOpcode(Operation &op) {
       .Case<TucRtosfrOp>([&](auto op) { return 0x02; })
       .Case<TucRtosfriOp>([&](auto op) { return 0x03; })
       .Case<TucMtosfrOp>([&](auto op) { return 0x04; })
+      .Case<TaskStaticMtosfrOp>([&](auto op) { return 0x04; })
       .Case<TucStosfrOp>([&](auto op) { return 0x05; })
       .Case<TucSfrtosOp>([&](auto op) { return 0x06; })
       .Case<TucStallOp>([&](auto op) { return 0x07; })
@@ -84,6 +85,14 @@ getCommand(Operation &op) {
           GeneralRegister reg;
           reg.mtosfr_0.spm_address = op.getSpmAddress();
           reg.mtosfr_0.size = op.getSize();
+          reg.mtosfr_0.sfr_address = op.getSfrAddress();
+          registers.push_back(reg);
+        }
+        return std::make_tuple(command, registers);
+      })
+      .Case<TaskStaticMtosfrOp>([&](auto op) {
+        {
+          GeneralRegister reg;
           reg.mtosfr_0.sfr_address = op.getSfrAddress();
           registers.push_back(reg);
         }
@@ -435,7 +444,11 @@ std::vector<sfr_data_t> getSfrSubCommit(TaskSfrSubCommitOp &op) {
   return sfr.get_blocks();
 }
 
-std::vector<sfr_data_t> getSfrSubDataPath(TaskSfrSubDataPathOp &op) {
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskSfrSubDataPathOp> ||
+                               std::is_same_v<T, TaskStaticSfrSubDataPathOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrSubDataPath(T &op) {
   sfr::slice::OperationDataPath<sfr_data_t> sfr =
       sfr::slice::OperationDataPath<sfr_data_t>();
   sfr.data_path_route_sub_context = op.getRoute();
@@ -460,6 +473,16 @@ getSfr(Operation &op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrSubDataPath(op));
       })
+      .Default([&](Operation *) {
+        return op.emitOpError(
+            "unable to interpret as furiosa dialect operator");
+      });
+}
+
+FailureOr<std::vector<sfr_data_t>> getStaticSfr(Operation &op) {
+  return llvm::TypeSwitch<Operation *, FailureOr<std::vector<sfr_data_t>>>(&op)
+      .Case<TaskStaticSfrSubDataPathOp>(
+          [&](auto op) { return getSfrSubDataPath(op); })
       .Default([&](Operation *) {
         return op.emitOpError(
             "unable to interpret as furiosa dialect operator");
