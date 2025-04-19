@@ -118,7 +118,6 @@ operation ::= `furiosa.task.static.mtosfr` $sfr attr-dict
 
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>sfr_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
