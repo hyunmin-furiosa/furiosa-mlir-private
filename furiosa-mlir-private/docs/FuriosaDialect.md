@@ -2,4 +2,6 @@
 
 # 'furiosa' Dialect
 
+Furiosa dialect
+
 [TOC]
