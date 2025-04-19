@@ -37,6 +37,9 @@ FLAGS += -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
 furiosa-mlir: configure
 	$(CMAKE) --build $(BUILD_DIR) --parallel $(JOBS)
 
+furiosa-mlir-doc: configure
+	$(CMAKE) --build $(BUILD_DIR) --target mlir-doc --parallel $(JOBS)
+
 configure:
 	mkdir -p $(BUILD_DIR)
 	$(CMAKE) . -G $(NINJA) -B $(BUILD_DIR) $(FLAGS)
