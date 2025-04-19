@@ -399,7 +399,6 @@ def TaskStaticMtosfrOp : TaskOp<"task.static.mtosfr"> {
   let description = [{}];
   let arguments = (ins
       SfrType:$sfr,
-      I64Attr:$size,
       I64Attr:$sfr_address
   );
   let results = (outs);
