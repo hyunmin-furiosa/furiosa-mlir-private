@@ -372,7 +372,6 @@ def TaskStaticSfrSubDataPathOp
   let summary = "Static special function register for sub data path unit";
   let description = [{}];
   let arguments = (ins
-      I64Attr:$sfr_addr,
       I64Attr:$route
   );
 }
