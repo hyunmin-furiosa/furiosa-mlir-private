@@ -37,7 +37,7 @@ FLAGS += -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
 furiosa-mlir: configure
 	$(CMAKE) --build $(BUILD_DIR) --parallel $(JOBS)
 
-furiosa-mlir-doc: configure
+docs furiosa-mlir-doc: configure
 	$(CMAKE) --build $(BUILD_DIR) --target mlir-doc --parallel $(JOBS)
 	cp $(BUILD_DIR)/docs/Furiosa/*.md $(CURDIR)/docs
 
