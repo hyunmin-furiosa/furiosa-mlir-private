@@ -298,31 +298,11 @@ def TucPrflushOp : TensorUnitCommandOp<"tuc.prflush"> {
 }
 
 //===----------------------------------------------------------------------===//
-// Task operations.
+// Shared dag type definitions
 //===----------------------------------------------------------------------===//
 
-class TaskOp<string mnemonic, list<Trait> traits = []>
-    : Furiosa_Op<mnemonic, traits> {}
-
-class TaskSfrOp<string mnemonic, list<Trait> traits = []>
-    : TaskOp<mnemonic, traits> {
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
-
-class TaskStaticSfrOp<string mnemonic, list<Trait> traits = []>
-    : TaskOp<mnemonic, traits> {
-  let results = (outs
-      SfrType:$sfr
-  );
-  let assemblyFormat = "attr-dict";
-}
-
-def TaskSfrSubFetchOp : TaskSfrOp<"task.sfr.sub_fetch"> {
-  let summary = "Special function register for sub fetch unit";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$sfr_addr,
+def Shared {
+  dag SfrSubFetch = (ins
       I64Attr:$base,
       I64Attr:$type_conversion,
       I64Attr:$num_zero_points,
@@ -340,13 +320,7 @@ def TaskSfrSubFetchOp : TaskSfrOp<"task.sfr.sub_fetch"> {
       I64Attr:$outer_dim1_chunk_size,
       ArrayAttr:$custom_snoop_bitmap
   );
-}
-
-def TaskSfrSubCommitOp : TaskSfrOp<"task.sfr.sub_commit"> {
-  let summary = "Special function register for sub commit unit";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$sfr_addr,
+  dag SfrSubCommit = (ins
       I64Attr:$mode,
       I64Attr:$packet_valid_count,
       I64Attr:$base,
@@ -356,31 +330,11 @@ def TaskSfrSubCommitOp : TaskSfrOp<"task.sfr.sub_commit"> {
       ArrayAttr:$strides,
       ArrayAttr:$slice_enable_bitmap
   );
-}
-
-def TaskSfrSubDataPathOp : TaskSfrOp<"task.sfr.sub_data_path"> {
-  let summary = "Special function register for sub data path unit";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$sfr_addr,
+  dag SfrSubDataPath = (ins
       I64Attr:$route
   );
-}
 
-def TaskStaticSfrSubDataPathOp
-    : TaskStaticSfrOp<"task.static.sfr.sub_data_path"> {
-  let summary = "Static special function register for sub data path unit";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$route
-  );
-}
-
-def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
-  let summary = "Direct memory access descriptor";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$desc_addr,
+  dag DmaDescriptor = (ins
       I64Attr:$opcode,
       I64Attr:$source_base,
       I64Attr:$destination_base,
@@ -389,12 +343,98 @@ def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
       ArrayAttr:$destination_limits,
       ArrayAttr:$destination_strides
   );
+}
+
+//===----------------------------------------------------------------------===//
+// Task operations.
+//===----------------------------------------------------------------------===//
+
+class TaskOp<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<mnemonic, traits> {}
+
+class TaskStaticSfrOp<string mnemonic, list<Trait> traits = []>
+    : TaskOp<mnemonic, traits> {
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
 
-def TaskStaticMtosfrOp : TaskOp<"task.static.mtosfr"> {
-  let summary = "Static memory to special register file";
+def TaskStaticSfrSubFetchOp : TaskStaticSfrOp<"task.static.sfr.sub_fetch"> {
+  let summary = "Static special function register for sub fetch unit";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$sfr_addr
+                       ),
+                       Shared.SfrSubFetch);
+}
+
+def TaskStaticSfrSubCommitOp : TaskStaticSfrOp<"task.static.sfr.sub_commit"> {
+  let summary = "Static special function register for sub commit unit";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$sfr_addr
+                       ),
+                       Shared.SfrSubCommit);
+}
+
+def TaskStaticSfrSubDataPathOp
+    : TaskStaticSfrOp<"task.static.sfr.sub_data_path"> {
+  let summary = "Static special function register for sub data path unit";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$sfr_addr
+                       ),
+                       Shared.SfrSubDataPath);
+}
+
+def TaskStaticDmaDescriptorOp : TaskOp<"task.static.dma_descriptor"> {
+  let summary = "Static direct memory access descriptor";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$desc_addr
+                       ),
+                       Shared.DmaDescriptor);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+class TaskSfrOp<string mnemonic, list<Trait> traits = []>
+    : TaskOp<mnemonic, traits> {
+  let results = (outs
+      SfrType:$sfr
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def TaskSfrSubFetchOp : TaskSfrOp<"task.sfr.sub_fetch"> {
+  let summary = "Special function register for sub fetch unit";
+  let description = [{}];
+  let arguments = Shared.SfrSubFetch;
+}
+
+def TaskSfrSubCommitOp : TaskSfrOp<"task.sfr.sub_commit"> {
+  let summary = "Special function register for sub commit unit";
+  let description = [{}];
+  let arguments = Shared.SfrSubCommit;
+}
+
+def TaskSfrSubDataPathOp : TaskSfrOp<"task.sfr.sub_data_path"> {
+  let summary = "Special function register for sub data path unit";
+  let description = [{}];
+  let arguments = Shared.SfrSubDataPath;
+}
+
+def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
+  let summary = "Direct memory access descriptor";
+  let description = [{}];
+  let arguments = Shared.DmaDescriptor;
+  let results = (outs
+      DmaDescriptorType:$desc
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def TaskMtosfrOp : TaskOp<"task.mtosfr"> {
+  let summary = "Dynamic memory to special register file";
   let description = [{}];
   let arguments = (ins
       SfrType:$sfr,
@@ -402,6 +442,19 @@ def TaskStaticMtosfrOp : TaskOp<"task.static.mtosfr"> {
   );
   let results = (outs);
   let assemblyFormat = "$sfr attr-dict";
+}
+
+def TaskDmawOp : TaskOp<"task.dmaw"> {
+  let summary = "Dynamic direct memory access wide";
+  let description = [{}];
+  let arguments = (ins
+      DmaDescriptorType:$desc,
+      I64Attr:$dma_tag_id,
+      I1Attr:$profile,
+      I64Attr:$profile_id
+  );
+  let results = (outs);
+  let assemblyFormat = "$desc attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD
