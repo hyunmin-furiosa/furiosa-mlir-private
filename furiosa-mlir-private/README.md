@@ -14,7 +14,7 @@ cd pert
 make pert
 ```
 
-Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [d497668](https://github.com/furiosa-ai/npu-virtual-platform/commit/d497668fffe08385aea4c08cf6d67a972157d489)
+Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [b95cd40](https://github.com/furiosa-ai/npu-virtual-platform/commit/b95cd408fc21d37389c19afa8111504160fb937e)
 ```shell
 make renegade DEFAULT_PERT_PATH=<device-runtime>/target/aarch64-unknown-none-softfloat/release/pert
 ```
