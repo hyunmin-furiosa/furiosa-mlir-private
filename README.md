@@ -3,12 +3,12 @@ The Furiosa-MLIR project aims to provide a compilation flow that converts arbitr
 
 ## Building Furiosa-MLIR
 
-Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [1e764eb](https://github.com/furiosa-ai/furiosa-torch/commit/1e764eba4b72d48ca1f86073f2016b83c525dc5e).
+Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [0aa4cdf](https://github.com/furiosa-ai/furiosa-torch/commit/0aa4cdf5f29483abdded2b4d956d54cd423d6716).
 ```shell
 cargo build --release
 ```
 
-Build pert in [device-runtime](https://github.com/furiosa-ai/device-runtime/) at [87dbcac](https://github.com/furiosa-ai/device-runtime/commit/87dbcacb2d64a33bdc21bfddef3471bda46a626a)
+Build pert in [device-runtime](https://github.com/furiosa-ai/device-runtime/) at [6d67166](https://github.com/furiosa-ai/device-runtime/commit/6d671664f6823967e69a8c49b729ad0ef6ff1f80)
 ```shell
 cd pert
 make pert
@@ -19,7 +19,7 @@ Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform)
 make renegade DEFAULT_PERT_PATH=<device-runtime>/target/aarch64-unknown-none-softfloat/release/pert
 ```
 
-Build [llvm-project](https://github.com/llvm/llvm-project) at [6d847b1](https://github.com/llvm/llvm-project/commit/6d847b1aada50d59c3e29f2e7eff779c0ee8182c).
+Build [llvm-project](https://github.com/llvm/llvm-project) at [dda4b96](https://github.com/llvm/llvm-project/commit/dda4b968e77e1bb2c319bf2d523de3b5c4ccbb23).
 ```shell
 cmake -G Ninja -B build llvm \
   -DCMAKE_BUILD_TYPE=Release \
