@@ -4,11 +4,16 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/CompilerInvocation.h"
 
+#include "lld/Common/Driver.h"
+
 #include "llvm/Object/ELFObjectFile.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
+
+// for linkObject
+LLD_HAS_DRIVER(elf)
 
 namespace mlir::furiosa {
 
@@ -44,13 +49,12 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
       filepath_out.str(); // -o filepath_out
   invocation->getHeaderSearchOpts().UseStandardSystemIncludes =
       false; // -nostdsysteminc
-  SmallVector<StringRef> includeDirs;
-  StringRef(CLANG_CROSS_COMPILE_INCLUDE_DIRS).split(includeDirs, ":");
-  for (auto includeDir : includeDirs) {
-    invocation->getHeaderSearchOpts().AddPath(includeDir,
-                                              clang::frontend::Angled, false,
-                                              true); // -I
-  } // -I
+  invocation->getHeaderSearchOpts().AddPath(
+      StringRef(CLANG_CROSS_COMPILE_INCLUDE), clang::frontend::Angled, false,
+      true); // -I
+  invocation->getHeaderSearchOpts().AddPath(
+      StringRef(CLANG_CROSS_COMPILE_LIBPE), clang::frontend::Angled, false,
+      true);                                          // -I
   invocation->getCodeGenOpts().OptimizationLevel = 3; // -O3
   invocation->getCodeGenOpts().setInlining(
       clang::CodeGenOptions::NormalInlining);
@@ -88,16 +92,24 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
 FailureOr<std::string> linkObject(llvm::Twine filepath) {
   llvm::Twine filepath_out = filepath + ".o";
 
-  // Link the object file
-  std::string command = "aarch64-none-elf-ld ";
-  command += "-T/root/furiosa-mlir/include/furiosa-mlir/Target/Furiosa/libpe/"
-             "linker.ld ";
-  command += filepath.str() + " ";
-  command += "-o " + filepath_out.str() + " ";
+  auto linker = std::string("-T") + CLANG_CROSS_COMPILE_LIBPE + "/linker.ld";
+  auto input = filepath.str();
+  auto output = std::string("-o") + filepath_out.str();
+  const char *args[] = {"ld.lld", linker.c_str(), input.c_str(), output.c_str(),
+                        "-e0"}; // -v to make verbose
+  lld::lldMain(args, llvm::outs(), llvm::errs(),
+               {{::lld::Gnu, &lld::elf::link}});
 
-  llvm::dbgs() << command << "\n";
-
-  system(command.c_str());
+  // TODO: Use lld::elf::LinkerDriver directly
+  // auto *context = new lld::elf::Ctx;
+  // lld::elf::Ctx &ctx = *context;
+  // lld::elf::LinkerDriver &driver = ctx.driver;
+  // driver.addFile(
+  //     "/root/furiosa-mlir/include/furiosa-mlir/Target/Furiosa/libpe/linker.ld");
+  // driver.addFile(filepath.str());
+  // ctx.arg.outputFile = filepath_out.str();
+  // driver.link(args);
+  // CommonLinkerContext::destroy();
 
   return filepath_out.str();
 }

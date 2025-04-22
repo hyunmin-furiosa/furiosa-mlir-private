@@ -29,8 +29,8 @@ class Furiosa_Attr<string name, string attrMnemonic, list<Trait> traits = [],
   let attrName = "furiosa."#attrMnemonic;
 }
 
-def Furiosa_AddressAttr : Furiosa_Attr<"Address", "address"> {
-  let summary = "Furiosa address attribute";
+def AddressAttr : Furiosa_Attr<"Address", "address"> {
+  let summary = "Address attribute";
   let description = [{}];
   let parameters = (ins
       "uint64_t":$address
@@ -38,8 +38,8 @@ def Furiosa_AddressAttr : Furiosa_Attr<"Address", "address"> {
   let assemblyFormat = "`<` $address `>`";
 }
 
-def Furiosa_TargetAttr : Furiosa_Attr<"Target", "target"> {
-  let summary = "Furiosa target attribute";
+def TargetAttr : Furiosa_Attr<"Target", "target"> {
+  let summary = "Target attribute";
   let description = [{}];
   let parameters = (ins
       "uint64_t":$npu,
@@ -60,10 +60,14 @@ class Furiosa_Type<string name, string typeMnemonic, list<Trait> traits = [],
   let typeName = "furiosa."#typeMnemonic;
 }
 
-def Furiosa_TensorType : Furiosa_Type<"Tensor", "tensor"> {
-  let summary = "Furiosa tensor type";
+def SfrType : Furiosa_Type<"Sfr", "sfr"> {
+  let summary = "Special function register type";
   let description = [{}];
-  let assemblyFormat = "";
+}
+
+def DmaDescriptorType : Furiosa_Type<"DmaDescriptor", "dma_descriptor"> {
+  let summary = "Direct memory access descriptor type";
+  let description = [{}];
 }
 
 #endif

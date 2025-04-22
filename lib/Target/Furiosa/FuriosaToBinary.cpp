@@ -1,3 +1,5 @@
+#include <stack>
+
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
@@ -9,6 +11,7 @@
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
 
+#include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Error.h"
@@ -30,17 +33,61 @@ struct ArmCEmitter {
   /// Emits operation 'op' or returns failure.
   LogicalResult emitOperation(Operation &op);
 
+  /// Return the existing or a new name for a Value.
+  StringRef getOrCreateName(Value val) {
+    if (!valueMapper.count(val)) {
+      valueMapper.insert(val, llvm::formatv("v{0}", ++valueInScopeCount.top()));
+    }
+    return *valueMapper.begin(val);
+  }
+
+  /// RAII helper function to manage entering/exiting C++ scopes.
+  struct Scope {
+    Scope(ArmCEmitter &emitter)
+        : valueMapperScope(emitter.valueMapper),
+          blockMapperScope(emitter.blockMapper), emitter(emitter) {
+      emitter.valueInScopeCount.push(emitter.valueInScopeCount.top());
+      emitter.labelInScopeCount.push(emitter.labelInScopeCount.top());
+    }
+    ~Scope() {
+      emitter.valueInScopeCount.pop();
+      emitter.labelInScopeCount.pop();
+    }
+
+  private:
+    llvm::ScopedHashTableScope<Value, std::string> valueMapperScope;
+    llvm::ScopedHashTableScope<Block *, std::string> blockMapperScope;
+    ArmCEmitter &emitter;
+  };
+
+  bool hasValueInScope(Value val) { return valueMapper.count(val); }
+
   /// Returns the output stream.
   raw_indented_ostream &ostream() { return os; };
 
 private:
+  using ValueMapper = llvm::ScopedHashTable<Value, std::string>;
+  using BlockMapper = llvm::ScopedHashTable<Block *, std::string>;
+
   /// Output stream to emit to.
   raw_indented_ostream os;
+
+  /// Map from value to name of C++ variable that contain the name.
+  ValueMapper valueMapper;
+
+  /// Map from block to name of C++ label.
+  BlockMapper blockMapper;
+
+  /// The number of values in the current scope. This is used to declare the
+  /// names of values in a scope.
+  std::stack<int64_t> valueInScopeCount;
+  std::stack<int64_t> labelInScopeCount;
 };
 
 static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
-  auto [command, registers] = *getCommand(*op);
   raw_indented_ostream &os = emitter.ostream();
+  auto [command, registers] = *getCommand(*op);
+
   for (auto [command_reg_idx, reg] : llvm::enumerate(registers)) {
     std::uint32_t general_reg_idx = command_reg_idx;
     os << "TUC_GENERAL_REGISTERS[" << general_reg_idx
@@ -55,9 +102,9 @@ static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
   return success();
 }
 
-static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
+static LogicalResult printStaticSfr(ArmCEmitter &emitter, Operation *op) {
   raw_indented_ostream &os = emitter.ostream();
-  auto [sfr_address, sfr_vector] = *getSfr(*op);
+  auto [sfr_address, sfr_vector] = *getStaticSfr(*op);
 
   os << "{\n";
   os.indent();
@@ -78,8 +125,26 @@ static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
   return success();
 }
 
-static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
-                                        furiosa::DmaDescriptorOp op) {
+static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
+  raw_indented_ostream &os = emitter.ostream();
+  auto sfr_vector = *getSfr(*op);
+
+  OpResult result = op->getResult(0);
+  os << "static const uint64_t " << emitter.getOrCreateName(result)
+     << "[] = { ";
+  for (auto it = sfr_vector.begin(); it != sfr_vector.end(); ++it) {
+    os << llvm::format_hex(*it, 0);
+    if (it != sfr_vector.end() - 1)
+      os << ", ";
+  }
+  os << " };\n";
+
+  return success();
+}
+
+static LogicalResult
+printStaticDmaDescriptor(ArmCEmitter &emitter,
+                         furiosa::TaskStaticDmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
@@ -129,6 +194,99 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   return success();
 }
 
+static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
+                                        furiosa::TaskDmaDescriptorOp op) {
+  raw_indented_ostream &os = emitter.ostream();
+  auto descriptor = *getDmaDescriptor(op);
+
+  OpResult result = op->getResult(0);
+  os << "static const struct dma_desc_t " << emitter.getOrCreateName(result)
+     << " = { ";
+  os << descriptor.opcode << ", ";
+  os << 0 << ", ";
+  os << llvm::format_hex(descriptor.source_base, 0) << ", ";
+  os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.source_limits[i];
+    if (i != DIMS - 1)
+      os << ", ";
+  }
+  os << " }, ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.source_strides[i];
+    if (i != DIMS - 1)
+      os << ", ";
+  }
+  os << " }, ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.destination_limits[i];
+    if (i != DIMS - 1)
+      os << ", ";
+  }
+  os << " }, ";
+  os << "{ ";
+  for (auto i = 0u; i < DIMS; i++) {
+    os << descriptor.destination_strides[i];
+    if (i != DIMS - 1)
+      os << ", ";
+  }
+  os << " } ";
+  os << "};\n";
+
+  return success();
+};
+
+static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter, TaskMtosfrOp op) {
+  raw_indented_ostream &os = emitter.ostream();
+  auto [command, registers] = *getCommand(*op.getOperation());
+
+  Value operand = op->getOperand(0);
+  auto operandName = emitter.getOrCreateName(operand);
+  os << "TUC_GENERAL_REGISTERS[0] = " << llvm::format_hex(registers[0].value, 0)
+     << " | ((uint64_t)" << operandName << " & 0xffffff)"
+     << " | (((sizeof(" << operandName << ") / sizeof(" << operandName
+     << "[0])) & 0xff) << 24)"
+     << ";\n";
+  command.setReg(0, 0);
+  os << "TUC_COMMAND_QUEUE_ENTRY[tail] = " << llvm::format_hex(command.value, 0)
+     << ";\n";
+  os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
+  os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
+  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
+  os << "\n";
+  return success();
+}
+
+static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, TaskDmawOp op) {
+  raw_indented_ostream &os = emitter.ostream();
+  auto [command, registers] = *getCommand(*op.getOperation());
+
+  Value operand = op->getOperand(0);
+  auto operandName = emitter.getOrCreateName(operand);
+  os << "TUC_GENERAL_REGISTERS[0] = " << llvm::format_hex(registers[0].value, 0)
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+  os << "TUC_GENERAL_REGISTERS[1] = " << llvm::format_hex(registers[1].value, 0)
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+  os << "TUC_GENERAL_REGISTERS[2] = " << llvm::format_hex(registers[2].value, 0)
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+  os << "TUC_GENERAL_REGISTERS[3] = " << llvm::format_hex(registers[3].value, 0)
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+  command.setReg(0, 0);
+  command.setReg(1, 1);
+  command.setReg(2, 2);
+  command.setReg(3, 3);
+  os << "TUC_COMMAND_QUEUE_ENTRY[tail] = " << llvm::format_hex(command.value, 0)
+     << ";\n";
+  os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
+  os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
+  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
+  os << "\n";
+  return success();
+}
+
 static LogicalResult printFunctionArgs(ArmCEmitter &emitter,
                                        Operation *functionOp,
                                        Region::BlockArgListType arguments) {
@@ -174,6 +332,7 @@ static LogicalResult printKernelFunction(func::FuncOp functionOp) {
     llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
     ArmCEmitter armCEmitter(fd_os);
     raw_indented_ostream &os = armCEmitter.ostream();
+    ArmCEmitter::Scope scope(armCEmitter);
 
     // Necessary defines and includes
     os << R"""(#include <stdalign.h>
@@ -465,7 +624,6 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
 static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::ReturnOp returnOp) {
   raw_indented_ostream &os = emitter.ostream();
-  os << "\n";
   os << "shared->trampoline(TRAMPOLINE_EXIT, 0, 0);";
   return success();
 }
@@ -480,7 +638,10 @@ static LogicalResult printOperation(ArmCEmitter &emitter, ModuleOp moduleOp) {
   return success();
 }
 
-ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {}
+ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {
+  valueInScopeCount.push(0);
+  labelInScopeCount.push(0);
+}
 
 LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   LogicalResult status =
@@ -491,21 +652,36 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           .Case<func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Case<furiosa::ItosfrOp, furiosa::RtosfrOp, furiosa::RtosfriOp,
-                furiosa::MtosfrOp, furiosa::StosfrOp, furiosa::SfrtosOp,
-                furiosa::StallOp, furiosa::ItosOp, furiosa::ItosiOp,
-                furiosa::StosOp, furiosa::StotabOp, furiosa::StotrfOp,
-                furiosa::StovrfOp, furiosa::ExecutionOp, furiosa::WaitOp,
-                furiosa::WaitiOp, furiosa::InterruptOp, furiosa::DmaOp,
-                furiosa::Dma1Op, furiosa::DmawOp, furiosa::ProfileOp,
-                furiosa::ProfileiOp, furiosa::PrflushOp>([&](auto op) {
+          .Case<
+              furiosa::TucItosfrOp, furiosa::TucRtosfrOp, furiosa::TucRtosfriOp,
+              furiosa::TucMtosfrOp, furiosa::TucStosfrOp, furiosa::TucSfrtosOp,
+              furiosa::TucStallOp, furiosa::TucItosOp, furiosa::TucItosiOp,
+              furiosa::TucStosOp, furiosa::TucStotabOp, furiosa::TucStotrfOp,
+              furiosa::TucStovrfOp, furiosa::TucExecutionOp, furiosa::TucWaitOp,
+              furiosa::TucWaitiOp, furiosa::TucInterruptOp, furiosa::TucDmaOp,
+              furiosa::TucDma1Op, furiosa::TucDmawOp, furiosa::TucProfileOp,
+              furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
-          .Case<furiosa::SubFetchUnitSfrOp, furiosa::SubCommitUnitSfrOp,
-                furiosa::SubDataPathUnitSfrOp>(
+          .Case<furiosa::TaskStaticSfrSubFetchOp,
+                furiosa::TaskStaticSfrSubFetchOp,
+                furiosa::TaskStaticSfrSubDataPathOp>(
+              [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
+          .Case<furiosa::TaskStaticSfrSubFetchOp,
+                furiosa::TaskStaticSfrSubFetchOp,
+                furiosa::TaskStaticSfrSubDataPathOp>(
+              [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
+          .Case<furiosa::TaskSfrSubFetchOp, furiosa::TaskSfrSubCommitOp,
+                furiosa::TaskSfrSubDataPathOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
-          .Case<furiosa::DmaDescriptorOp>(
+          .Case<furiosa::TaskStaticDmaDescriptorOp>(
+              [&](auto op) { return printStaticDmaDescriptor(*this, op); })
+          .Case<furiosa::TaskDmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
+          .Case<furiosa::TaskMtosfrOp>(
+              [&](auto op) { return printDynamicMtosfr(*this, op); })
+          .Case<furiosa::TaskDmawOp>(
+              [&](auto op) { return printDynamicDmaw(*this, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");
           });

@@ -17,12 +17,19 @@ include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
+include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 
 //===----------------------------------------------------------------------===//
 // Tensor unit commands.
 //===----------------------------------------------------------------------===//
 
-def Furiosa_ItosfrOp : Furiosa_TensorUnitCommand<"itosfr"> {
+class TensorUnitCommandOp<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<mnemonic, traits> {
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def TucItosfrOp : TensorUnitCommandOp<"tuc.itosfr"> {
   let summary = "Immediate to special register file";
   let description = [{}];
   let arguments = (ins
@@ -30,11 +37,9 @@ def Furiosa_ItosfrOp : Furiosa_TensorUnitCommand<"itosfr"> {
       I64Attr:$sfr_address,
       I64Attr:$size
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_RtosfrOp : Furiosa_TensorUnitCommand<"rtosfr"> {
+def TucRtosfrOp : TensorUnitCommandOp<"tuc.rtosfr"> {
   let summary = "Register to special register file";
   let description = [{}];
   let arguments = (ins
@@ -42,11 +47,9 @@ def Furiosa_RtosfrOp : Furiosa_TensorUnitCommand<"rtosfr"> {
       I64Attr:$sfr_address,
       I64Attr:$size
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_RtosfriOp : Furiosa_TensorUnitCommand<"rtosfri"> {
+def TucRtosfriOp : TensorUnitCommandOp<"tuc.rtosfri"> {
   let summary = "Register to special register file immediate";
   let description = [{}];
   let arguments = (ins
@@ -54,11 +57,9 @@ def Furiosa_RtosfriOp : Furiosa_TensorUnitCommand<"rtosfri"> {
       I32Attr:$log_size,
       I64Attr:$value
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_MtosfrOp : Furiosa_TensorUnitCommand<"mtosfr"> {
+def TucMtosfrOp : TensorUnitCommandOp<"tuc.mtosfr"> {
   let summary = "Memory to special register file";
   let description = [{}];
   let arguments = (ins
@@ -66,11 +67,9 @@ def Furiosa_MtosfrOp : Furiosa_TensorUnitCommand<"mtosfr"> {
       I64Attr:$size,
       I64Attr:$sfr_address
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_StosfrOp : Furiosa_TensorUnitCommand<"stosfr"> {
+def TucStosfrOp : TensorUnitCommandOp<"tuc.stosfr"> {
   let summary = "SRAM to special register file";
   let description = [{}];
   let arguments = (ins
@@ -85,11 +84,9 @@ def Furiosa_StosfrOp : Furiosa_TensorUnitCommand<"stosfr"> {
       I64Attr:$size,
       I64Attr:$words_per_packet
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_SfrtosOp : Furiosa_TensorUnitCommand<"sfrtos"> {
+def TucSfrtosOp : TensorUnitCommandOp<"tuc.sfrtos"> {
   let summary = "special register file to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -97,21 +94,17 @@ def Furiosa_SfrtosOp : Furiosa_TensorUnitCommand<"sfrtos"> {
       I64Attr:$commit_limit,
       I64Attr:$sfr_address
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_StallOp : Furiosa_TensorUnitCommand<"stall"> {
+def TucStallOp : TensorUnitCommandOp<"tuc.stall"> {
   let summary = "Stall";
   let description = [{}];
   let arguments = (ins
       I64Attr:$cycle
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_ItosOp : Furiosa_TensorUnitCommand<"itos"> {
+def TucItosOp : TensorUnitCommandOp<"tuc.itos"> {
   let summary = "Immediate to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -122,11 +115,9 @@ def Furiosa_ItosOp : Furiosa_TensorUnitCommand<"itos"> {
       I64Attr:$limit1,
       I64Attr:$stride1
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_ItosiOp : Furiosa_TensorUnitCommand<"itosi"> {
+def TucItosiOp : TensorUnitCommandOp<"tuc.itosi"> {
   let summary = "Immediate to SRAM immediate";
   let description = [{}];
   let arguments = (ins
@@ -134,11 +125,9 @@ def Furiosa_ItosiOp : Furiosa_TensorUnitCommand<"itosi"> {
       I64Attr:$address_end,
       I64Attr:$value
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_StosOp : Furiosa_TensorUnitCommand<"stos"> {
+def TucStosOp : TensorUnitCommandOp<"tuc.stos"> {
   let summary = "SRAM to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -149,11 +138,9 @@ def Furiosa_StosOp : Furiosa_TensorUnitCommand<"stos"> {
       I64Attr:$dim1_log_size,
       I64Attr:$words_per_packet
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_StotabOp : Furiosa_TensorUnitCommand<"stotab"> {
+def TucStotabOp : TensorUnitCommandOp<"tuc.stotab"> {
   let summary = "SRAM to table";
   let description = [{}];
   let arguments = (ins
@@ -167,11 +154,9 @@ def Furiosa_StotabOp : Furiosa_TensorUnitCommand<"stotab"> {
       I64Attr:$dim1_log_size,
       I64Attr:$words_per_packet
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_StotrfOp : Furiosa_TensorUnitCommand<"stotrf"> {
+def TucStotrfOp : TensorUnitCommandOp<"tuc.stotrf"> {
   let summary = "SRAM to tensor register file";
   let description = [{}];
   let arguments = (ins
@@ -193,11 +178,9 @@ def Furiosa_StotrfOp : Furiosa_TensorUnitCommand<"stotrf"> {
       I64Attr:$flits_per_period,
       I64Attr:$valid_flits_per_period
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_StovrfOp : Furiosa_TensorUnitCommand<"stovrf"> {
+def TucStovrfOp : TensorUnitCommandOp<"tuc.stovrf"> {
   let summary = "SRAM to vector register file";
   let description = [{}];
   let arguments = (ins
@@ -214,11 +197,9 @@ def Furiosa_StovrfOp : Furiosa_TensorUnitCommand<"stovrf"> {
       I64Attr:$write_row_count,
       I64Attr:$write_row_stride
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_ExecutionOp : Furiosa_TensorUnitCommand<"exec"> {
+def TucExecutionOp : TensorUnitCommandOp<"tuc.exec"> {
   let summary = "Tensor unit execution";
   let description = [{}];
   let arguments = (ins
@@ -226,11 +207,9 @@ def Furiosa_ExecutionOp : Furiosa_TensorUnitCommand<"exec"> {
       I1Attr:$context_id,
       I1Attr:$target_context
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_WaitOp : Furiosa_TensorUnitCommand<"wait"> {
+def TucWaitOp : TensorUnitCommandOp<"tuc.wait"> {
   let summary = "Wait";
   let description = [{}];
   let arguments = (ins
@@ -238,11 +217,9 @@ def Furiosa_WaitOp : Furiosa_TensorUnitCommand<"wait"> {
       I1Attr:$type,
       I1Attr:$target_context
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_WaitiOp : Furiosa_TensorUnitCommand<"waiti"> {
+def TucWaitiOp : TensorUnitCommandOp<"tuc.waiti"> {
   let summary = "Wait interrupt";
   let description = [{}];
   let arguments = (ins
@@ -250,19 +227,15 @@ def Furiosa_WaitiOp : Furiosa_TensorUnitCommand<"waiti"> {
       I1Attr:$type,
       I1Attr:$target_context
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_InterruptOp : Furiosa_TensorUnitCommand<"interrupt"> {
+def TucInterruptOp : TensorUnitCommandOp<"tuc.interrupt"> {
   let summary = "SRAM to tensor register file";
   let description = [{}];
   let arguments = (ins);
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_DmaOp : Furiosa_TensorUnitCommand<"dma"> {
+def TucDmaOp : TensorUnitCommandOp<"tuc.dma"> {
   let summary = "Direct memory access";
   let description = [{}];
   let arguments = (ins
@@ -274,11 +247,9 @@ def Furiosa_DmaOp : Furiosa_TensorUnitCommand<"dma"> {
       I1Attr:$profile,
       I64Attr:$profile_id
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_Dma1Op : Furiosa_TensorUnitCommand<"dma1"> {
+def TucDma1Op : TensorUnitCommandOp<"tuc.dma1"> {
   let summary = "Direct memory access 1";
   let description = [{}];
   let arguments = (ins
@@ -288,11 +259,9 @@ def Furiosa_Dma1Op : Furiosa_TensorUnitCommand<"dma1"> {
       I1Attr:$profile,
       I64Attr:$profile_id
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_DmawOp : Furiosa_TensorUnitCommand<"dmaw"> {
+def TucDmawOp : TensorUnitCommandOp<"tuc.dmaw"> {
   let summary = "Direct memory access wide";
   let description = [{}];
   let arguments = (ins
@@ -304,55 +273,36 @@ def Furiosa_DmawOp : Furiosa_TensorUnitCommand<"dmaw"> {
       I1Attr:$profile,
       I64Attr:$profile_id
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_ProfileOp : Furiosa_TensorUnitCommand<"profile"> {
+def TucProfileOp : TensorUnitCommandOp<"tuc.profile"> {
   let summary = "Profile";
   let description = [{}];
   let arguments = (ins
       I64Attr:$profile_id
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_ProfileiOp : Furiosa_TensorUnitCommand<"profilei"> {
+def TucProfileiOp : TensorUnitCommandOp<"tuc.profilei"> {
   let summary = "Profile immediate";
   let description = [{}];
   let arguments = (ins
       I64Attr:$profile_id
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
-def Furiosa_PrflushOp : Furiosa_TensorUnitCommand<"prflush"> {
+def TucPrflushOp : TensorUnitCommandOp<"tuc.prflush"> {
   let summary = "Profile flush";
   let description = [{}];
   let arguments = (ins);
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
 }
 
 //===----------------------------------------------------------------------===//
-// Task binary helpers.
+// Shared dag type definitions
 //===----------------------------------------------------------------------===//
 
-def Furiosa_SfrOp : Furiosa_TensorUnitCommand<"sfr"> {
-  let summary = "Special function register";
-  let description = [{}];
-  let arguments = (ins);
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
-
-def Furiosa_SubFetchUnitSfrOp : Furiosa_TensorUnitCommand<"subfetchunit_sfr"> {
-  let summary = "Sub fetch unit special function register";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$sfr_addr,
+def Shared {
+  dag SfrSubFetch = (ins
       I64Attr:$base,
       I64Attr:$type_conversion,
       I64Attr:$num_zero_points,
@@ -370,16 +320,7 @@ def Furiosa_SubFetchUnitSfrOp : Furiosa_TensorUnitCommand<"subfetchunit_sfr"> {
       I64Attr:$outer_dim1_chunk_size,
       ArrayAttr:$custom_snoop_bitmap
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
-
-def Furiosa_SubCommitUnitSfrOp
-    : Furiosa_TensorUnitCommand<"subcommitunit_sfr"> {
-  let summary = "Sub commit unit special function register";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$sfr_addr,
+  dag SfrSubCommit = (ins
       I64Attr:$mode,
       I64Attr:$packet_valid_count,
       I64Attr:$base,
@@ -389,27 +330,11 @@ def Furiosa_SubCommitUnitSfrOp
       ArrayAttr:$strides,
       ArrayAttr:$slice_enable_bitmap
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
-
-def Furiosa_SubDataPathUnitSfrOp
-    : Furiosa_TensorUnitCommand<"subdatapathunit_sfr"> {
-  let summary = "Sub data path unit special function register";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$sfr_addr,
+  dag SfrSubDataPath = (ins
       I64Attr:$route
   );
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
 
-def Furiosa_DmaDescriptorOp : Furiosa_TensorUnitCommand<"dma_descriptor"> {
-  let summary = "Direct memory access descriptor";
-  let description = [{}];
-  let arguments = (ins
-      I64Attr:$desc_addr,
+  dag DmaDescriptor = (ins
       I64Attr:$opcode,
       I64Attr:$source_base,
       I64Attr:$destination_base,
@@ -418,8 +343,118 @@ def Furiosa_DmaDescriptorOp : Furiosa_TensorUnitCommand<"dma_descriptor"> {
       ArrayAttr:$destination_limits,
       ArrayAttr:$destination_strides
   );
+}
+
+//===----------------------------------------------------------------------===//
+// Task operations.
+//===----------------------------------------------------------------------===//
+
+class TaskOp<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<mnemonic, traits> {}
+
+class TaskStaticSfrOp<string mnemonic, list<Trait> traits = []>
+    : TaskOp<mnemonic, traits> {
   let results = (outs);
   let assemblyFormat = "attr-dict";
+}
+
+def TaskStaticSfrSubFetchOp : TaskStaticSfrOp<"task.static.sfr.sub_fetch"> {
+  let summary = "Static special function register for sub fetch unit";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$sfr_addr
+                       ),
+                       Shared.SfrSubFetch);
+}
+
+def TaskStaticSfrSubCommitOp : TaskStaticSfrOp<"task.static.sfr.sub_commit"> {
+  let summary = "Static special function register for sub commit unit";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$sfr_addr
+                       ),
+                       Shared.SfrSubCommit);
+}
+
+def TaskStaticSfrSubDataPathOp
+    : TaskStaticSfrOp<"task.static.sfr.sub_data_path"> {
+  let summary = "Static special function register for sub data path unit";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$sfr_addr
+                       ),
+                       Shared.SfrSubDataPath);
+}
+
+def TaskStaticDmaDescriptorOp : TaskOp<"task.static.dma_descriptor"> {
+  let summary = "Static direct memory access descriptor";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$desc_addr
+                       ),
+                       Shared.DmaDescriptor);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+class TaskSfrOp<string mnemonic, list<Trait> traits = []>
+    : TaskOp<mnemonic, traits> {
+  let results = (outs
+      SfrType:$sfr
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def TaskSfrSubFetchOp : TaskSfrOp<"task.sfr.sub_fetch"> {
+  let summary = "Special function register for sub fetch unit";
+  let description = [{}];
+  let arguments = Shared.SfrSubFetch;
+}
+
+def TaskSfrSubCommitOp : TaskSfrOp<"task.sfr.sub_commit"> {
+  let summary = "Special function register for sub commit unit";
+  let description = [{}];
+  let arguments = Shared.SfrSubCommit;
+}
+
+def TaskSfrSubDataPathOp : TaskSfrOp<"task.sfr.sub_data_path"> {
+  let summary = "Special function register for sub data path unit";
+  let description = [{}];
+  let arguments = Shared.SfrSubDataPath;
+}
+
+def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
+  let summary = "Direct memory access descriptor";
+  let description = [{}];
+  let arguments = Shared.DmaDescriptor;
+  let results = (outs
+      DmaDescriptorType:$desc
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def TaskMtosfrOp : TaskOp<"task.mtosfr"> {
+  let summary = "Dynamic memory to special register file";
+  let description = [{}];
+  let arguments = (ins
+      SfrType:$sfr,
+      I64Attr:$sfr_address
+  );
+  let results = (outs);
+  let assemblyFormat = "$sfr attr-dict";
+}
+
+def TaskDmawOp : TaskOp<"task.dmaw"> {
+  let summary = "Dynamic direct memory access wide";
+  let description = [{}];
+  let arguments = (ins
+      DmaDescriptorType:$desc,
+      I64Attr:$dma_tag_id,
+      I1Attr:$profile,
+      I64Attr:$profile_id
+  );
+  let results = (outs);
+  let assemblyFormat = "$desc attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD
