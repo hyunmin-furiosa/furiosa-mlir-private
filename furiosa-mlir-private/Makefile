@@ -14,6 +14,7 @@ TARGETS := $(shell find . -path ./build -prune -type f -o -iname "*.h" -o -iname
 # CMake flags
 FLAGS := -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 FLAGS += -DCLANG_DIR="$(LLVM_BUILD_DIR)/lib/cmake/clang/"
+FLAGS += -DLLD_DIR="$(LLVM_BUILD_DIR)/lib/cmake/lld/"
 FLAGS += -DLLVM_DIR="$(LLVM_BUILD_DIR)/lib/cmake/llvm/"
 FLAGS += -DMLIR_DIR="$(LLVM_BUILD_DIR)/lib/cmake/mlir/"
 FLAGS += -DLLVM_BUILD_DIR="$(LLVM_BUILD_DIR)"
@@ -35,6 +36,10 @@ FLAGS += -DMLIR_ENABLE_BINDINGS_PYTHON=OFF
 
 furiosa-mlir: configure
 	$(CMAKE) --build $(BUILD_DIR) --parallel $(JOBS)
+
+docs furiosa-mlir-doc: configure
+	$(CMAKE) --build $(BUILD_DIR) --target mlir-doc --parallel $(JOBS)
+	cp $(BUILD_DIR)/docs/Furiosa/*.md $(CURDIR)/docs
 
 configure:
 	mkdir -p $(BUILD_DIR)

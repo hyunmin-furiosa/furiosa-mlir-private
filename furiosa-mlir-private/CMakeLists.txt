@@ -104,9 +104,11 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR OR FURIOSA_MLIR_OUT_OF_TRE
   #-------------------------------------------------------------------------------
 
   find_package(Clang REQUIRED CONFIG PATHS ${CLANG_DIR} NO_DEFAULT_PATH)
+  find_package(LLD REQUIRED CONFIG PATHS ${LLD_DIR} NO_DEFAULT_PATH)
   find_package(LLVM REQUIRED CONFIG PATHS ${LLVM_DIR} NO_DEFAULT_PATH)
   find_package(MLIR REQUIRED CONFIG PATHS ${MLIR_DIR} NO_DEFAULT_PATH)
   message(STATUS "Using ClangConfig.cmake in: ${CLANG_DIR}")
+  message(STATUS "Using LLDConfig.cmake in: ${LLD_DIR}")
   message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
   message(STATUS "Using MLIRConfig.cmake in: ${MLIR_DIR}")
 
@@ -125,10 +127,10 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR OR FURIOSA_MLIR_OUT_OF_TRE
   set(LLVM_LIT_ARGS "${LIT_ARGS_DEFAULT}" CACHE STRING "Default options for lit")
 
   list(APPEND CMAKE_MODULE_PATH "${CLANG_CMAKE_DIR}")
+  list(APPEND CMAKE_MODULE_PATH "${LLD_CMAKE_DIR}")
   list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
   list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
   include(TableGen)
-  include(AddClang)
   include(AddLLVM)
   include(AddMLIR)
   include(HandleLLVMOptions)
@@ -152,11 +154,13 @@ else()
   set(MLIR_INCLUDE_DIRS "${MLIR_INCLUDE_DIR};${MLIR_GENERATED_INCLUDE_DIR}")
 endif()
 
+set(MLIR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(FURIOSA_MLIR_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(FURIOSA_MLIR_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 message(STATUS "Building furiosa-mlir project at ${FURIOSA_MLIR_SOURCE_DIR} (into ${FURIOSA_MLIR_BINARY_DIR})")
 
 include_directories(${CLANG_INCLUDE_DIRS})
+include_directories(${LLD_INCLUDE_DIRS})
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${MLIR_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -186,7 +190,6 @@ list(APPEND CMAKE_MODULE_PATH ${LLVM_MAIN_SRC_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_tools/cmake)
 
 include(TableGen)
-include(AddClang)
 include(AddLLVM)
 include(AddMLIR)
 include(AddMLIRPython)

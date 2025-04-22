@@ -15,15 +15,12 @@ include "mlir/IR/OpBase.td"
 def Furiosa_Dialect : Dialect {
   let name = "furiosa";
   let cppNamespace = "::mlir::furiosa";
-  let description = [{}];
+  let description = [{Furiosa dialect}];
   let useDefaultTypePrinterParser = 1;
   let useDefaultAttributePrinterParser = 1;
 }
 
 class Furiosa_Op<string mnemonic, list<Trait> traits = []>
     : Op<Furiosa_Dialect, mnemonic, traits> {}
-
-class Furiosa_TensorUnitCommand<string mnemonic, list<Trait> traits = []>
-    : Furiosa_Op<mnemonic, traits> {}
 
 #endif // FURIOSA_BASE_TD
