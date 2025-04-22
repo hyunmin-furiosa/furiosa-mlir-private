@@ -10,6 +10,188 @@ Syntax:
 operation ::= `furiosa.task.dma_descriptor` attr-dict
 ```
 
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>source_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `desc` | Direct memory access descriptor type |
+
+
+### `furiosa.task.dmaw` (furiosa::TaskDmawOp)
+
+_Dynamic direct memory access wide_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.dmaw` $desc attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dma_tag_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>profile</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
+<tr><td><code>profile_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `desc` | Direct memory access descriptor type |
+
+
+### `furiosa.task.mtosfr` (furiosa::TaskMtosfrOp)
+
+_Dynamic memory to special register file_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.mtosfr` $sfr attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.sub_commit` (furiosa::TaskSfrSubCommitOp)
+
+_Special function register for sub commit unit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.sub_commit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>packet_valid_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>commit_data</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.sub_data_path` (furiosa::TaskSfrSubDataPathOp)
+
+_Special function register for sub data path unit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.sub_data_path` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>route</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.sub_fetch` (furiosa::TaskSfrSubFetchOp)
+
+_Special function register for sub fetch unit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.sub_fetch` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>num_zero_points</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zero_point0</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zero_point1</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>topology</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_slice_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim0_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.static.dma_descriptor` (furiosa::TaskStaticDmaDescriptorOp)
+
+_Static direct memory access descriptor_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.dma_descriptor` attr-dict
+```
+
 #### Attributes:
 
 <table>
@@ -25,14 +207,14 @@ operation ::= `furiosa.task.dma_descriptor` attr-dict
 </table>
 
 
-### `furiosa.task.sfr.sub_commit` (furiosa::TaskSfrSubCommitOp)
+### `furiosa.task.static.sfr.sub_commit` (furiosa::TaskStaticSfrSubCommitOp)
 
-_Special function register for sub commit unit_
+_Static special function register for sub commit unit_
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.sfr.sub_commit` attr-dict
+operation ::= `furiosa.task.static.sfr.sub_commit` attr-dict
 ```
 
 #### Attributes:
@@ -51,14 +233,14 @@ operation ::= `furiosa.task.sfr.sub_commit` attr-dict
 </table>
 
 
-### `furiosa.task.sfr.sub_data_path` (furiosa::TaskSfrSubDataPathOp)
+### `furiosa.task.static.sfr.sub_data_path` (furiosa::TaskStaticSfrSubDataPathOp)
 
-_Special function register for sub data path unit_
+_Static special function register for sub data path unit_
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.sfr.sub_data_path` attr-dict
+operation ::= `furiosa.task.static.sfr.sub_data_path` attr-dict
 ```
 
 #### Attributes:
@@ -70,14 +252,14 @@ operation ::= `furiosa.task.sfr.sub_data_path` attr-dict
 </table>
 
 
-### `furiosa.task.sfr.sub_fetch` (furiosa::TaskSfrSubFetchOp)
+### `furiosa.task.static.sfr.sub_fetch` (furiosa::TaskStaticSfrSubFetchOp)
 
-_Special function register for sub fetch unit_
+_Static special function register for sub fetch unit_
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.sfr.sub_fetch` attr-dict
+operation ::= `furiosa.task.static.sfr.sub_fetch` attr-dict
 ```
 
 #### Attributes:
@@ -102,56 +284,6 @@ operation ::= `furiosa.task.sfr.sub_fetch` attr-dict
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>custom_snoop_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
 </table>
-
-
-### `furiosa.task.static.mtosfr` (furiosa::TaskStaticMtosfrOp)
-
-_Static memory to special register file_
-
-Syntax:
-
-```
-operation ::= `furiosa.task.static.mtosfr` $sfr attr-dict
-```
-
-#### Attributes:
-
-<table>
-<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>sfr_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-</table>
-
-#### Operands:
-
-| Operand | Description |
-| :-----: | ----------- |
-| `sfr` | Special function register type |
-
-
-### `furiosa.task.static.sfr.sub_data_path` (furiosa::TaskStaticSfrSubDataPathOp)
-
-_Static special function register for sub data path unit_
-
-Syntax:
-
-```
-operation ::= `furiosa.task.static.sfr.sub_data_path` attr-dict
-```
-
-Interfaces: `InferTypeOpInterface`
-
-#### Attributes:
-
-<table>
-<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>route</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-</table>
-
-#### Results:
-
-| Result | Description |
-| :----: | ----------- |
-| `sfr` | Special function register type |
 
 
 ### `furiosa.tuc.dma1` (furiosa::TucDma1Op)
