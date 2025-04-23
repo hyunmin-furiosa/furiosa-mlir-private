@@ -184,9 +184,9 @@ printStaticDmaDescriptor(ArmCEmitter &emitter,
   }
   os << " } ";
   os << "};\n";
-  os << "memcpy((void *)" << llvm::format_hex(op.getDescAddr(), 0)
+  os << "memcpy((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
      << ", &_desc, sizeof(struct dma_desc_t));\n";
-  os << "flush_cache((void *)" << llvm::format_hex(op.getDescAddr(), 0)
+  os << "flush_cache((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
      << ", sizeof(struct dma_desc_t));\n";
   os.unindent();
   os << "}\n";
@@ -663,16 +663,12 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
               furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
-          .Case<furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubDataPathOp>(
+          .Case<furiosa::TaskStaticSfrSubFetchUnitOp,
+                furiosa::TaskStaticSfrSubCommitUnitOp,
+                furiosa::TaskStaticSfrSubDataPathUnitOp>(
               [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubDataPathOp>(
-              [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskSfrSubFetchOp, furiosa::TaskSfrSubCommitOp,
-                furiosa::TaskSfrSubDataPathOp>(
+          .Case<furiosa::TaskSfrSubFetchUnitOp, furiosa::TaskSfrSubCommitUnitOp,
+                furiosa::TaskSfrSubDataPathUnitOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
           .Case<furiosa::TaskStaticDmaDescriptorOp>(
               [&](auto op) { return printStaticDmaDescriptor(*this, op); })
