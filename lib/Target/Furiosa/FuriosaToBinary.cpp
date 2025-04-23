@@ -184,9 +184,9 @@ printStaticDmaDescriptor(ArmCEmitter &emitter,
   }
   os << " } ";
   os << "};\n";
-  os << "memcpy((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
+  os << "memcpy((void *)" << llvm::format_hex(op.getDescAddr(), 0)
      << ", &_desc, sizeof(struct dma_desc_t));\n";
-  os << "flush_cache((void *)" << llvm::format_hex(op.getSfrAddr(), 0)
+  os << "flush_cache((void *)" << llvm::format_hex(op.getDescAddr(), 0)
      << ", sizeof(struct dma_desc_t));\n";
   os.unindent();
   os << "}\n";

@@ -306,9 +306,9 @@ class NamedDag<string m, dag d> {
   dag data = d;
 }
 
-defset list<NamedDag> Shared = {
+defset list<NamedDag> Sfr = {
   def SfrMainFetchUnit
-      : NamedDag<"sfr.main_fetch_unit",
+      : NamedDag<"main_fetch_unit",
                  (ins
                      I64Attr:$fetch_mode,
                      I64Attr:$num_zero_points,
@@ -347,143 +347,142 @@ defset list<NamedDag> Shared = {
                      ArrayAttr:$custom_snoop_bitmap_mask
                  )>;
 
-  def SfrMainCommitUnit
-      : NamedDag<"sfr.main_commit_unit", (ins
-                                             I64Attr:$type_conversion,
-                                             I64Attr:$base,
-                                             I64Attr:$commit_in_size,
-                                             I64Attr:$commit_size,
-                                             ArrayAttr:$limits,
-                                             ArrayAttr:$strides,
-                                             ArrayAttr:$slice_enable_bitmap_mask
-                                         )>;
-
-  def SfrDotProductEngine : NamedDag<"sfr.dot_product_engine",
-                                     (ins
-                                         I64Attr:$reg_indexer_base,
-                                         I64Attr:$acc_indexer_base,
-                                         I64Attr:$flits_per_input,
-                                         I64Attr:$feed_input_transpose,
-                                         I64Attr:$initial_shift_dim,
-                                         I64Attr:$shift_stride,
-                                         I64Attr:$pop_dim,
-                                         I64Attr:$shift_dim,
-                                         I64Attr:$channel_config,
-                                         I64Attr:$feed_data_type,
-                                         ArrayAttr:$initial_shift,
-                                         ArrayAttr:$iter_seq_limits,
-                                         ArrayAttr:$reg_indexer_strides,
-                                         ArrayAttr:$acc_indexer_strides,
-                                         I64Attr:$acc_limit,
-                                         I64Attr:$acc_cols,
-                                         I64Attr:$acc_reset,
-                                         I64Attr:$output_major,
-                                         I64Attr:$acc_init_value,
-                                         I64Attr:$mac_tree_operation,
-                                         I64Attr:$mac_tree_depth,
-                                         I64Attr:$mac_type,
-                                         I64Attr:$mac_rows,
-                                         I64Attr:$fp_ieee_nan_multiplication,
-                                         I64Attr:$fxp_shift_rounding_mode,
-                                         I64Attr:$data_type,
-                                         I64Attr:$reg_read_log_size,
-                                         I64Attr:$reg_read_mode,
-                                         I64Attr:$reg_read_cache_mode
+  def MainCommitUnit
+      : NamedDag<"main_commit_unit", (ins
+                                         I64Attr:$type_conversion,
+                                         I64Attr:$base,
+                                         I64Attr:$commit_in_size,
+                                         I64Attr:$commit_size,
+                                         ArrayAttr:$limits,
+                                         ArrayAttr:$strides,
+                                         ArrayAttr:$slice_enable_bitmap_mask
                                      )>;
 
-  def SfrTransposeEngine
-      : NamedDag<"sfr.transpose_engine", (ins
-                                             I64Attr:$fetch_in_cols,
-                                             I64Attr:$fetch_in_rows,
-                                             I64Attr:$fetch_out_rows,
-                                             I64Attr:$data_type,
-                                             I64Attr:$fetch_in_width_shift
-                                         )>;
-
-  def SfrMainDataPathUnit
-      : NamedDag<"sfr.main_data_path_unit", (ins
-                                                I64Attr:$main_context,
-                                                I64Attr:$channel_config
-                                            )>;
-
-  def SfrSubFetchUnit
-      : NamedDag<"sfr.sub_fetch_unit", (ins
-                                           I64Attr:$base,
-                                           I64Attr:$type_conversion,
-                                           I64Attr:$num_zero_points,
-                                           I64Attr:$zero_point0,
-                                           I64Attr:$zero_point1,
-                                           ArrayAttr:$limits,
-                                           ArrayAttr:$strides,
-                                           I64Attr:$flit_count,
-                                           I64Attr:$words_per_packet,
-                                           I64Attr:$topology,
-                                           I64Attr:$outer_slice_log_size,
-                                           I64Attr:$outer_dim0_log_size,
-                                           I64Attr:$outer_dim1_log_size,
-                                           I64Attr:$outer_dim0_chunk_size,
-                                           I64Attr:$outer_dim1_chunk_size,
-                                           ArrayAttr:$custom_snoop_bitmap_mask
+  def DotProductEngine
+      : NamedDag<"dot_product_engine", (ins
+                                           I64Attr:$reg_indexer_base,
+                                           I64Attr:$acc_indexer_base,
+                                           I64Attr:$flits_per_input,
+                                           I64Attr:$feed_input_transpose,
+                                           I64Attr:$initial_shift_dim,
+                                           I64Attr:$shift_stride,
+                                           I64Attr:$pop_dim,
+                                           I64Attr:$shift_dim,
+                                           I64Attr:$channel_config,
+                                           I64Attr:$feed_data_type,
+                                           ArrayAttr:$initial_shift,
+                                           ArrayAttr:$iter_seq_limits,
+                                           ArrayAttr:$reg_indexer_strides,
+                                           ArrayAttr:$acc_indexer_strides,
+                                           I64Attr:$acc_limit,
+                                           I64Attr:$acc_cols,
+                                           I64Attr:$acc_reset,
+                                           I64Attr:$output_major,
+                                           I64Attr:$acc_init_value,
+                                           I64Attr:$mac_tree_operation,
+                                           I64Attr:$mac_tree_depth,
+                                           I64Attr:$mac_type,
+                                           I64Attr:$mac_rows,
+                                           I64Attr:$fp_ieee_nan_multiplication,
+                                           I64Attr:$fxp_shift_rounding_mode,
+                                           I64Attr:$data_type,
+                                           I64Attr:$reg_read_log_size,
+                                           I64Attr:$reg_read_mode,
+                                           I64Attr:$reg_read_cache_mode
                                        )>;
 
-  def SfrSubCommitUnit
-      : NamedDag<"sfr.sub_commit_unit", (ins
-                                            I64Attr:$mode,
-                                            I64Attr:$packet_valid_count,
-                                            I64Attr:$base,
-                                            I64Attr:$commit_in_size,
-                                            I64Attr:$commit_data,
-                                            ArrayAttr:$limits,
-                                            ArrayAttr:$strides,
-                                            ArrayAttr:$slice_enable_bitmap_mask
+  def TransposeEngine
+      : NamedDag<"transpose_engine", (ins
+                                         I64Attr:$fetch_in_cols,
+                                         I64Attr:$fetch_in_rows,
+                                         I64Attr:$fetch_out_rows,
+                                         I64Attr:$data_type,
+                                         I64Attr:$fetch_in_width_shift
+                                     )>;
+
+  def MainDataPathUnit
+      : NamedDag<"main_data_path_unit", (ins
+                                            I64Attr:$main_context,
+                                            I64Attr:$channel_config
                                         )>;
 
-  def SfrTensorRegisterFile
-      : NamedDag<"sfr.tensor_register_file",
-                 (ins
-                     I64Attr:$write_interleaving_flit_count,
-                     I64Attr:$write_mode,
-                     I64Attr:$write_mac_rows,
-                     I64Attr:$write_skip_flit_count,
-                     I64Attr:$write_row_base,
-                     I64Attr:$write_mac_row_interleaving,
-                     I64Attr:$write_row_count,
-                     I64Attr:$write_flits_per_period,
-                     I64Attr:$write_valid_flits_per_period
-                 )>;
-
-  def SfrVectorRegisterFile
-      : NamedDag<"sfr.vector_register_file", (ins
-                                                 I64Attr:$write_row_base,
-                                                 I64Attr:$write_row_count,
-                                                 I64Attr:$write_skip_flit_count,
-                                                 I64Attr:$write_row_stride
-                                             )>;
-
-  def SfrRegisterConfigUnit
-      : NamedDag<"sfr.register_config_unit", (ins
-                                                 I64Attr:$base,
-                                                 I64Attr:$size,
-                                                 I64Attr:$access_type,
-                                                 I64Attr:$words_per_input,
-                                                 I64Attr:$data_offset
-                                             )>;
-
-  def SfrSubDataPathUnit : NamedDag<"sfr.sub_data_path_unit", (ins
-                                                                  I64Attr:$route
-                                                              )>;
-
-  def DmaDescriptor
-      : NamedDag<"dma_descriptor", (ins
-                                       I64Attr:$opcode,
-                                       I64Attr:$source_base,
-                                       I64Attr:$destination_base,
-                                       ArrayAttr:$source_limits,
-                                       ArrayAttr:$source_strides,
-                                       ArrayAttr:$destination_limits,
-                                       ArrayAttr:$destination_strides
+  def SubFetchUnit
+      : NamedDag<"sub_fetch_unit", (ins
+                                       I64Attr:$base,
+                                       I64Attr:$type_conversion,
+                                       I64Attr:$num_zero_points,
+                                       I64Attr:$zero_point0,
+                                       I64Attr:$zero_point1,
+                                       ArrayAttr:$limits,
+                                       ArrayAttr:$strides,
+                                       I64Attr:$flit_count,
+                                       I64Attr:$words_per_packet,
+                                       I64Attr:$topology,
+                                       I64Attr:$outer_slice_log_size,
+                                       I64Attr:$outer_dim0_log_size,
+                                       I64Attr:$outer_dim1_log_size,
+                                       I64Attr:$outer_dim0_chunk_size,
+                                       I64Attr:$outer_dim1_chunk_size,
+                                       ArrayAttr:$custom_snoop_bitmap_mask
                                    )>;
+
+  def SubCommitUnit
+      : NamedDag<"sub_commit_unit", (ins
+                                        I64Attr:$mode,
+                                        I64Attr:$packet_valid_count,
+                                        I64Attr:$base,
+                                        I64Attr:$commit_in_size,
+                                        I64Attr:$commit_data,
+                                        ArrayAttr:$limits,
+                                        ArrayAttr:$strides,
+                                        ArrayAttr:$slice_enable_bitmap_mask
+                                    )>;
+
+  def TensorRegisterFile : NamedDag<"tensor_register_file",
+                                    (ins
+                                        I64Attr:$write_interleaving_flit_count,
+                                        I64Attr:$write_mode,
+                                        I64Attr:$write_mac_rows,
+                                        I64Attr:$write_skip_flit_count,
+                                        I64Attr:$write_row_base,
+                                        I64Attr:$write_mac_row_interleaving,
+                                        I64Attr:$write_row_count,
+                                        I64Attr:$write_flits_per_period,
+                                        I64Attr:$write_valid_flits_per_period
+                                    )>;
+
+  def VectorRegisterFile
+      : NamedDag<"vector_register_file", (ins
+                                             I64Attr:$write_row_base,
+                                             I64Attr:$write_row_count,
+                                             I64Attr:$write_skip_flit_count,
+                                             I64Attr:$write_row_stride
+                                         )>;
+
+  def RegisterConfigUnit
+      : NamedDag<"register_config_unit", (ins
+                                             I64Attr:$base,
+                                             I64Attr:$size,
+                                             I64Attr:$access_type,
+                                             I64Attr:$words_per_input,
+                                             I64Attr:$data_offset
+                                         )>;
+
+  def SubDataPathUnit : NamedDag<"sub_data_path_unit", (ins
+                                                           I64Attr:$route
+                                                       )>;
 }
+
+def DmaDescriptor
+    : NamedDag<"dma_descriptor", (ins
+                                     I64Attr:$opcode,
+                                     I64Attr:$source_base,
+                                     I64Attr:$destination_base,
+                                     ArrayAttr:$source_limits,
+                                     ArrayAttr:$source_strides,
+                                     ArrayAttr:$destination_limits,
+                                     ArrayAttr:$destination_strides
+                                 )>;
 
 //===----------------------------------------------------------------------===//
 // Task operations.
@@ -506,10 +505,10 @@ class TaskSfrOp<string mnemonic, list<Trait> traits = []>
   let assemblyFormat = "attr-dict";
 }
 
-foreach nd = Shared in {
-  def TaskStatic#!cast<string>(nd)#Op
-      : TaskStaticSfrOp<"task.static."#nd.mnemonic> {
-    let summary = "";
+foreach nd = Sfr in {
+  def TaskStaticSfr#!cast<string>(nd)#Op
+      : TaskStaticSfrOp<"task.static.sfr."#nd.mnemonic> {
+    let summary = "Static special function register for "#!cast<string>(nd);
     let description = [{}];
     let arguments = !con((ins
                              I64Attr:$sfr_addr
@@ -517,11 +516,32 @@ foreach nd = Shared in {
                          nd.data);
   }
 
-  def Task#!cast<string>(nd)#Op : TaskSfrOp<"task."#nd.mnemonic> {
-    let summary = "";
+  def TaskSfr#!cast<string>(nd)#Op : TaskSfrOp<"task.sfr."#nd.mnemonic> {
+    let summary = "Special function register for "#!cast<string>(nd);
     let description = [{}];
     let arguments = nd.data;
   }
+}
+
+def TaskStaticDmaDescriptorOp : TaskOp<"task.static.dma_descriptor"> {
+  let summary = "Static direct memory access descriptor";
+  let description = [{}];
+  let arguments = !con((ins
+                           I64Attr:$desc_addr
+                       ),
+                       DmaDescriptor.data);
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
+  let summary = "Direct memory access descriptor";
+  let description = [{}];
+  let arguments = DmaDescriptor.data;
+  let results = (outs
+      DmaDescriptorType:$desc
+  );
+  let assemblyFormat = "attr-dict";
 }
 
 def TaskMtosfrOp : TaskOp<"task.mtosfr"> {
@@ -539,13 +559,13 @@ def TaskDmawOp : TaskOp<"task.dmaw"> {
   let summary = "Dynamic direct memory access wide";
   let description = [{}];
   let arguments = (ins
-      SfrType:$sfr,
+      DmaDescriptorType:$desc,
       I64Attr:$dma_tag_id,
       I1Attr:$profile,
       I64Attr:$profile_id
   );
   let results = (outs);
-  let assemblyFormat = "$sfr attr-dict";
+  let assemblyFormat = "$desc attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD
