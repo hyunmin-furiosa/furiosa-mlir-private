@@ -382,10 +382,10 @@ getCommand(Operation &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubFetchOp> ||
-                               std::is_same_v<T, TaskSfrSubFetchOp>,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubFetchUnitOp> ||
+                               std::is_same_v<T, TaskSfrSubFetchUnitOp>,
                            bool> = true>
-std::vector<sfr_data_t> getSfrSubFetch(T &op) {
+std::vector<sfr_data_t> getSfrSubFetchUnit(T &op) {
   sfr::slice::SubFetchUnit<sfr_data_t> sfr =
       sfr::slice::SubFetchUnit<sfr_data_t>();
   sfr.base = op.getBase();
@@ -419,24 +419,24 @@ std::vector<sfr_data_t> getSfrSubFetch(T &op) {
   sfr.outer_dim1_log_size = op.getOuterDim1LogSize();
   sfr.outer_dim0_chunk_size = op.getOuterDim0ChunkSize();
   sfr.outer_dim1_chunk_size = op.getOuterDim1ChunkSize();
-  auto custom_snoop_bitmap = op.getCustomSnoopBitmap();
+  auto custom_snoop_bitmap_mask = op.getCustomSnoopBitmapMask();
   sfr.sub_fetch_unit_custom_snoop_bitmap0 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[0]).getInt();
   sfr.sub_fetch_unit_custom_snoop_bitmap1 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[1]).getInt();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[1]).getInt();
   sfr.sub_fetch_unit_custom_snoop_bitmap2 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[2]).getInt();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[2]).getInt();
   sfr.sub_fetch_unit_custom_snoop_bitmap3 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap[3]).getInt();
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[3]).getInt();
 
   return sfr.get_blocks();
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubCommitOp> ||
-                               std::is_same_v<T, TaskSfrSubCommitOp>,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubCommitUnitOp> ||
+                               std::is_same_v<T, TaskSfrSubCommitUnitOp>,
                            bool> = true>
-std::vector<sfr_data_t> getSfrSubCommit(T &op) {
+std::vector<sfr_data_t> getSfrSubCommitUnit(T &op) {
   sfr::slice::SubCommitUnit<sfr_data_t> sfr =
       sfr::slice::SubCommitUnit<sfr_data_t>();
   sfr.mode = op.getMode();
@@ -462,24 +462,24 @@ std::vector<sfr_data_t> getSfrSubCommit(T &op) {
   sfr.strides_element5 = dyn_cast_or_null<IntegerAttr>(strides[5]).getInt();
   sfr.strides_element6 = dyn_cast_or_null<IntegerAttr>(strides[6]).getInt();
   sfr.strides_element7 = dyn_cast_or_null<IntegerAttr>(strides[7]).getInt();
-  auto slice_enable_bitmap = op.getSliceEnableBitmap();
+  auto slice_enable_bitmap_mask = op.getSliceEnableBitmapMask();
   sfr.sub_commit_unit_slice_enable_bitmap0 =
-      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap_mask[0]).getInt();
   sfr.sub_commit_unit_slice_enable_bitmap1 =
-      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[1]).getInt();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap_mask[1]).getInt();
   sfr.sub_commit_unit_slice_enable_bitmap2 =
-      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[2]).getInt();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap_mask[2]).getInt();
   sfr.sub_commit_unit_slice_enable_bitmap3 =
-      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap[3]).getInt();
+      dyn_cast_or_null<IntegerAttr>(slice_enable_bitmap_mask[3]).getInt();
 
   return sfr.get_blocks();
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubDataPathOp> ||
-                               std::is_same_v<T, TaskSfrSubDataPathOp>,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubDataPathUnitOp> ||
+                               std::is_same_v<T, TaskSfrSubDataPathUnitOp>,
                            bool> = true>
-std::vector<sfr_data_t> getSfrSubDataPath(T &op) {
+std::vector<sfr_data_t> getSfrSubDataPathUnit(T &op) {
   sfr::slice::OperationDataPath<sfr_data_t> sfr =
       sfr::slice::OperationDataPath<sfr_data_t>();
   sfr.data_path_route_sub_context = op.getRoute();
@@ -492,17 +492,17 @@ getStaticSfr(Operation &op) {
   return llvm::TypeSwitch<
              Operation *,
              FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>>(&op)
-      .Case<TaskStaticSfrSubFetchOp>([&](auto op) {
+      .Case<TaskStaticSfrSubFetchUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSfrSubFetch(op));
+            op.getSfrAddr(), getSfrSubFetchUnit(op));
       })
-      .Case<TaskStaticSfrSubCommitOp>([&](auto op) {
+      .Case<TaskStaticSfrSubCommitUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSfrSubCommit(op));
+            op.getSfrAddr(), getSfrSubCommitUnit(op));
       })
-      .Case<TaskStaticSfrSubDataPathOp>([&](auto op) {
+      .Case<TaskStaticSfrSubDataPathUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSfrSubDataPath(op));
+            op.getSfrAddr(), getSfrSubDataPathUnit(op));
       })
       .Default([&](Operation *) {
         return op.emitOpError(
@@ -512,10 +512,12 @@ getStaticSfr(Operation &op) {
 
 FailureOr<std::vector<sfr_data_t>> getSfr(Operation &op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::vector<sfr_data_t>>>(&op)
-      .Case<TaskSfrSubFetchOp>([&](auto op) { return getSfrSubFetch(op); })
-      .Case<TaskSfrSubCommitOp>([&](auto op) { return getSfrSubCommit(op); })
-      .Case<TaskSfrSubDataPathOp>(
-          [&](auto op) { return getSfrSubDataPath(op); })
+      .Case<TaskSfrSubFetchUnitOp>(
+          [&](auto op) { return getSfrSubFetchUnit(op); })
+      .Case<TaskSfrSubCommitUnitOp>(
+          [&](auto op) { return getSfrSubCommitUnit(op); })
+      .Case<TaskSfrSubDataPathUnitOp>(
+          [&](auto op) { return getSfrSubDataPathUnit(op); })
       .Default([&](Operation *) {
         return op.emitOpError(
             "unable to interpret as furiosa dialect operator");

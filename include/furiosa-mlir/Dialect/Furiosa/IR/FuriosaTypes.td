@@ -65,9 +65,4 @@ def SfrType : Furiosa_Type<"Sfr", "sfr"> {
   let description = [{}];
 }
 
-def DmaDescriptorType : Furiosa_Type<"DmaDescriptor", "dma_descriptor"> {
-  let summary = "Direct memory access descriptor type";
-  let description = [{}];
-}
-
 #endif
