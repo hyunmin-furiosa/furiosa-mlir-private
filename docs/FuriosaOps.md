@@ -195,39 +195,9 @@ Interfaces: `InferTypeOpInterface`
 | `sfr` | Special function register type |
 
 
-### `furiosa.task.sfr.register_config_unit` (furiosa::TaskSfrRegisterConfigUnitOp)
+### `furiosa.task.sfr.main_fetch_unit` (furiosa::TaskSfrMainFetchUnitOp)
 
-_Special function register for RegisterConfigUnit_
-
-Syntax:
-
-```
-operation ::= `furiosa.task.sfr.register_config_unit` attr-dict
-```
-
-Interfaces: `InferTypeOpInterface`
-
-#### Attributes:
-
-<table>
-<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-</table>
-
-#### Results:
-
-| Result | Description |
-| :----: | ----------- |
-| `sfr` | Special function register type |
-
-
-### `furiosa.task.sfr.main_fetch_unit` (furiosa::TaskSfrSfrMainFetchUnitOp)
-
-_Special function register for SfrMainFetchUnit_
+_Special function register for MainFetchUnit_
 
 Syntax:
 
@@ -276,6 +246,36 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.register_config_unit` (furiosa::TaskSfrRegisterConfigUnitOp)
+
+_Special function register for RegisterConfigUnit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.register_config_unit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
 #### Results:
@@ -595,32 +595,9 @@ operation ::= `furiosa.task.static.sfr.main_data_path_unit` attr-dict
 </table>
 
 
-### `furiosa.task.static.sfr.register_config_unit` (furiosa::TaskStaticSfrRegisterConfigUnitOp)
+### `furiosa.task.static.sfr.main_fetch_unit` (furiosa::TaskStaticSfrMainFetchUnitOp)
 
-_Static special function register for RegisterConfigUnit_
-
-Syntax:
-
-```
-operation ::= `furiosa.task.static.sfr.register_config_unit` attr-dict
-```
-
-#### Attributes:
-
-<table>
-<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-</table>
-
-
-### `furiosa.task.static.sfr.main_fetch_unit` (furiosa::TaskStaticSfrSfrMainFetchUnitOp)
-
-_Static special function register for SfrMainFetchUnit_
+_Static special function register for MainFetchUnit_
 
 Syntax:
 
@@ -668,6 +645,29 @@ operation ::= `furiosa.task.static.sfr.main_fetch_unit` attr-dict
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.register_config_unit` (furiosa::TaskStaticSfrRegisterConfigUnitOp)
+
+_Static special function register for RegisterConfigUnit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.register_config_unit` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
 
