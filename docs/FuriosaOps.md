@@ -2,6 +2,8 @@
 
 ### `furiosa.task.dma_descriptor` (furiosa::TaskDmaDescriptorOp)
 
+_Direct memory access descriptor_
+
 Syntax:
 
 ```
@@ -27,7 +29,7 @@ Interfaces: `InferTypeOpInterface`
 
 | Result | Description |
 | :----: | ----------- |
-| `sfr` | Special function register type |
+| `desc` | Direct memory access descriptor type |
 
 
 ### `furiosa.task.dmaw` (furiosa::TaskDmawOp)
@@ -37,7 +39,7 @@ _Dynamic direct memory access wide_
 Syntax:
 
 ```
-operation ::= `furiosa.task.dmaw` $sfr attr-dict
+operation ::= `furiosa.task.dmaw` $desc attr-dict
 ```
 
 #### Attributes:
@@ -53,7 +55,7 @@ operation ::= `furiosa.task.dmaw` $sfr attr-dict
 
 | Operand | Description |
 | :-----: | ----------- |
-| `sfr` | Special function register type |
+| `desc` | Direct memory access descriptor type |
 
 
 ### `furiosa.task.mtosfr` (furiosa::TaskMtosfrOp)
@@ -81,6 +83,8 @@ operation ::= `furiosa.task.mtosfr` $sfr attr-dict
 
 
 ### `furiosa.task.sfr.dot_product_engine` (furiosa::TaskSfrDotProductEngineOp)
+
+_Special function register for DotProductEngine_
 
 Syntax:
 
@@ -134,6 +138,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.sfr.main_commit_unit` (furiosa::TaskSfrMainCommitUnitOp)
 
+_Special function register for MainCommitUnit_
+
 Syntax:
 
 ```
@@ -164,6 +170,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.sfr.main_data_path_unit` (furiosa::TaskSfrMainDataPathUnitOp)
 
+_Special function register for MainDataPathUnit_
+
 Syntax:
 
 ```
@@ -187,7 +195,39 @@ Interfaces: `InferTypeOpInterface`
 | `sfr` | Special function register type |
 
 
-### `furiosa.task.sfr.main_fetch_unit` (furiosa::TaskSfrMainFetchUnitOp)
+### `furiosa.task.sfr.register_config_unit` (furiosa::TaskSfrRegisterConfigUnitOp)
+
+_Special function register for RegisterConfigUnit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.register_config_unit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.main_fetch_unit` (furiosa::TaskSfrSfrMainFetchUnitOp)
+
+_Special function register for SfrMainFetchUnit_
 
 Syntax:
 
@@ -245,35 +285,9 @@ Interfaces: `InferTypeOpInterface`
 | `sfr` | Special function register type |
 
 
-### `furiosa.task.sfr.register_config_unit` (furiosa::TaskSfrRegisterConfigUnitOp)
-
-Syntax:
-
-```
-operation ::= `furiosa.task.sfr.register_config_unit` attr-dict
-```
-
-Interfaces: `InferTypeOpInterface`
-
-#### Attributes:
-
-<table>
-<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-</table>
-
-#### Results:
-
-| Result | Description |
-| :----: | ----------- |
-| `sfr` | Special function register type |
-
-
 ### `furiosa.task.sfr.sub_commit_unit` (furiosa::TaskSfrSubCommitUnitOp)
+
+_Special function register for SubCommitUnit_
 
 Syntax:
 
@@ -306,6 +320,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.sfr.sub_data_path_unit` (furiosa::TaskSfrSubDataPathUnitOp)
 
+_Special function register for SubDataPathUnit_
+
 Syntax:
 
 ```
@@ -329,6 +345,8 @@ Interfaces: `InferTypeOpInterface`
 
 
 ### `furiosa.task.sfr.sub_fetch_unit` (furiosa::TaskSfrSubFetchUnitOp)
+
+_Special function register for SubFetchUnit_
 
 Syntax:
 
@@ -369,6 +387,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.sfr.tensor_register_file` (furiosa::TaskSfrTensorRegisterFileOp)
 
+_Special function register for TensorRegisterFile_
+
 Syntax:
 
 ```
@@ -401,6 +421,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.sfr.transpose_engine` (furiosa::TaskSfrTransposeEngineOp)
 
+_Special function register for TransposeEngine_
+
 Syntax:
 
 ```
@@ -429,6 +451,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.sfr.vector_register_file` (furiosa::TaskSfrVectorRegisterFileOp)
 
+_Special function register for VectorRegisterFile_
+
 Syntax:
 
 ```
@@ -456,6 +480,8 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.static.dma_descriptor` (furiosa::TaskStaticDmaDescriptorOp)
 
+_Static direct memory access descriptor_
+
 Syntax:
 
 ```
@@ -466,7 +492,7 @@ operation ::= `furiosa.task.static.dma_descriptor` attr-dict
 
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>desc_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -478,6 +504,8 @@ operation ::= `furiosa.task.static.dma_descriptor` attr-dict
 
 
 ### `furiosa.task.static.sfr.dot_product_engine` (furiosa::TaskStaticSfrDotProductEngineOp)
+
+_Static special function register for DotProductEngine_
 
 Syntax:
 
@@ -524,6 +552,8 @@ operation ::= `furiosa.task.static.sfr.dot_product_engine` attr-dict
 
 ### `furiosa.task.static.sfr.main_commit_unit` (furiosa::TaskStaticSfrMainCommitUnitOp)
 
+_Static special function register for MainCommitUnit_
+
 Syntax:
 
 ```
@@ -547,6 +577,8 @@ operation ::= `furiosa.task.static.sfr.main_commit_unit` attr-dict
 
 ### `furiosa.task.static.sfr.main_data_path_unit` (furiosa::TaskStaticSfrMainDataPathUnitOp)
 
+_Static special function register for MainDataPathUnit_
+
 Syntax:
 
 ```
@@ -563,7 +595,32 @@ operation ::= `furiosa.task.static.sfr.main_data_path_unit` attr-dict
 </table>
 
 
-### `furiosa.task.static.sfr.main_fetch_unit` (furiosa::TaskStaticSfrMainFetchUnitOp)
+### `furiosa.task.static.sfr.register_config_unit` (furiosa::TaskStaticSfrRegisterConfigUnitOp)
+
+_Static special function register for RegisterConfigUnit_
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.register_config_unit` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.main_fetch_unit` (furiosa::TaskStaticSfrSfrMainFetchUnitOp)
+
+_Static special function register for SfrMainFetchUnit_
 
 Syntax:
 
@@ -614,28 +671,9 @@ operation ::= `furiosa.task.static.sfr.main_fetch_unit` attr-dict
 </table>
 
 
-### `furiosa.task.static.sfr.register_config_unit` (furiosa::TaskStaticSfrRegisterConfigUnitOp)
-
-Syntax:
-
-```
-operation ::= `furiosa.task.static.sfr.register_config_unit` attr-dict
-```
-
-#### Attributes:
-
-<table>
-<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-</table>
-
-
 ### `furiosa.task.static.sfr.sub_commit_unit` (furiosa::TaskStaticSfrSubCommitUnitOp)
+
+_Static special function register for SubCommitUnit_
 
 Syntax:
 
@@ -661,6 +699,8 @@ operation ::= `furiosa.task.static.sfr.sub_commit_unit` attr-dict
 
 ### `furiosa.task.static.sfr.sub_data_path_unit` (furiosa::TaskStaticSfrSubDataPathUnitOp)
 
+_Static special function register for SubDataPathUnit_
+
 Syntax:
 
 ```
@@ -677,6 +717,8 @@ operation ::= `furiosa.task.static.sfr.sub_data_path_unit` attr-dict
 
 
 ### `furiosa.task.static.sfr.sub_fetch_unit` (furiosa::TaskStaticSfrSubFetchUnitOp)
+
+_Static special function register for SubFetchUnit_
 
 Syntax:
 
@@ -710,6 +752,8 @@ operation ::= `furiosa.task.static.sfr.sub_fetch_unit` attr-dict
 
 ### `furiosa.task.static.sfr.tensor_register_file` (furiosa::TaskStaticSfrTensorRegisterFileOp)
 
+_Static special function register for TensorRegisterFile_
+
 Syntax:
 
 ```
@@ -735,6 +779,8 @@ operation ::= `furiosa.task.static.sfr.tensor_register_file` attr-dict
 
 ### `furiosa.task.static.sfr.transpose_engine` (furiosa::TaskStaticSfrTransposeEngineOp)
 
+_Static special function register for TransposeEngine_
+
 Syntax:
 
 ```
@@ -755,6 +801,8 @@ operation ::= `furiosa.task.static.sfr.transpose_engine` attr-dict
 
 
 ### `furiosa.task.static.sfr.vector_register_file` (furiosa::TaskStaticSfrVectorRegisterFileOp)
+
+_Static special function register for VectorRegisterFile_
 
 Syntax:
 
