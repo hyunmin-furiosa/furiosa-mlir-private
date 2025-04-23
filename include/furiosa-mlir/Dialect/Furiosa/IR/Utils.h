@@ -482,7 +482,7 @@ template <typename T,
 std::vector<sfr_data_t> getSfrSubDataPathUnit(T &op) {
   sfr::slice::OperationDataPath<sfr_data_t> sfr =
       sfr::slice::OperationDataPath<sfr_data_t>();
-  sfr.data_path_route_sub_context = op.getRoute();
+  sfr.data_path_route_sub_context = op.getDataPathRouteSubContext();
 
   return sfr.get_blocks();
 }

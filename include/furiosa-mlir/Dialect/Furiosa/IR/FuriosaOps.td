@@ -307,169 +307,1259 @@ class NamedDag<string m, dag d> {
 }
 
 defset list<NamedDag> Sfr = {
-  def MainFetchUnit : NamedDag<"main_fetch_unit",
-                               (ins
-                                   I64Attr:$fetch_mode,
-                                   I64Attr:$num_zero_points,
-                                   I64Attr:$zero_point0,
-                                   I64Attr:$zero_point1,
-                                   I64Attr:$table_entry_size,
-                                   I64Attr:$tables,
-                                   I64Attr:$indirect_base,
-                                   I64Attr:$indirect_dim,
-                                   I64Attr:$table_base_mode,
-                                   I64Attr:$indirect_pointer_size,
-                                   I64Attr:$zeropoint_tail_mode,
-                                   I64Attr:$last_dim_pad_value,
-                                   I64Attr:$last_dim,
-                                   I64Attr:$pad_order,
-                                   I64Attr:$last_dim_rightmost_valid_count_dim,
-                                   I64Attr:$last_dim_left_pad_count,
-                                   I64Attr:$type_conversion,
-                                   I64Attr:$last_dim_left_pad_mode,
-                                   I64Attr:$zeropoint_dims,
-                                   ArrayAttr:$last_dim_rightmost_valid_count,
-                                   I64Attr:$base,
-                                   I64Attr:$fetch_size,
-                                   ArrayAttr:$limits,
-                                   ArrayAttr:$strides,
-                                   I64Attr:$flit_count,
-                                   I64Attr:$words_per_packet,
-                                   I64Attr:$zeropoint_fetch_limit,
-                                   I64Attr:$topology,
-                                   I64Attr:$channel_config,
-                                   I64Attr:$outer_slice_log_size,
-                                   I64Attr:$outer_dim0_log_size,
-                                   I64Attr:$outer_dim1_log_size,
-                                   I64Attr:$outer_dim0_chunk_size,
-                                   I64Attr:$outer_dim1_chunk_size,
-                                   ArrayAttr:$custom_snoop_bitmap_mask
-                               )>;
+  def MainFetchUnit
+      : NamedDag<
+            "main_fetch_unit",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$num_zero_points,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zero_point0,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zero_point1,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$table_entry_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$tables,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$indirect_base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$indirect_dim,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$table_base_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$indirect_pointer_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zeropoint_tail_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$last_dim_pad_value,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$last_dim,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$pad_order,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$last_dim_rightmost_valid_count_dim,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$last_dim_left_pad_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$type_conversion,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$last_dim_left_pad_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zeropoint_dims,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0,0,0,0,0}">:$last_dim_rightmost_valid_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_size,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$limits,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$strides,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$flit_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$words_per_packet,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zeropoint_fetch_limit,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$topology,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$channel_config,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_slice_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim0_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim0_chunk_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_chunk_size,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0}">:$custom_snoop_bitmap_mask
+            )>;
 
   def MainCommitUnit
-      : NamedDag<"main_commit_unit", (ins
-                                         I64Attr:$type_conversion,
-                                         I64Attr:$base,
-                                         I64Attr:$commit_in_size,
-                                         I64Attr:$commit_size,
-                                         ArrayAttr:$limits,
-                                         ArrayAttr:$strides,
-                                         ArrayAttr:$slice_enable_bitmap_mask
-                                     )>;
+      : NamedDag<"main_commit_unit",
+                 (ins
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$type_conversion,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$base,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$commit_in_size,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$commit_size,
+                     DefaultValuedOptionalAttr<ArrayAttr,
+                                               "{0,0,0,0,0,0,0,0}">:$limits,
+                     DefaultValuedOptionalAttr<ArrayAttr,
+                                               "{0,0,0,0,0,0,0,0}">:$strides,
+                     DefaultValuedOptionalAttr<
+                         ArrayAttr, "{0,0,0,0}">:$slice_enable_bitmap_mask
+                 )>;
 
   def DotProductEngine
-      : NamedDag<"dot_product_engine", (ins
-                                           I64Attr:$reg_indexer_base,
-                                           I64Attr:$acc_indexer_base,
-                                           I64Attr:$flits_per_input,
-                                           I64Attr:$feed_input_transpose,
-                                           I64Attr:$initial_shift_dim,
-                                           I64Attr:$shift_stride,
-                                           I64Attr:$pop_dim,
-                                           I64Attr:$shift_dim,
-                                           I64Attr:$channel_config,
-                                           I64Attr:$feed_data_type,
-                                           ArrayAttr:$initial_shift,
-                                           ArrayAttr:$iter_seq_limits,
-                                           ArrayAttr:$reg_indexer_strides,
-                                           ArrayAttr:$acc_indexer_strides,
-                                           I64Attr:$acc_limit,
-                                           I64Attr:$acc_cols,
-                                           I64Attr:$acc_reset,
-                                           I64Attr:$output_major,
-                                           I64Attr:$acc_init_value,
-                                           I64Attr:$mac_tree_operation,
-                                           I64Attr:$mac_tree_depth,
-                                           I64Attr:$mac_type,
-                                           I64Attr:$mac_rows,
-                                           I64Attr:$fp_ieee_nan_multiplication,
-                                           I64Attr:$fxp_shift_rounding_mode,
-                                           I64Attr:$data_type,
-                                           I64Attr:$reg_read_log_size,
-                                           I64Attr:$reg_read_mode,
-                                           I64Attr:$reg_read_cache_mode
-                                       )>;
+      : NamedDag<
+            "dot_product_engine",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$reg_indexer_base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$acc_indexer_base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$flits_per_input,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$feed_input_transpose,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$initial_shift_dim,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$shift_stride,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$pop_dim,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$shift_dim,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$channel_config,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$feed_data_type,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$initial_shift_element,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$acc_limit,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$acc_cols,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$acc_reset,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$output_major,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$acc_init_value,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mac_tree_operation,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mac_tree_depth,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mac_type,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mac_rows,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_ieee_nan_multiplication,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_shift_rounding_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$data_type,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$reg_read_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$reg_read_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$reg_read_cache_mode
+            )>;
+
+  def VectorRouteUnit
+      : NamedDag<
+            "vector_route_unit",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$route_info_data_out_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$route_info_reduce_channel_out_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$route_info_reduce_unit_in_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$route_info_arithmetic_unit_in_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$route_info_valid_generator_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$route_info_route_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$route_info_route_group_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$route_info_index_base,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$indexer_limits,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$indexer_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0,0,0,0,0}">:$valid_generator_lowered_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0,0,0,0,0}">:$valid_generator_lowered_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,"
+                               "0}">:$valid_generator_allocated_original_dim,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0}">:$valid_generator_original_dim_partition_config,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0}">:$valid_generator_original_dim_valid_count,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_mask,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_id_match0,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$collect_compaction_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$compaction_mode_collect_compaction_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$compaction_mode_collect_compaction_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$compaction_mode_collect_compaction_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$cast_compaction_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$compaction_mode_cast_compaction_count
+            )>;
+
+  def VectorReduceUnit
+      : NamedDag<
+            "vector_reduce_unit",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$cluster_route_add_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$cluster_route_max_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$cluster_route_min_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$cluster_route_mul_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$cluster_route_cluster_source,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mul_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mul_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mul_control_rhs_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$mul_control_io_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_control_io_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$mul_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$add_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$add_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$add_control_rhs_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$add_control_io_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_control_io_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$add_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$max_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$max_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$max_control_rhs_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$max_control_io_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_control_io_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$max_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$min_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$min_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$min_control_rhs_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$min_control_io_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_control_io_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$min_data1_scalar_register_element2
+            )>;
+
+  def VectorArithmeticUnit
+      : NamedDag<
+            "vector_arithmetic_unit",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$branch_mode_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$branch_mode_format,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$branch_mode_compare_operation0,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$branch_mode_compare_operation1,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$branch_mode_compare_operation2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$branch_mode_compare_operation3,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$branch_mode_group_size,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$branch_mode_branch_read_base,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$branch_mode_branch_read_limit,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$branch_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$branch_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$branch_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$branch_data1_scalar_register_element3,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$register_file_write_mode_branch_write_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$register_file_write_mode_branch_write_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$register_file_write_mode_branch_write_limit,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$register_file_write_mode_write_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$register_file_write_mode_write_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$register_file_write_mode_write_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_cluster_route_logic_and_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_cluster_route_logic_or_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_cluster_route_logic_xor_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_cluster_route_logic_left_shift_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_cluster_route_logic_right_shift_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_cluster_route_logic_cluster_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_and_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_and_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_and_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_and_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_and_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_and_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_and_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_or_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_or_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_or_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_or_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_or_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_or_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_or_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_xor_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_xor_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_xor_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_xor_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_xor_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$logic_xor_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_xor_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_op_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_arg_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_left_shift_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_left_shift_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_op_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_arg_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$logic_right_shift_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$logic_right_shift_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_cluster_route_fxp_add_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_cluster_route_fxp_left_shift_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_cluster_route_fxp_mul_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_cluster_route_fxp_right_shift_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_cluster_route_fxp_cluster_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_add_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_add_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_left_shift_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_left_shift_control_arg_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_left_shift_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_left_shift_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_left_shift_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_left_shift_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_left_shift_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_left_shift_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_left_shift_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_mul_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_mul_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fxp_right_shift_control_op_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_arg_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_right_shift_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_right_shift_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_right_shift_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fxp_right_shift_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_right_shift_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_right_shift_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fxp_right_shift_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_cluster_route_fp_fma_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_cluster_route_fp_fpu_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_cluster_route_fp_exp_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_cluster_route_fp_mul0_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_cluster_route_fp_mul1_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_cluster_route_fp_cluster_source,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fp_fma_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fma_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fma_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fma_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fma_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fma_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fma_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fma_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fp_fma_data1_secondary_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fp_fma_data2_secondary_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr,
+                    "0">:$fp_fma_data2_secondary_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fp_fpu_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fpu_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fpu_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fpu_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fpu_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fpu_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_fpu_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_fpu_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fp_exp_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_exp_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_exp_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_exp_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_exp_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_exp_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_exp_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_exp_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul0_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul0_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_mul1_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_mul1_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_reduce_data_path,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$reduce_layer_mode_reduce_rows,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_reduce_tree_depth,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$reduce_layer_mode_acc_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_acc_indexer_proceed,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_fxp_shift_rounding_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_reduce_row0_op_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_reduce_row1_op_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_accumulation_limit,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_mode_acc_indexer_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_acc_init_reduce_row0_acc_init,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$reduce_layer_acc_init_reduce_row1_acc_init,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0,0,0,0,0}">:$reduce_layer_acc_indexer_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr,
+                    "{0,0,0,0,0,0,0,0}">:$reduce_layer_acc_indexer_strides,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fp_div_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_acc_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$fp_div_control_acc_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_control_acc_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$fp_div_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$float_adapter_fxp_to_fp_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$float_adapter_fxp_to_fp_int_width,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$float_adapter_fxp_to_fp_round_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$float_adapter_fp_to_fxp_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$float_adapter_fp_to_fxp_int_width,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$float_adapter_fp_to_fxp_round_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$float_adapter_split_layer_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$float_adapter_concat_layer_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_cluster_route_clip_add_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_cluster_route_clip_max_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_cluster_route_clip_min_source,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_cluster_route_clip_cluster_source,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_add_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_add_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_add_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_add_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_add_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_add_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_add_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_max_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_max_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_max_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_max_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_max_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_max_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_max_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_min_control_op_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_min_control_arg_mode,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_min_control_reg0_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_min_control_reg1_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_min_control_reg2_cmp_op,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$clip_min_control_rf_cmp_op,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_reg0_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_reg0_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_reg1_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_reg1_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_reg2_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_reg2_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_rf_execution_id,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_control_rf_execution_id_mask,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_data0_scalar_register_element0,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_data0_scalar_register_element1,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$clip_min_data1_scalar_register_element2,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$alloc_indexer_read_indexer0_module,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$alloc_indexer_read_indexer1_module,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$alloc_indexer_read_indexer2_module,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$alloc_indexer_read_indexer3_module,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$alloc_indexer_operand_indexer_module,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$alloc_indexer_write_indexer_module,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$read_indexer0_operation,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$operation_read_indexer0_proceed,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_read_indexer0_element_size,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$read_indexer1_operation,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$operation_read_indexer1_proceed,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_read_indexer1_element_size,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$read_indexer2_operation,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$operation_read_indexer2_proceed,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_read_indexer2_element_size,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$read_indexer3_operation,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$operation_read_indexer3_proceed,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_read_indexer3_element_size,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$operand_indexer_operation,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_operand_indexer_proceed,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_operand_indexer_update_mode,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$operation_operand_indexer_element_size,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$write_indexer_operation,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$indexer_base0_read_indexer0_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$indexer_base0_read_indexer1_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$indexer_base0_read_indexer2_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$indexer_base0_read_indexer3_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$indexer_base1_operand_indexer_base,
+                DefaultValuedOptionalAttr<
+                    I64Attr, "0">:$indexer_base1_write_indexer_base,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer0_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer0_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer1_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer1_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer2_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer2_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer3_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer3_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$operand_indexer_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$operand_indexer_strides,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$write_indexer_limits,
+                DefaultValuedOptionalAttr<
+                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$write_indexer_strides
+            )>;
 
   def TransposeEngine
-      : NamedDag<"transpose_engine", (ins
-                                         I64Attr:$fetch_in_cols,
-                                         I64Attr:$fetch_in_rows,
-                                         I64Attr:$fetch_out_rows,
-                                         I64Attr:$data_type,
-                                         I64Attr:$fetch_in_width_shift
-                                     )>;
+      : NamedDag<
+            "transpose_engine",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_in_cols,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_in_rows,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_out_rows,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$data_type,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_in_width_shift
+            )>;
 
   def MainDataPathUnit
-      : NamedDag<"main_data_path_unit", (ins
-                                            I64Attr:$main_context,
-                                            I64Attr:$channel_config
-                                        )>;
+      : NamedDag<"main_data_path_unit",
+                 (ins
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$main_context,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$channel_config
+                 )>;
 
   def SubFetchUnit
-      : NamedDag<"sub_fetch_unit", (ins
-                                       I64Attr:$base,
-                                       I64Attr:$type_conversion,
-                                       I64Attr:$num_zero_points,
-                                       I64Attr:$zero_point0,
-                                       I64Attr:$zero_point1,
-                                       ArrayAttr:$limits,
-                                       ArrayAttr:$strides,
-                                       I64Attr:$flit_count,
-                                       I64Attr:$words_per_packet,
-                                       I64Attr:$topology,
-                                       I64Attr:$outer_slice_log_size,
-                                       I64Attr:$outer_dim0_log_size,
-                                       I64Attr:$outer_dim1_log_size,
-                                       I64Attr:$outer_dim0_chunk_size,
-                                       I64Attr:$outer_dim1_chunk_size,
-                                       ArrayAttr:$custom_snoop_bitmap_mask
-                                   )>;
+      : NamedDag<
+            "sub_fetch_unit",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$type_conversion,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$num_zero_points,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zero_point0,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$zero_point1,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$limits,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$strides,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$flit_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$words_per_packet,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$topology,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_slice_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim0_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_log_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim0_chunk_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_chunk_size,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0}">:$custom_snoop_bitmap_mask
+            )>;
 
   def SubCommitUnit
-      : NamedDag<"sub_commit_unit", (ins
-                                        I64Attr:$mode,
-                                        I64Attr:$packet_valid_count,
-                                        I64Attr:$base,
-                                        I64Attr:$commit_in_size,
-                                        I64Attr:$commit_data,
-                                        ArrayAttr:$limits,
-                                        ArrayAttr:$strides,
-                                        ArrayAttr:$slice_enable_bitmap_mask
-                                    )>;
+      : NamedDag<
+            "sub_commit_unit",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$packet_valid_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$commit_in_size,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$commit_data,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$limits,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$strides,
+                DefaultValuedOptionalAttr<ArrayAttr,
+                                          "{0,0,0,0}">:$slice_enable_bitmap_mask
+            )>;
 
-  def TensorRegisterFile : NamedDag<"tensor_register_file",
-                                    (ins
-                                        I64Attr:$write_interleaving_flit_count,
-                                        I64Attr:$write_mode,
-                                        I64Attr:$write_mac_rows,
-                                        I64Attr:$write_skip_flit_count,
-                                        I64Attr:$write_row_base,
-                                        I64Attr:$write_mac_row_interleaving,
-                                        I64Attr:$write_row_count,
-                                        I64Attr:$write_flits_per_period,
-                                        I64Attr:$write_valid_flits_per_period
-                                    )>;
+  def TensorRegisterFile
+      : NamedDag<
+            "tensor_register_file",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$write_interleaving_flit_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_mode,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_mac_rows,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_skip_flit_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_row_base,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$write_mac_row_interleaving,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_row_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_flits_per_period,
+                DefaultValuedOptionalAttr<I64Attr,
+                                          "0">:$write_valid_flits_per_period
+            )>;
 
   def VectorRegisterFile
-      : NamedDag<"vector_register_file", (ins
-                                             I64Attr:$write_row_base,
-                                             I64Attr:$write_row_count,
-                                             I64Attr:$write_skip_flit_count,
-                                             I64Attr:$write_row_stride
-                                         )>;
+      : NamedDag<
+            "vector_register_file",
+            (ins
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_row_base,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_row_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_skip_flit_count,
+                DefaultValuedOptionalAttr<I64Attr, "0">:$write_row_stride
+            )>;
 
   def RegisterConfigUnit
-      : NamedDag<"register_config_unit", (ins
-                                             I64Attr:$base,
-                                             I64Attr:$size,
-                                             I64Attr:$access_type,
-                                             I64Attr:$words_per_input,
-                                             I64Attr:$data_offset
-                                         )>;
+      : NamedDag<"register_config_unit",
+                 (ins
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$base,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$size,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$access_type,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$words_per_input,
+                     DefaultValuedOptionalAttr<I64Attr, "0">:$data_offset
+                 )>;
 
-  def SubDataPathUnit : NamedDag<"sub_data_path_unit", (ins
-                                                           I64Attr:$route
-                                                       )>;
+  def SubDataPathUnit
+      : NamedDag<"sub_data_path_unit",
+                 (ins
+                     DefaultValuedOptionalAttr<I64Attr,
+                                               "0">:$data_path_route_sub_context
+                 )>;
 }
 
 def DmaDescriptor
