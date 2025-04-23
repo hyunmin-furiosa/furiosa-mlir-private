@@ -333,13 +333,13 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$last_dim_left_pad_mode,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$zeropoint_dims,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0,0,0,0,0}">:$last_dim_rightmost_valid_count,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$base,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$fetch_size,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$limits,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$strides,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$flit_count,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$words_per_packet,
@@ -351,7 +351,7 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_log_size,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim0_chunk_size,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_chunk_size,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0}">:$custom_snoop_bitmap_mask
             )>;
 
@@ -362,12 +362,12 @@ defset list<NamedDag> Sfr = {
                      DefaultValuedOptionalAttr<I64Attr, "0">:$base,
                      DefaultValuedOptionalAttr<I64Attr, "0">:$commit_in_size,
                      DefaultValuedOptionalAttr<I64Attr, "0">:$commit_size,
-                     DefaultValuedOptionalAttr<ArrayAttr,
+                     DefaultValuedOptionalAttr<I64ArrayAttr,
                                                "{0,0,0,0,0,0,0,0}">:$limits,
-                     DefaultValuedOptionalAttr<ArrayAttr,
+                     DefaultValuedOptionalAttr<I64ArrayAttr,
                                                "{0,0,0,0,0,0,0,0}">:$strides,
                      DefaultValuedOptionalAttr<
-                         ArrayAttr, "{0,0,0,0}">:$slice_enable_bitmap_mask
+                         I64ArrayAttr, "{0,0,0,0}">:$slice_enable_bitmap_mask
                  )>;
 
   def DotProductEngine
@@ -385,7 +385,7 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$channel_config,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$feed_data_type,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$initial_shift_element,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$initial_shift_element,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$acc_limit,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$acc_cols,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$acc_reset,
@@ -423,29 +423,29 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr,
                                           "0">:$route_info_route_group_size,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$route_info_index_base,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$indexer_limits,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$indexer_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0,0,0,0,0}">:$valid_generator_lowered_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0,0,0,0,0}">:$valid_generator_lowered_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,"
-                               "0}">:$valid_generator_allocated_original_dim,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,"
+                                  "0}">:$valid_generator_allocated_original_dim,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0}">:$valid_generator_original_dim_partition_config,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0}">:$valid_generator_original_dim_valid_count,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_mask,
+                    I64ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_mask,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_id_match0,
+                    I64ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_id_match0,
                 DefaultValuedOptionalAttr<I64Attr,
                                           "0">:$collect_compaction_mode,
                 DefaultValuedOptionalAttr<
@@ -1202,10 +1202,10 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<
                     I64Attr, "0">:$reduce_layer_acc_init_reduce_row1_acc_init,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0,0,0,0,0}">:$reduce_layer_acc_indexer_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr,
+                    I64ArrayAttr,
                     "{0,0,0,0,0,0,0,0}">:$reduce_layer_acc_indexer_strides,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$fp_div_control_op_mode,
                 DefaultValuedOptionalAttr<I64Attr,
@@ -1431,29 +1431,29 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<
                     I64Attr, "0">:$indexer_base1_write_indexer_base,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer0_limits,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer0_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer0_strides,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer0_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer1_limits,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer1_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer1_strides,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer1_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer2_limits,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer2_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer2_strides,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer2_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer3_limits,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer3_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer3_strides,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$read_indexer3_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$operand_indexer_limits,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$operand_indexer_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$operand_indexer_strides,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$operand_indexer_strides,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$write_indexer_limits,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$write_indexer_limits,
                 DefaultValuedOptionalAttr<
-                    ArrayAttr, "{0,0,0,0,0,0,0,0}">:$write_indexer_strides
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$write_indexer_strides
             )>;
 
   def TransposeEngine
@@ -1483,9 +1483,9 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$num_zero_points,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$zero_point0,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$zero_point1,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$limits,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$strides,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$flit_count,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$words_per_packet,
@@ -1495,7 +1495,7 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_log_size,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim0_chunk_size,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$outer_dim1_chunk_size,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0}">:$custom_snoop_bitmap_mask
             )>;
 
@@ -1508,11 +1508,11 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$base,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$commit_in_size,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$commit_data,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$limits,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0,0,0,0,0}">:$strides,
-                DefaultValuedOptionalAttr<ArrayAttr,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
                                           "{0,0,0,0}">:$slice_enable_bitmap_mask
             )>;
 
@@ -1567,10 +1567,10 @@ def DmaDescriptor
                                      I64Attr:$opcode,
                                      I64Attr:$source_base,
                                      I64Attr:$destination_base,
-                                     ArrayAttr:$source_limits,
-                                     ArrayAttr:$source_strides,
-                                     ArrayAttr:$destination_limits,
-                                     ArrayAttr:$destination_strides
+                                     I64ArrayAttr:$source_limits,
+                                     I64ArrayAttr:$source_strides,
+                                     I64ArrayAttr:$destination_limits,
+                                     I64ArrayAttr:$destination_strides
                                  )>;
 
 //===----------------------------------------------------------------------===//
