@@ -2,8 +2,6 @@
 
 ### `furiosa.task.dma_descriptor` (furiosa::TaskDmaDescriptorOp)
 
-_Direct memory access descriptor_
-
 Syntax:
 
 ```
@@ -29,7 +27,7 @@ Interfaces: `InferTypeOpInterface`
 
 | Result | Description |
 | :----: | ----------- |
-| `desc` | Direct memory access descriptor type |
+| `sfr` | Special function register type |
 
 
 ### `furiosa.task.dmaw` (furiosa::TaskDmawOp)
@@ -39,7 +37,7 @@ _Dynamic direct memory access wide_
 Syntax:
 
 ```
-operation ::= `furiosa.task.dmaw` $desc attr-dict
+operation ::= `furiosa.task.dmaw` $sfr attr-dict
 ```
 
 #### Attributes:
@@ -55,7 +53,7 @@ operation ::= `furiosa.task.dmaw` $desc attr-dict
 
 | Operand | Description |
 | :-----: | ----------- |
-| `desc` | Direct memory access descriptor type |
+| `sfr` | Special function register type |
 
 
 ### `furiosa.task.mtosfr` (furiosa::TaskMtosfrOp)
@@ -82,14 +80,205 @@ operation ::= `furiosa.task.mtosfr` $sfr attr-dict
 | `sfr` | Special function register type |
 
 
-### `furiosa.task.sfr.sub_commit` (furiosa::TaskSfrSubCommitOp)
-
-_Special function register for sub commit unit_
+### `furiosa.task.sfr.dot_product_engine` (furiosa::TaskSfrDotProductEngineOp)
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.sfr.sub_commit` attr-dict
+operation ::= `furiosa.task.sfr.dot_product_engine` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>reg_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>flits_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>feed_input_transpose</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>initial_shift_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>shift_stride</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>pop_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>shift_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>feed_data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>initial_shift</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>iter_seq_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>reg_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>acc_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>acc_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_cols</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_reset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>output_major</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_init_value</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_tree_operation</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_tree_depth</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fp_ieee_nan_multiplication</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fxp_shift_rounding_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_read_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_read_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_read_cache_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.main_commit_unit` (furiosa::TaskSfrMainCommitUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.main_commit_unit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>commit_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.main_data_path_unit` (furiosa::TaskSfrMainDataPathUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.main_data_path_unit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>main_context</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.main_fetch_unit` (furiosa::TaskSfrMainFetchUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.main_fetch_unit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>fetch_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>num_zero_points</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zero_point0</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zero_point1</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>table_entry_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>tables</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>table_base_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect_pointer_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zeropoint_tail_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_pad_value</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>pad_order</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_rightmost_valid_count_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_left_pad_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_left_pad_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zeropoint_dims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_rightmost_valid_count</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zeropoint_fetch_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>topology</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_slice_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim0_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.register_config_unit` (furiosa::TaskSfrRegisterConfigUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.register_config_unit` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.sub_commit_unit` (furiosa::TaskSfrSubCommitUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.sub_commit_unit` attr-dict
 ```
 
 Interfaces: `InferTypeOpInterface`
@@ -105,7 +294,7 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>commit_data</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
 <tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>slice_enable_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
 </table>
 
 #### Results:
@@ -115,14 +304,12 @@ Interfaces: `InferTypeOpInterface`
 | `sfr` | Special function register type |
 
 
-### `furiosa.task.sfr.sub_data_path` (furiosa::TaskSfrSubDataPathOp)
-
-_Special function register for sub data path unit_
+### `furiosa.task.sfr.sub_data_path_unit` (furiosa::TaskSfrSubDataPathUnitOp)
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.sfr.sub_data_path` attr-dict
+operation ::= `furiosa.task.sfr.sub_data_path_unit` attr-dict
 ```
 
 Interfaces: `InferTypeOpInterface`
@@ -141,14 +328,12 @@ Interfaces: `InferTypeOpInterface`
 | `sfr` | Special function register type |
 
 
-### `furiosa.task.sfr.sub_fetch` (furiosa::TaskSfrSubFetchOp)
-
-_Special function register for sub fetch unit_
+### `furiosa.task.sfr.sub_fetch_unit` (furiosa::TaskSfrSubFetchUnitOp)
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.sfr.sub_fetch` attr-dict
+operation ::= `furiosa.task.sfr.sub_fetch_unit` attr-dict
 ```
 
 Interfaces: `InferTypeOpInterface`
@@ -172,7 +357,94 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>custom_snoop_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.tensor_register_file` (furiosa::TaskSfrTensorRegisterFileOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.tensor_register_file` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>write_interleaving_flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_mac_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_skip_flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_mac_row_interleaving</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_flits_per_period</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_valid_flits_per_period</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.transpose_engine` (furiosa::TaskSfrTransposeEngineOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.transpose_engine` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>fetch_in_cols</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_in_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_out_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_in_width_shift</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `sfr` | Special function register type |
+
+
+### `furiosa.task.sfr.vector_register_file` (furiosa::TaskSfrVectorRegisterFileOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.sfr.vector_register_file` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>write_row_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_skip_flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_stride</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
 #### Results:
@@ -184,8 +456,6 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa.task.static.dma_descriptor` (furiosa::TaskStaticDmaDescriptorOp)
 
-_Static direct memory access descriptor_
-
 Syntax:
 
 ```
@@ -196,7 +466,7 @@ operation ::= `furiosa.task.static.dma_descriptor` attr-dict
 
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>desc_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -207,14 +477,170 @@ operation ::= `furiosa.task.static.dma_descriptor` attr-dict
 </table>
 
 
-### `furiosa.task.static.sfr.sub_commit` (furiosa::TaskStaticSfrSubCommitOp)
-
-_Static special function register for sub commit unit_
+### `furiosa.task.static.sfr.dot_product_engine` (furiosa::TaskStaticSfrDotProductEngineOp)
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.static.sfr.sub_commit` attr-dict
+operation ::= `furiosa.task.static.sfr.dot_product_engine` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>flits_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>feed_input_transpose</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>initial_shift_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>shift_stride</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>pop_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>shift_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>feed_data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>initial_shift</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>iter_seq_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>reg_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>acc_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>acc_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_cols</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_reset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>output_major</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>acc_init_value</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_tree_operation</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_tree_depth</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>mac_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fp_ieee_nan_multiplication</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fxp_shift_rounding_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_read_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_read_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>reg_read_cache_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.main_commit_unit` (furiosa::TaskStaticSfrMainCommitUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.main_commit_unit` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>commit_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.main_data_path_unit` (furiosa::TaskStaticSfrMainDataPathUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.main_data_path_unit` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>main_context</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.main_fetch_unit` (furiosa::TaskStaticSfrMainFetchUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.main_fetch_unit` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>num_zero_points</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zero_point0</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zero_point1</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>table_entry_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>tables</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>table_base_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect_pointer_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zeropoint_tail_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_pad_value</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>pad_order</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_rightmost_valid_count_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_left_pad_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_left_pad_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zeropoint_dims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>last_dim_rightmost_valid_count</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>zeropoint_fetch_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>topology</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_slice_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim0_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.register_config_unit` (furiosa::TaskStaticSfrRegisterConfigUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.register_config_unit` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>access_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>words_per_input</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_offset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.sub_commit_unit` (furiosa::TaskStaticSfrSubCommitUnitOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.sub_commit_unit` attr-dict
 ```
 
 #### Attributes:
@@ -229,18 +655,16 @@ operation ::= `furiosa.task.static.sfr.sub_commit` attr-dict
 <tr><td><code>commit_data</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
 <tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>slice_enable_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
 </table>
 
 
-### `furiosa.task.static.sfr.sub_data_path` (furiosa::TaskStaticSfrSubDataPathOp)
-
-_Static special function register for sub data path unit_
+### `furiosa.task.static.sfr.sub_data_path_unit` (furiosa::TaskStaticSfrSubDataPathUnitOp)
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.static.sfr.sub_data_path` attr-dict
+operation ::= `furiosa.task.static.sfr.sub_data_path_unit` attr-dict
 ```
 
 #### Attributes:
@@ -252,14 +676,12 @@ operation ::= `furiosa.task.static.sfr.sub_data_path` attr-dict
 </table>
 
 
-### `furiosa.task.static.sfr.sub_fetch` (furiosa::TaskStaticSfrSubFetchOp)
-
-_Static special function register for sub fetch unit_
+### `furiosa.task.static.sfr.sub_fetch_unit` (furiosa::TaskStaticSfrSubFetchUnitOp)
 
 Syntax:
 
 ```
-operation ::= `furiosa.task.static.sfr.sub_fetch` attr-dict
+operation ::= `furiosa.task.static.sfr.sub_fetch_unit` attr-dict
 ```
 
 #### Attributes:
@@ -282,7 +704,73 @@ operation ::= `furiosa.task.static.sfr.sub_fetch` attr-dict
 <tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>custom_snoop_bitmap</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.tensor_register_file` (furiosa::TaskStaticSfrTensorRegisterFileOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.tensor_register_file` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_interleaving_flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_mac_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_skip_flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_mac_row_interleaving</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_flits_per_period</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_valid_flits_per_period</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.transpose_engine` (furiosa::TaskStaticSfrTransposeEngineOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.transpose_engine` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_in_cols</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_in_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_out_rows</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>fetch_in_width_shift</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
+
+### `furiosa.task.static.sfr.vector_register_file` (furiosa::TaskStaticSfrVectorRegisterFileOp)
+
+Syntax:
+
+```
+operation ::= `furiosa.task.static.sfr.vector_register_file` attr-dict
+```
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sfr_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_skip_flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>write_row_stride</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
 
