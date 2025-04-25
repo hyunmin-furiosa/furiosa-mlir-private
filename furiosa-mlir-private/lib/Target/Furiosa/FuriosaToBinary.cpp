@@ -675,12 +675,35 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
               furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
-          .Case<furiosa::TaskStaticSfrSubFetchUnitOp,
+          .Case<furiosa::TaskStaticSfrDotProductEngineOp,
+                furiosa::TaskStaticSfrMainCommitUnitOp,
+                furiosa::TaskStaticSfrMainDataPathUnitOp,
+                furiosa::TaskStaticSfrMainFetchUnitOp,
+                furiosa::TaskStaticSfrRegisterConfigUnitOp,
                 furiosa::TaskStaticSfrSubCommitUnitOp,
-                furiosa::TaskStaticSfrSubDataPathUnitOp>(
+                furiosa::TaskStaticSfrSubDataPathUnitOp,
+                furiosa::TaskStaticSfrSubFetchUnitOp,
+                furiosa::TaskStaticSfrTensorRegisterFileOp,
+                furiosa::TaskStaticSfrTransposeEngineOp,
+                furiosa::TaskStaticSfrVectorArithmeticUnitOp,
+                furiosa::TaskStaticSfrVectorReduceUnitOp,
+                furiosa::TaskStaticSfrVectorRegisterFileOp,
+                furiosa::TaskStaticSfrVectorRouteUnitOp>(
               [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskSfrSubFetchUnitOp, furiosa::TaskSfrSubCommitUnitOp,
-                furiosa::TaskSfrSubDataPathUnitOp>(
+          .Case<furiosa::TaskSfrDotProductEngineOp,
+                furiosa::TaskSfrMainCommitUnitOp,
+                furiosa::TaskSfrMainDataPathUnitOp,
+                furiosa::TaskSfrMainFetchUnitOp,
+                furiosa::TaskSfrRegisterConfigUnitOp,
+                furiosa::TaskSfrSubCommitUnitOp,
+                furiosa::TaskSfrSubDataPathUnitOp,
+                furiosa::TaskSfrSubFetchUnitOp,
+                furiosa::TaskSfrTensorRegisterFileOp,
+                furiosa::TaskSfrTransposeEngineOp,
+                furiosa::TaskSfrVectorArithmeticUnitOp,
+                furiosa::TaskSfrVectorReduceUnitOp,
+                furiosa::TaskSfrVectorRegisterFileOp,
+                furiosa::TaskSfrVectorRouteUnitOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
           .Case<furiosa::TaskStaticDmaDescriptorOp>(
               [&](auto op) { return printStaticDmaDescriptor(*this, op); })

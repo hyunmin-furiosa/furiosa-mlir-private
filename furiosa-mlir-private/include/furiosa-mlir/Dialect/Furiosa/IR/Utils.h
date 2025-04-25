@@ -382,53 +382,48 @@ getCommand(Operation &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubFetchUnitOp> ||
-                               std::is_same_v<T, TaskSfrSubFetchUnitOp>,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrDotProductEngineOp> ||
+                               std::is_same_v<T, TaskSfrDotProductEngineOp>,
                            bool> = true>
-std::vector<sfr_data_t> getSfrSubFetchUnit(T &op) {
-  sfr::slice::SubFetchUnit<sfr_data_t> sfr =
-      sfr::slice::SubFetchUnit<sfr_data_t>();
-  sfr.base = op.getBase();
-  sfr.type_conversion = op.getTypeConversion();
-  sfr.num_zero_points = op.getNumZeroPoints();
-  sfr.zero_point0 = op.getZeroPoint0();
-  sfr.zero_point1 = op.getZeroPoint1();
-  auto limits = op.getLimits();
-  sfr.limits_element0 = dyn_cast_or_null<IntegerAttr>(limits[0]).getInt();
-  sfr.limits_element1 = dyn_cast_or_null<IntegerAttr>(limits[1]).getInt();
-  sfr.limits_element2 = dyn_cast_or_null<IntegerAttr>(limits[2]).getInt();
-  sfr.limits_element3 = dyn_cast_or_null<IntegerAttr>(limits[3]).getInt();
-  sfr.limits_element4 = dyn_cast_or_null<IntegerAttr>(limits[4]).getInt();
-  sfr.limits_element5 = dyn_cast_or_null<IntegerAttr>(limits[5]).getInt();
-  sfr.limits_element6 = dyn_cast_or_null<IntegerAttr>(limits[6]).getInt();
-  sfr.limits_element7 = dyn_cast_or_null<IntegerAttr>(limits[7]).getInt();
-  auto strides = op.getStrides();
-  sfr.strides_element0 = dyn_cast_or_null<IntegerAttr>(strides[0]).getInt();
-  sfr.strides_element1 = dyn_cast_or_null<IntegerAttr>(strides[1]).getInt();
-  sfr.strides_element2 = dyn_cast_or_null<IntegerAttr>(strides[2]).getInt();
-  sfr.strides_element3 = dyn_cast_or_null<IntegerAttr>(strides[3]).getInt();
-  sfr.strides_element4 = dyn_cast_or_null<IntegerAttr>(strides[4]).getInt();
-  sfr.strides_element5 = dyn_cast_or_null<IntegerAttr>(strides[5]).getInt();
-  sfr.strides_element6 = dyn_cast_or_null<IntegerAttr>(strides[6]).getInt();
-  sfr.strides_element7 = dyn_cast_or_null<IntegerAttr>(strides[7]).getInt();
-  sfr.flit_count = op.getFlitCount();
-  sfr.words_per_packet = op.getWordsPerPacket();
-  sfr.topology = op.getTopology();
-  sfr.outer_slice_log_size = op.getOuterSliceLogSize();
-  sfr.outer_dim0_log_size = op.getOuterDim0LogSize();
-  sfr.outer_dim1_log_size = op.getOuterDim1LogSize();
-  sfr.outer_dim0_chunk_size = op.getOuterDim0ChunkSize();
-  sfr.outer_dim1_chunk_size = op.getOuterDim1ChunkSize();
-  auto custom_snoop_bitmap_mask = op.getCustomSnoopBitmapMask();
-  sfr.sub_fetch_unit_custom_snoop_bitmap0 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[0]).getInt();
-  sfr.sub_fetch_unit_custom_snoop_bitmap1 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[1]).getInt();
-  sfr.sub_fetch_unit_custom_snoop_bitmap2 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[2]).getInt();
-  sfr.sub_fetch_unit_custom_snoop_bitmap3 =
-      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[3]).getInt();
+std::vector<sfr_data_t> getSfrDotProductEngine(T &op) {
+  sfr::slice::DotProductEngineMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
 
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrMainCommitUnitOp> ||
+                               std::is_same_v<T, TaskSfrMainCommitUnitOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrMainCommitUnit(T &op) {
+  sfr::slice::CommitUnitMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrMainDataPathUnitOp> ||
+                               std::is_same_v<T, TaskSfrMainDataPathUnitOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrMainDataPathUnit(T &op) {
+  sfr::slice::OperationDataPathMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrMainFetchUnitOp> ||
+                               std::is_same_v<T, TaskSfrMainFetchUnitOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrMainFetchUnit(T &op) {
+  sfr::slice::FetchUnitMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, TaskStaticSfrRegisterConfigUnitOp> ||
+                         std::is_same_v<T, TaskSfrRegisterConfigUnitOp>,
+                     bool> = true>
+std::vector<sfr_data_t> getSfrRegisterConfigUnit(T &op) {
+  sfr::slice::RegisterConfig<sfr_data_t> sfr{};
   return sfr.get_blocks();
 }
 
@@ -437,8 +432,7 @@ template <typename T,
                                std::is_same_v<T, TaskSfrSubCommitUnitOp>,
                            bool> = true>
 std::vector<sfr_data_t> getSfrSubCommitUnit(T &op) {
-  sfr::slice::SubCommitUnit<sfr_data_t> sfr =
-      sfr::slice::SubCommitUnit<sfr_data_t>();
+  sfr::slice::SubCommitUnit<sfr_data_t> sfr{};
   sfr.mode = op.getMode();
   sfr.packet_valid_count = op.getPacketValidCount();
   sfr.base = op.getBase();
@@ -487,14 +481,137 @@ std::vector<sfr_data_t> getSfrSubDataPathUnit(T &op) {
   return sfr.get_blocks();
 }
 
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubFetchUnitOp> ||
+                               std::is_same_v<T, TaskSfrSubFetchUnitOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrSubFetchUnit(T &op) {
+  sfr::slice::SubFetchUnit<sfr_data_t> sfr{};
+  sfr.base = op.getBase();
+  sfr.type_conversion = op.getTypeConversion();
+  sfr.num_zero_points = op.getNumZeroPoints();
+  sfr.zero_point0 = op.getZeroPoint0();
+  sfr.zero_point1 = op.getZeroPoint1();
+  auto limits = op.getLimits();
+  sfr.limits_element0 = dyn_cast_or_null<IntegerAttr>(limits[0]).getInt();
+  sfr.limits_element1 = dyn_cast_or_null<IntegerAttr>(limits[1]).getInt();
+  sfr.limits_element2 = dyn_cast_or_null<IntegerAttr>(limits[2]).getInt();
+  sfr.limits_element3 = dyn_cast_or_null<IntegerAttr>(limits[3]).getInt();
+  sfr.limits_element4 = dyn_cast_or_null<IntegerAttr>(limits[4]).getInt();
+  sfr.limits_element5 = dyn_cast_or_null<IntegerAttr>(limits[5]).getInt();
+  sfr.limits_element6 = dyn_cast_or_null<IntegerAttr>(limits[6]).getInt();
+  sfr.limits_element7 = dyn_cast_or_null<IntegerAttr>(limits[7]).getInt();
+  auto strides = op.getStrides();
+  sfr.strides_element0 = dyn_cast_or_null<IntegerAttr>(strides[0]).getInt();
+  sfr.strides_element1 = dyn_cast_or_null<IntegerAttr>(strides[1]).getInt();
+  sfr.strides_element2 = dyn_cast_or_null<IntegerAttr>(strides[2]).getInt();
+  sfr.strides_element3 = dyn_cast_or_null<IntegerAttr>(strides[3]).getInt();
+  sfr.strides_element4 = dyn_cast_or_null<IntegerAttr>(strides[4]).getInt();
+  sfr.strides_element5 = dyn_cast_or_null<IntegerAttr>(strides[5]).getInt();
+  sfr.strides_element6 = dyn_cast_or_null<IntegerAttr>(strides[6]).getInt();
+  sfr.strides_element7 = dyn_cast_or_null<IntegerAttr>(strides[7]).getInt();
+  sfr.flit_count = op.getFlitCount();
+  sfr.words_per_packet = op.getWordsPerPacket();
+  sfr.topology = op.getTopology();
+  sfr.outer_slice_log_size = op.getOuterSliceLogSize();
+  sfr.outer_dim0_log_size = op.getOuterDim0LogSize();
+  sfr.outer_dim1_log_size = op.getOuterDim1LogSize();
+  sfr.outer_dim0_chunk_size = op.getOuterDim0ChunkSize();
+  sfr.outer_dim1_chunk_size = op.getOuterDim1ChunkSize();
+  auto custom_snoop_bitmap_mask = op.getCustomSnoopBitmapMask();
+  sfr.sub_fetch_unit_custom_snoop_bitmap0 =
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[0]).getInt();
+  sfr.sub_fetch_unit_custom_snoop_bitmap1 =
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[1]).getInt();
+  sfr.sub_fetch_unit_custom_snoop_bitmap2 =
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[2]).getInt();
+  sfr.sub_fetch_unit_custom_snoop_bitmap3 =
+      dyn_cast_or_null<IntegerAttr>(custom_snoop_bitmap_mask[3]).getInt();
+
+  return sfr.get_blocks();
+}
+
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, TaskStaticSfrTensorRegisterFileOp> ||
+                         std::is_same_v<T, TaskSfrTensorRegisterFileOp>,
+                     bool> = true>
+std::vector<sfr_data_t> getSfrTensorRegisterFile(T &op) {
+  sfr::slice::DotProductEngineRegisterFile<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrTransposeEngineOp> ||
+                               std::is_same_v<T, TaskSfrTransposeEngineOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrTransposeEngine(T &op) {
+  sfr::slice::TransposeEngineMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorArithmeticUnitOp> ||
+                         std::is_same_v<T, TaskSfrVectorArithmeticUnitOp>,
+                     bool> = true>
+std::vector<sfr_data_t> getSfrVectorArithmeticUnit(T &op) {
+  sfr::slice::VectorArithmeticUnitMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorReduceUnitOp> ||
+                               std::is_same_v<T, TaskSfrVectorReduceUnitOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrVectorReduceUnit(T &op) {
+  sfr::slice::VectorReduceUnitMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorRegisterFileOp> ||
+                         std::is_same_v<T, TaskSfrVectorRegisterFileOp>,
+                     bool> = true>
+std::vector<sfr_data_t> getSfrVectorRegisterFile(T &op) {
+  sfr::slice::VectorRegisterFile<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
+template <typename T,
+          std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorRouteUnitOp> ||
+                               std::is_same_v<T, TaskSfrVectorRouteUnitOp>,
+                           bool> = true>
+std::vector<sfr_data_t> getSfrVectorRouteUnit(T &op) {
+  sfr::slice::VectorRouteUnitMainContext<sfr_data_t> sfr{};
+  return sfr.get_blocks();
+}
+
 FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>
 getStaticSfr(Operation &op) {
   return llvm::TypeSwitch<
              Operation *,
              FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>>(&op)
-      .Case<TaskStaticSfrSubFetchUnitOp>([&](auto op) {
+      .Case<TaskStaticSfrDotProductEngineOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
-            op.getSfrAddr(), getSfrSubFetchUnit(op));
+            op.getSfrAddr(), getSfrDotProductEngine(op));
+      })
+      .Case<TaskStaticSfrMainCommitUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrMainCommitUnit(op));
+      })
+      .Case<TaskStaticSfrMainDataPathUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrMainDataPathUnit(op));
+      })
+      .Case<TaskStaticSfrMainFetchUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrMainFetchUnit(op));
+      })
+      .Case<TaskStaticSfrRegisterConfigUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrRegisterConfigUnit(op));
       })
       .Case<TaskStaticSfrSubCommitUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
@@ -504,6 +621,34 @@ getStaticSfr(Operation &op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrSubDataPathUnit(op));
       })
+      .Case<TaskStaticSfrSubFetchUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrSubFetchUnit(op));
+      })
+      .Case<TaskStaticSfrTensorRegisterFileOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrTensorRegisterFile(op));
+      })
+      .Case<TaskStaticSfrTransposeEngineOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrTransposeEngine(op));
+      })
+      .Case<TaskStaticSfrVectorArithmeticUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrVectorArithmeticUnit(op));
+      })
+      .Case<TaskStaticSfrVectorReduceUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrVectorReduceUnit(op));
+      })
+      .Case<TaskStaticSfrVectorRegisterFileOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrVectorRegisterFile(op));
+      })
+      .Case<TaskStaticSfrVectorRouteUnitOp>([&](auto op) {
+        return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
+            op.getSfrAddr(), getSfrVectorRouteUnit(op));
+      })
       .Default([&](Operation *) {
         return op.emitOpError(
             "unable to interpret as furiosa dialect operator");
@@ -512,12 +657,34 @@ getStaticSfr(Operation &op) {
 
 FailureOr<std::vector<sfr_data_t>> getSfr(Operation &op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::vector<sfr_data_t>>>(&op)
-      .Case<TaskSfrSubFetchUnitOp>(
-          [&](auto op) { return getSfrSubFetchUnit(op); })
+      .Case<TaskSfrDotProductEngineOp>(
+          [&](auto op) { return getSfrDotProductEngine(op); })
+      .Case<TaskSfrMainCommitUnitOp>(
+          [&](auto op) { return getSfrMainCommitUnit(op); })
+      .Case<TaskSfrMainDataPathUnitOp>(
+          [&](auto op) { return getSfrMainDataPathUnit(op); })
+      .Case<TaskSfrMainFetchUnitOp>(
+          [&](auto op) { return getSfrMainFetchUnit(op); })
+      .Case<TaskSfrRegisterConfigUnitOp>(
+          [&](auto op) { return getSfrRegisterConfigUnit(op); })
       .Case<TaskSfrSubCommitUnitOp>(
           [&](auto op) { return getSfrSubCommitUnit(op); })
       .Case<TaskSfrSubDataPathUnitOp>(
           [&](auto op) { return getSfrSubDataPathUnit(op); })
+      .Case<TaskSfrSubFetchUnitOp>(
+          [&](auto op) { return getSfrSubFetchUnit(op); })
+      .Case<TaskSfrTensorRegisterFileOp>(
+          [&](auto op) { return getSfrTensorRegisterFile(op); })
+      .Case<TaskSfrTransposeEngineOp>(
+          [&](auto op) { return getSfrTransposeEngine(op); })
+      .Case<TaskSfrVectorArithmeticUnitOp>(
+          [&](auto op) { return getSfrVectorArithmeticUnit(op); })
+      .Case<TaskSfrVectorReduceUnitOp>(
+          [&](auto op) { return getSfrVectorReduceUnit(op); })
+      .Case<TaskSfrVectorRegisterFileOp>(
+          [&](auto op) { return getSfrVectorRegisterFile(op); })
+      .Case<TaskSfrVectorRouteUnitOp>(
+          [&](auto op) { return getSfrVectorRouteUnit(op); })
       .Default([&](Operation *) {
         return op.emitOpError(
             "unable to interpret as furiosa dialect operator");
