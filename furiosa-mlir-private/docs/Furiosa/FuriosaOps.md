@@ -19,10 +19,10 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>source_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>source_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -108,7 +108,7 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>shift_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>feed_data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>initial_shift_element</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>initial_shift_element</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>acc_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>acc_cols</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>acc_reset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -153,9 +153,9 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -227,11 +227,11 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>last_dim_left_pad_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zeropoint_dims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>last_dim_rightmost_valid_count</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>last_dim_rightmost_valid_count</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>fetch_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zeropoint_fetch_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -242,7 +242,7 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -303,9 +303,9 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_data</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -362,8 +362,8 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>num_zero_points</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zero_point0</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zero_point1</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>topology</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -372,7 +372,7 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -748,8 +748,8 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>reduce_layer_mode_acc_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>reduce_layer_acc_init_reduce_row0_acc_init</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>reduce_layer_acc_init_reduce_row1_acc_init</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>reduce_layer_acc_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>reduce_layer_acc_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>reduce_layer_acc_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>reduce_layer_acc_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>fp_div_control_op_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>fp_div_control_arg_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>fp_div_control_reg0_cmp_op</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -862,18 +862,18 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>indexer_base0_read_indexer3_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>indexer_base1_operand_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>indexer_base1_write_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>read_indexer0_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer0_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer1_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer1_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer2_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer2_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer3_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer3_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>operand_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>operand_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>write_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>write_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>read_indexer0_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer0_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer1_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer1_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer2_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer2_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer3_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer3_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>operand_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>operand_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>write_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>write_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -1034,15 +1034,15 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>route_info_route_mask</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>route_info_route_group_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>route_info_index_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_lowered_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_lowered_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_allocated_original_dim</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_original_dim_partition_config</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_original_dim_valid_count</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_slice_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_slice_id_match0</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_lowered_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_lowered_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_allocated_original_dim</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_original_dim_partition_config</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_original_dim_valid_count</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_slice_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_slice_id_match0</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>collect_compaction_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>compaction_mode_collect_compaction_cmp_op</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>compaction_mode_collect_compaction_execution_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -1076,10 +1076,10 @@ operation ::= `furiosa.task.static.dma_descriptor` attr-dict
 <tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>source_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>source_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 
@@ -1108,7 +1108,7 @@ operation ::= `furiosa.task.static.sfr.dot_product_engine` attr-dict
 <tr><td><code>shift_dim</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>channel_config</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>feed_data_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>initial_shift_element</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>initial_shift_element</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>acc_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>acc_cols</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>acc_reset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -1146,9 +1146,9 @@ operation ::= `furiosa.task.static.sfr.main_commit_unit` attr-dict
 <tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 
@@ -1206,11 +1206,11 @@ operation ::= `furiosa.task.static.sfr.main_fetch_unit` attr-dict
 <tr><td><code>type_conversion</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>last_dim_left_pad_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zeropoint_dims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>last_dim_rightmost_valid_count</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>last_dim_rightmost_valid_count</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>fetch_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zeropoint_fetch_limit</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -1221,7 +1221,7 @@ operation ::= `furiosa.task.static.sfr.main_fetch_unit` attr-dict
 <tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 
@@ -1268,9 +1268,9 @@ operation ::= `furiosa.task.static.sfr.sub_commit_unit` attr-dict
 <tr><td><code>base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_in_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>commit_data</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>slice_enable_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 
@@ -1313,8 +1313,8 @@ operation ::= `furiosa.task.static.sfr.sub_fetch_unit` attr-dict
 <tr><td><code>num_zero_points</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zero_point0</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>zero_point1</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>flit_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>topology</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -1323,7 +1323,7 @@ operation ::= `furiosa.task.static.sfr.sub_fetch_unit` attr-dict
 <tr><td><code>outer_dim1_log_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim0_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>outer_dim1_chunk_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>custom_snoop_bitmap_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 
@@ -1678,8 +1678,8 @@ operation ::= `furiosa.task.static.sfr.vector_arithmetic_unit` attr-dict
 <tr><td><code>reduce_layer_mode_acc_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>reduce_layer_acc_init_reduce_row0_acc_init</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>reduce_layer_acc_init_reduce_row1_acc_init</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>reduce_layer_acc_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>reduce_layer_acc_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>reduce_layer_acc_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>reduce_layer_acc_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>fp_div_control_op_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>fp_div_control_arg_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>fp_div_control_reg0_cmp_op</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
@@ -1792,18 +1792,18 @@ operation ::= `furiosa.task.static.sfr.vector_arithmetic_unit` attr-dict
 <tr><td><code>indexer_base0_read_indexer3_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>indexer_base1_operand_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>indexer_base1_write_indexer_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>read_indexer0_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer0_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer1_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer1_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer2_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer2_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer3_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>read_indexer3_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>operand_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>operand_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>write_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>write_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>read_indexer0_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer0_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer1_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer1_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer2_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer2_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer3_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>read_indexer3_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>operand_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>operand_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>write_indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>write_indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 
@@ -1943,15 +1943,15 @@ operation ::= `furiosa.task.static.sfr.vector_route_unit` attr-dict
 <tr><td><code>route_info_route_mask</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>route_info_route_group_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>route_info_index_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_lowered_limits</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_lowered_strides</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_allocated_original_dim</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_original_dim_partition_config</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_original_dim_valid_count</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_slice_mask</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
-<tr><td><code>valid_generator_slice_id_match0</code></td><td>::mlir::ArrayAttr</td><td>array attribute</td></tr>
+<tr><td><code>indexer_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>indexer_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_lowered_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_lowered_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_allocated_original_dim</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_original_dim_partition_config</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_original_dim_valid_count</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_slice_mask</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>valid_generator_slice_id_match0</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>collect_compaction_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>compaction_mode_collect_compaction_cmp_op</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>compaction_mode_collect_compaction_execution_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
