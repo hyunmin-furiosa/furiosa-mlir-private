@@ -264,16 +264,28 @@ static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, TaskDmawOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op.getOperation());
 
+  static constexpr std::uint64_t remotePeBase = 0x80'0000'0000;
+  static constexpr std::uint64_t peSize = 0x2000'0000; // 512MB
+  std::uint64_t remotePeOffset = 0;
+  if (auto functionOp = op->getParentOfType<func::FuncOp>()) {
+    auto targetAttr = functionOp->getAttrOfType<furiosa::TargetAttr>("target");
+    auto clusterPeBegin = targetAttr.getPeBegin() % 4; // within cluster
+    remotePeOffset = remotePeBase + clusterPeBegin * peSize;
+  }
+
   Value operand = op->getOperand(0);
   auto operandName = emitter.getOrCreateName(operand);
   os << "TUC_GENERAL_REGISTERS[0] = " << llvm::format_hex(registers[0].value, 0)
      << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
   os << "TUC_GENERAL_REGISTERS[1] = " << llvm::format_hex(registers[1].value, 0)
-     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff) | "
+     << llvm::format_hex(remotePeOffset, 0) << ";\n"; // remote pe0
   os << "TUC_GENERAL_REGISTERS[2] = " << llvm::format_hex(registers[2].value, 0)
-     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff) | "
+     << llvm::format_hex(remotePeOffset, 0) << ";\n"; // remote pe0
   os << "TUC_GENERAL_REGISTERS[3] = " << llvm::format_hex(registers[3].value, 0)
-     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff) | "
+     << llvm::format_hex(remotePeOffset, 0) << ";\n"; // remote pe0
   command.setReg(0, 0);
   command.setReg(1, 1);
   command.setReg(2, 2);
