@@ -16,7 +16,8 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Error.h"
 
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
 #include "furiosa-mlir/Target/Furiosa/Binary.h"
