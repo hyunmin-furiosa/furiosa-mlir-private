@@ -8,6 +8,7 @@ set(LinkedLibs
   MLIRComplexDialect
   MLIRFuncDialect
   MLIRFuncInlinerExtension
+  MLIRFuncToLLVM
   MLIRIR
   MLIRMLProgramDialect
   MLIRMemRefDialect
