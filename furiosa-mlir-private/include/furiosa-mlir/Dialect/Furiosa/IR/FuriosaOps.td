@@ -384,8 +384,14 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<I64Attr, "0">:$shift_dim,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$channel_config,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$feed_data_type,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$initial_shift,
+                DefaultValuedOptionalAttr<I64ArrayAttr,
+                                          "{0,0,0,0,0,0,0,0}">:$iter_seq_limits,
                 DefaultValuedOptionalAttr<
-                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$initial_shift_element,
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$reg_indexer_strides,
+                DefaultValuedOptionalAttr<
+                    I64ArrayAttr, "{0,0,0,0,0,0,0,0}">:$acc_indexer_strides,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$acc_limit,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$acc_cols,
                 DefaultValuedOptionalAttr<I64Attr, "0">:$acc_reset,
@@ -445,7 +451,7 @@ defset list<NamedDag> Sfr = {
                 DefaultValuedOptionalAttr<
                     I64ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_mask,
                 DefaultValuedOptionalAttr<
-                    I64ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_id_match0,
+                    I64ArrayAttr, "{0,0,0,0}">:$valid_generator_slice_id_match,
                 DefaultValuedOptionalAttr<I64Attr,
                                           "0">:$collect_compaction_mode,
                 DefaultValuedOptionalAttr<
