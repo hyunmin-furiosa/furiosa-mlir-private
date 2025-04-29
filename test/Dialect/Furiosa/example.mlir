@@ -20,11 +20,9 @@ module {
     %5 = tensor.empty() : tensor<256xf32, #furiosa.address<0x20000>>
     return %5 : tensor<256xf32, #furiosa.address<0x20000>>
   }
-  func.func @test() -> (tensor<256xi1>) {
+  func.func @test() {
     %0 = tensor.empty() : tensor<256xf32, #furiosa.address<0x10000>>
-    %1 = tensor.empty() : tensor<256xf32>
-    %2 = func.call @kernel(%0) : (tensor<256xf32, #furiosa.address<0x10000>>) -> (tensor<256xf32, #furiosa.address<0x20000>>)
-    %3 = tosa.equal %1, %2 : (tensor<256xf32>, tensor<256xf32, #furiosa.address<0x20000>>) -> (tensor<256xi1>)
-    return %3 : tensor<256xi1>
+    %1 = func.call @kernel(%0) : (tensor<256xf32, #furiosa.address<0x10000>>) -> (tensor<256xf32, #furiosa.address<0x20000>>)
+    return
   }
 }
