@@ -145,7 +145,7 @@ static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
 
 static LogicalResult
 printStaticDmaDescriptor(ArmCEmitter &emitter,
-                         furiosa::TaskStaticDmaDescriptorOp op) {
+                         furiosa::task::StaticDmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
@@ -196,7 +196,7 @@ printStaticDmaDescriptor(ArmCEmitter &emitter,
 }
 
 static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
-                                        furiosa::TaskDmaDescriptorOp op) {
+                                        furiosa::task::DmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
@@ -240,7 +240,8 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   return success();
 };
 
-static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter, TaskMtosfrOp op) {
+static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter,
+                                        task::MtosfrOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op.getOperation());
 
@@ -261,7 +262,7 @@ static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter, TaskMtosfrOp op) {
   return success();
 }
 
-static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, TaskDmawOp op) {
+static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, task::DmawOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op.getOperation());
 
@@ -665,54 +666,57 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           .Case<func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Case<
-              furiosa::TucItosfrOp, furiosa::TucRtosfrOp, furiosa::TucRtosfriOp,
-              furiosa::TucMtosfrOp, furiosa::TucStosfrOp, furiosa::TucSfrtosOp,
-              furiosa::TucStallOp, furiosa::TucItosOp, furiosa::TucItosiOp,
-              furiosa::TucStosOp, furiosa::TucStotabOp, furiosa::TucStotrfOp,
-              furiosa::TucStovrfOp, furiosa::TucExecutionOp, furiosa::TucWaitOp,
-              furiosa::TucWaitiOp, furiosa::TucInterruptOp, furiosa::TucDmaOp,
-              furiosa::TucDma1Op, furiosa::TucDmawOp, furiosa::TucProfileOp,
-              furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
+          .Case<furiosa::tuc::ItosfrOp, furiosa::tuc::RtosfrOp,
+                furiosa::tuc::RtosfriOp, furiosa::tuc::MtosfrOp,
+                furiosa::tuc::StosfrOp, furiosa::tuc::SfrtosOp,
+                furiosa::tuc::StallOp, furiosa::tuc::ItosOp,
+                furiosa::tuc::ItosiOp, furiosa::tuc::StosOp,
+                furiosa::tuc::StotabOp, furiosa::tuc::StotrfOp,
+                furiosa::tuc::StovrfOp, furiosa::tuc::ExecutionOp,
+                furiosa::tuc::WaitOp, furiosa::tuc::WaitiOp,
+                furiosa::tuc::InterruptOp, furiosa::tuc::DmaOp,
+                furiosa::tuc::Dma1Op, furiosa::tuc::DmawOp,
+                furiosa::tuc::ProfileOp, furiosa::tuc::ProfileiOp,
+                furiosa::tuc::PrflushOp>([&](auto op) {
             return printFuriosaCommand(*this, op.getOperation());
           })
-          .Case<furiosa::TaskStaticSfrDotProductEngineOp,
-                furiosa::TaskStaticSfrMainCommitUnitOp,
-                furiosa::TaskStaticSfrMainDataPathUnitOp,
-                furiosa::TaskStaticSfrMainFetchUnitOp,
-                furiosa::TaskStaticSfrRegisterConfigUnitOp,
-                furiosa::TaskStaticSfrSubCommitUnitOp,
-                furiosa::TaskStaticSfrSubDataPathUnitOp,
-                furiosa::TaskStaticSfrSubFetchUnitOp,
-                furiosa::TaskStaticSfrTensorRegisterFileOp,
-                furiosa::TaskStaticSfrTransposeEngineOp,
-                furiosa::TaskStaticSfrVectorArithmeticUnitOp,
-                furiosa::TaskStaticSfrVectorReduceUnitOp,
-                furiosa::TaskStaticSfrVectorRegisterFileOp,
-                furiosa::TaskStaticSfrVectorRouteUnitOp>(
+          .Case<furiosa::task::StaticSfrDotProductEngineOp,
+                furiosa::task::StaticSfrMainCommitUnitOp,
+                furiosa::task::StaticSfrMainDataPathUnitOp,
+                furiosa::task::StaticSfrMainFetchUnitOp,
+                furiosa::task::StaticSfrRegisterConfigUnitOp,
+                furiosa::task::StaticSfrSubCommitUnitOp,
+                furiosa::task::StaticSfrSubDataPathUnitOp,
+                furiosa::task::StaticSfrSubFetchUnitOp,
+                furiosa::task::StaticSfrTensorRegisterFileOp,
+                furiosa::task::StaticSfrTransposeEngineOp,
+                furiosa::task::StaticSfrVectorArithmeticUnitOp,
+                furiosa::task::StaticSfrVectorReduceUnitOp,
+                furiosa::task::StaticSfrVectorRegisterFileOp,
+                furiosa::task::StaticSfrVectorRouteUnitOp>(
               [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskSfrDotProductEngineOp,
-                furiosa::TaskSfrMainCommitUnitOp,
-                furiosa::TaskSfrMainDataPathUnitOp,
-                furiosa::TaskSfrMainFetchUnitOp,
-                furiosa::TaskSfrRegisterConfigUnitOp,
-                furiosa::TaskSfrSubCommitUnitOp,
-                furiosa::TaskSfrSubDataPathUnitOp,
-                furiosa::TaskSfrSubFetchUnitOp,
-                furiosa::TaskSfrTensorRegisterFileOp,
-                furiosa::TaskSfrTransposeEngineOp,
-                furiosa::TaskSfrVectorArithmeticUnitOp,
-                furiosa::TaskSfrVectorReduceUnitOp,
-                furiosa::TaskSfrVectorRegisterFileOp,
-                furiosa::TaskSfrVectorRouteUnitOp>(
+          .Case<furiosa::task::SfrDotProductEngineOp,
+                furiosa::task::SfrMainCommitUnitOp,
+                furiosa::task::SfrMainDataPathUnitOp,
+                furiosa::task::SfrMainFetchUnitOp,
+                furiosa::task::SfrRegisterConfigUnitOp,
+                furiosa::task::SfrSubCommitUnitOp,
+                furiosa::task::SfrSubDataPathUnitOp,
+                furiosa::task::SfrSubFetchUnitOp,
+                furiosa::task::SfrTensorRegisterFileOp,
+                furiosa::task::SfrTransposeEngineOp,
+                furiosa::task::SfrVectorArithmeticUnitOp,
+                furiosa::task::SfrVectorReduceUnitOp,
+                furiosa::task::SfrVectorRegisterFileOp,
+                furiosa::task::SfrVectorRouteUnitOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskStaticDmaDescriptorOp>(
+          .Case<furiosa::task::StaticDmaDescriptorOp>(
               [&](auto op) { return printStaticDmaDescriptor(*this, op); })
-          .Case<furiosa::TaskDmaDescriptorOp>(
+          .Case<furiosa::task::DmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
-          .Case<furiosa::TaskMtosfrOp>(
+          .Case<furiosa::task::MtosfrOp>(
               [&](auto op) { return printDynamicMtosfr(*this, op); })
-          .Case<furiosa::TaskDmawOp>(
+          .Case<furiosa::task::DmawOp>(
               [&](auto op) { return printDynamicDmaw(*this, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");

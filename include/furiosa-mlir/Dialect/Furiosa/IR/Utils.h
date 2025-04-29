@@ -9,31 +9,31 @@ namespace mlir::furiosa {
 
 FailureOr<std::uint32_t> getOpcode(Operation &op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::uint32_t>>(&op)
-      .Case<TucItosfrOp>([&](auto op) { return 0x01; })
-      .Case<TucRtosfrOp>([&](auto op) { return 0x02; })
-      .Case<TucRtosfriOp>([&](auto op) { return 0x03; })
-      .Case<TucMtosfrOp>([&](auto op) { return 0x04; })
-      .Case<TaskMtosfrOp>([&](auto op) { return 0x04; })
-      .Case<TucStosfrOp>([&](auto op) { return 0x05; })
-      .Case<TucSfrtosOp>([&](auto op) { return 0x06; })
-      .Case<TucStallOp>([&](auto op) { return 0x07; })
-      .Case<TucItosOp>([&](auto op) { return 0x08; })
-      .Case<TucItosiOp>([&](auto op) { return 0x09; })
-      .Case<TucStosOp>([&](auto op) { return 0x0a; })
-      .Case<TucStotabOp>([&](auto op) { return 0x0b; })
-      .Case<TucStotrfOp>([&](auto op) { return 0x0c; })
-      .Case<TucStovrfOp>([&](auto op) { return 0x0d; })
-      .Case<TucExecutionOp>([&](auto op) { return 0x10; })
-      .Case<TucWaitOp>([&](auto op) { return 0x11; })
-      .Case<TucWaitiOp>([&](auto op) { return 0x15; })
-      .Case<TucInterruptOp>([&](auto op) { return 0x12; })
-      .Case<TucDmaOp>([&](auto op) { return 0x13; })
-      .Case<TucDma1Op>([&](auto op) { return 0x14; })
-      .Case<TucDmawOp>([&](auto op) { return 0x16; })
-      .Case<TaskDmawOp>([&](auto op) { return 0x16; })
-      .Case<TucProfileOp>([&](auto op) { return 0x18; })
-      .Case<TucProfileiOp>([&](auto op) { return 0x19; })
-      .Case<TucPrflushOp>([&](auto op) { return 0x1a; })
+      .Case<tuc::ItosfrOp>([&](auto op) { return 0x01; })
+      .Case<tuc::RtosfrOp>([&](auto op) { return 0x02; })
+      .Case<tuc::RtosfriOp>([&](auto op) { return 0x03; })
+      .Case<tuc::MtosfrOp>([&](auto op) { return 0x04; })
+      .Case<task::MtosfrOp>([&](auto op) { return 0x04; })
+      .Case<tuc::StosfrOp>([&](auto op) { return 0x05; })
+      .Case<tuc::SfrtosOp>([&](auto op) { return 0x06; })
+      .Case<tuc::StallOp>([&](auto op) { return 0x07; })
+      .Case<tuc::ItosOp>([&](auto op) { return 0x08; })
+      .Case<tuc::ItosiOp>([&](auto op) { return 0x09; })
+      .Case<tuc::StosOp>([&](auto op) { return 0x0a; })
+      .Case<tuc::StotabOp>([&](auto op) { return 0x0b; })
+      .Case<tuc::StotrfOp>([&](auto op) { return 0x0c; })
+      .Case<tuc::StovrfOp>([&](auto op) { return 0x0d; })
+      .Case<tuc::ExecutionOp>([&](auto op) { return 0x10; })
+      .Case<tuc::WaitOp>([&](auto op) { return 0x11; })
+      .Case<tuc::WaitiOp>([&](auto op) { return 0x15; })
+      .Case<tuc::InterruptOp>([&](auto op) { return 0x12; })
+      .Case<tuc::DmaOp>([&](auto op) { return 0x13; })
+      .Case<tuc::Dma1Op>([&](auto op) { return 0x14; })
+      .Case<tuc::DmawOp>([&](auto op) { return 0x16; })
+      .Case<task::DmawOp>([&](auto op) { return 0x16; })
+      .Case<tuc::ProfileOp>([&](auto op) { return 0x18; })
+      .Case<tuc::ProfileiOp>([&](auto op) { return 0x19; })
+      .Case<tuc::PrflushOp>([&](auto op) { return 0x1a; })
       .Default([&](Operation *) {
         return op.emitOpError(
             "unable to interpret as furiosa dialect operator");
@@ -48,7 +48,7 @@ getCommand(Operation &op) {
                           FailureOr<std::tuple<TensorUnitCommand,
                                                SmallVector<GeneralRegister>>>>(
              &op)
-      .Case<TucItosfrOp>([&](auto op) {
+      .Case<tuc::ItosfrOp>([&](auto op) {
         command.itosfr.value = op.getValue();
         {
           GeneralRegister reg;
@@ -58,7 +58,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucRtosfrOp>([&](auto op) {
+      .Case<tuc::RtosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.rtosfr_0.value = op.getValue();
@@ -72,7 +72,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucRtosfriOp>([&](auto op) {
+      .Case<tuc::RtosfriOp>([&](auto op) {
         command.rtosfri.log_size = op.getLogSize();
         command.rtosfri.sfr_address = op.getSfrAddress();
         {
@@ -82,7 +82,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucMtosfrOp>([&](auto op) {
+      .Case<tuc::MtosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.mtosfr_0.spm_address = op.getSpmAddress();
@@ -92,7 +92,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TaskMtosfrOp>([&](auto op) {
+      .Case<task::MtosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.mtosfr_0.sfr_address = op.getSfrAddress();
@@ -100,7 +100,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucStosfrOp>([&](auto op) {
+      .Case<tuc::StosfrOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stosfr_0.fetch_base = op.getFetchBase();
@@ -121,7 +121,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucSfrtosOp>([&](auto op) {
+      .Case<tuc::SfrtosOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.sfrtos_0.commit_base = op.getCommitBase();
@@ -131,7 +131,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucStallOp>([&](auto op) {
+      .Case<tuc::StallOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stall_0.cycle = op.getCycle();
@@ -139,7 +139,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucItosOp>([&](auto op) {
+      .Case<tuc::ItosOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.itos_0.address_begin = op.getAddressBegin();
@@ -160,7 +160,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucItosiOp>([&](auto op) {
+      .Case<tuc::ItosiOp>([&](auto op) {
         command.value = op.getValue();
         {
           GeneralRegister reg;
@@ -170,7 +170,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucStosOp>([&](auto op) {
+      .Case<tuc::StosOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stos_0.address_begin = op.getAddressBegin();
@@ -187,7 +187,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucStotabOp>([&](auto op) {
+      .Case<tuc::StotabOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stotab_0.fetch_base = op.getFetchBase();
@@ -207,7 +207,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucStotrfOp>([&](auto op) {
+      .Case<tuc::StotrfOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stotrf_0.fetch_base = op.getFetchBase();
@@ -239,7 +239,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucStovrfOp>([&](auto op) {
+      .Case<tuc::StovrfOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.stovrf_0.fetch_base = op.getFetchBase();
@@ -266,21 +266,21 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucExecutionOp>([&](auto op) {
+      .Case<tuc::ExecutionOp>([&](auto op) {
         command.execution.subunit_bitmap = op.getSubunitBitmap();
         command.execution.context_id = op.getContextId();
         command.execution.target_context = op.getTargetContext();
         return std::make_tuple(command, registers);
       })
-      .Case<TucWaitOp, TucWaitiOp>([&](auto op) {
+      .Case<tuc::WaitOp, tuc::WaitiOp>([&](auto op) {
         command.wait.dma_tag_id = op.getDmaTagId();
         command.wait.type = op.getType();
         command.wait.target_context = op.getTargetContext();
         return std::make_tuple(command, registers);
       })
-      .Case<TucInterruptOp>(
+      .Case<tuc::InterruptOp>(
           [&](auto op) { return std::make_tuple(command, registers); })
-      .Case<TucDmaOp>([&](auto op) {
+      .Case<tuc::DmaOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dma_0.pe0_desc_addr = op.getPe0DescAddr();
@@ -302,7 +302,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucDma1Op>([&](auto op) {
+      .Case<tuc::Dma1Op>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dma1_0.desc_addr = op.getDescAddr();
@@ -314,7 +314,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucDmawOp>([&](auto op) {
+      .Case<tuc::DmawOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dmaw_0.desc_addr = op.getPe0DescAddr();
@@ -340,7 +340,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TaskDmawOp>([&](auto op) {
+      .Case<task::DmawOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.dmaw_0.dma_tag_id = op.getDmaTagId();
@@ -362,7 +362,7 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucProfileOp>([&](auto op) {
+      .Case<tuc::ProfileOp>([&](auto op) {
         {
           GeneralRegister reg;
           reg.profile_0.profile_id = op.getProfileId();
@@ -370,11 +370,11 @@ getCommand(Operation &op) {
         }
         return std::make_tuple(command, registers);
       })
-      .Case<TucProfileiOp>([&](auto op) {
+      .Case<tuc::ProfileiOp>([&](auto op) {
         command.profilei.profile_id = op.getProfileId();
         return std::make_tuple(command, registers);
       })
-      .Case<TucPrflushOp>(
+      .Case<tuc::PrflushOp>(
           [&](auto op) { return std::make_tuple(command, registers); })
       .Default([&](Operation *) {
         return op.emitOpError(
@@ -382,10 +382,11 @@ getCommand(Operation &op) {
       });
 }
 
-template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrDotProductEngineOp> ||
-                               std::is_same_v<T, TaskSfrDotProductEngineOp>,
-                           bool> = true>
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrDotProductEngineOp> ||
+                         std::is_same_v<T, task::SfrDotProductEngineOp>,
+                     bool> = true>
 std::vector<sfr_data_t> getSfrDotProductEngine(T &op) {
   sfr::slice::DotProductEngineMainContext<sfr_data_t> sfr{};
   sfr.reg_indexer_base = op.getRegIndexerBase();
@@ -486,8 +487,8 @@ std::vector<sfr_data_t> getSfrDotProductEngine(T &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrMainCommitUnitOp> ||
-                               std::is_same_v<T, TaskSfrMainCommitUnitOp>,
+          std::enable_if_t<std::is_same_v<T, task::StaticSfrMainCommitUnitOp> ||
+                               std::is_same_v<T, task::SfrMainCommitUnitOp>,
                            bool> = true>
 std::vector<sfr_data_t> getSfrMainCommitUnit(T &op) {
   sfr::slice::CommitUnitMainContext<sfr_data_t> sfr{};
@@ -526,10 +527,11 @@ std::vector<sfr_data_t> getSfrMainCommitUnit(T &op) {
   return sfr.get_blocks();
 }
 
-template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrMainDataPathUnitOp> ||
-                               std::is_same_v<T, TaskSfrMainDataPathUnitOp>,
-                           bool> = true>
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrMainDataPathUnitOp> ||
+                         std::is_same_v<T, task::SfrMainDataPathUnitOp>,
+                     bool> = true>
 std::vector<sfr_data_t> getSfrMainDataPathUnit(T &op) {
   sfr::slice::OperationDataPathMainContext<sfr_data_t> sfr{};
   sfr.main_context = op.getMainContext();
@@ -539,8 +541,8 @@ std::vector<sfr_data_t> getSfrMainDataPathUnit(T &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrMainFetchUnitOp> ||
-                               std::is_same_v<T, TaskSfrMainFetchUnitOp>,
+          std::enable_if_t<std::is_same_v<T, task::StaticSfrMainFetchUnitOp> ||
+                               std::is_same_v<T, task::SfrMainFetchUnitOp>,
                            bool> = true>
 std::vector<sfr_data_t> getSfrMainFetchUnit(T &op) {
   sfr::slice::FetchUnitMainContext<sfr_data_t> sfr{};
@@ -626,8 +628,8 @@ std::vector<sfr_data_t> getSfrMainFetchUnit(T &op) {
 
 template <
     typename T,
-    std::enable_if_t<std::is_same_v<T, TaskStaticSfrRegisterConfigUnitOp> ||
-                         std::is_same_v<T, TaskSfrRegisterConfigUnitOp>,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrRegisterConfigUnitOp> ||
+                         std::is_same_v<T, task::SfrRegisterConfigUnitOp>,
                      bool> = true>
 std::vector<sfr_data_t> getSfrRegisterConfigUnit(T &op) {
   sfr::slice::RegisterConfig<sfr_data_t> sfr{};
@@ -641,8 +643,8 @@ std::vector<sfr_data_t> getSfrRegisterConfigUnit(T &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubCommitUnitOp> ||
-                               std::is_same_v<T, TaskSfrSubCommitUnitOp>,
+          std::enable_if_t<std::is_same_v<T, task::StaticSfrSubCommitUnitOp> ||
+                               std::is_same_v<T, task::SfrSubCommitUnitOp>,
                            bool> = true>
 std::vector<sfr_data_t> getSfrSubCommitUnit(T &op) {
   sfr::slice::SubCommitUnit<sfr_data_t> sfr{};
@@ -682,10 +684,10 @@ std::vector<sfr_data_t> getSfrSubCommitUnit(T &op) {
   return sfr.get_blocks();
 }
 
-template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubDataPathUnitOp> ||
-                               std::is_same_v<T, TaskSfrSubDataPathUnitOp>,
-                           bool> = true>
+template <typename T, std::enable_if_t<
+                          std::is_same_v<T, task::StaticSfrSubDataPathUnitOp> ||
+                              std::is_same_v<T, task::SfrSubDataPathUnitOp>,
+                          bool> = true>
 std::vector<sfr_data_t> getSfrSubDataPathUnit(T &op) {
   sfr::slice::OperationDataPath<sfr_data_t> sfr =
       sfr::slice::OperationDataPath<sfr_data_t>();
@@ -695,8 +697,8 @@ std::vector<sfr_data_t> getSfrSubDataPathUnit(T &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrSubFetchUnitOp> ||
-                               std::is_same_v<T, TaskSfrSubFetchUnitOp>,
+          std::enable_if_t<std::is_same_v<T, task::StaticSfrSubFetchUnitOp> ||
+                               std::is_same_v<T, task::SfrSubFetchUnitOp>,
                            bool> = true>
 std::vector<sfr_data_t> getSfrSubFetchUnit(T &op) {
   sfr::slice::SubFetchUnit<sfr_data_t> sfr{};
@@ -746,8 +748,8 @@ std::vector<sfr_data_t> getSfrSubFetchUnit(T &op) {
 
 template <
     typename T,
-    std::enable_if_t<std::is_same_v<T, TaskStaticSfrTensorRegisterFileOp> ||
-                         std::is_same_v<T, TaskSfrTensorRegisterFileOp>,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrTensorRegisterFileOp> ||
+                         std::is_same_v<T, task::SfrTensorRegisterFileOp>,
                      bool> = true>
 std::vector<sfr_data_t> getSfrTensorRegisterFile(T &op) {
   sfr::slice::DotProductEngineRegisterFile<sfr_data_t> sfr{};
@@ -764,10 +766,10 @@ std::vector<sfr_data_t> getSfrTensorRegisterFile(T &op) {
   return sfr.get_blocks();
 }
 
-template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrTransposeEngineOp> ||
-                               std::is_same_v<T, TaskSfrTransposeEngineOp>,
-                           bool> = true>
+template <typename T, std::enable_if_t<
+                          std::is_same_v<T, task::StaticSfrTransposeEngineOp> ||
+                              std::is_same_v<T, task::SfrTransposeEngineOp>,
+                          bool> = true>
 std::vector<sfr_data_t> getSfrTransposeEngine(T &op) {
   sfr::slice::TransposeEngineMainContext<sfr_data_t> sfr{};
   sfr.fetch_in_cols = op.getFetchInCols();
@@ -781,8 +783,8 @@ std::vector<sfr_data_t> getSfrTransposeEngine(T &op) {
 
 template <
     typename T,
-    std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorArithmeticUnitOp> ||
-                         std::is_same_v<T, TaskSfrVectorArithmeticUnitOp>,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrVectorArithmeticUnitOp> ||
+                         std::is_same_v<T, task::SfrVectorArithmeticUnitOp>,
                      bool> = true>
 std::vector<sfr_data_t> getSfrVectorArithmeticUnit(T &op) {
   sfr::slice::VectorArithmeticUnitMainContext<sfr_data_t> sfr{};
@@ -1662,10 +1664,11 @@ std::vector<sfr_data_t> getSfrVectorArithmeticUnit(T &op) {
   return sfr.get_blocks();
 }
 
-template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorReduceUnitOp> ||
-                               std::is_same_v<T, TaskSfrVectorReduceUnitOp>,
-                           bool> = true>
+template <
+    typename T,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrVectorReduceUnitOp> ||
+                         std::is_same_v<T, task::SfrVectorReduceUnitOp>,
+                     bool> = true>
 std::vector<sfr_data_t> getSfrVectorReduceUnit(T &op) {
   sfr::slice::VectorReduceUnitMainContext<sfr_data_t> sfr{};
   sfr.cluster_route_add_source = op.getClusterRouteAddSource();
@@ -1771,8 +1774,8 @@ std::vector<sfr_data_t> getSfrVectorReduceUnit(T &op) {
 
 template <
     typename T,
-    std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorRegisterFileOp> ||
-                         std::is_same_v<T, TaskSfrVectorRegisterFileOp>,
+    std::enable_if_t<std::is_same_v<T, task::StaticSfrVectorRegisterFileOp> ||
+                         std::is_same_v<T, task::SfrVectorRegisterFileOp>,
                      bool> = true>
 std::vector<sfr_data_t> getSfrVectorRegisterFile(T &op) {
   sfr::slice::VectorRegisterFile<sfr_data_t> sfr{};
@@ -1784,10 +1787,10 @@ std::vector<sfr_data_t> getSfrVectorRegisterFile(T &op) {
   return sfr.get_blocks();
 }
 
-template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticSfrVectorRouteUnitOp> ||
-                               std::is_same_v<T, TaskSfrVectorRouteUnitOp>,
-                           bool> = true>
+template <typename T, std::enable_if_t<
+                          std::is_same_v<T, task::StaticSfrVectorRouteUnitOp> ||
+                              std::is_same_v<T, task::SfrVectorRouteUnitOp>,
+                          bool> = true>
 std::vector<sfr_data_t> getSfrVectorRouteUnit(T &op) {
   sfr::slice::VectorRouteUnitMainContext<sfr_data_t> sfr{};
   sfr.route_info_data_out_source = op.getRouteInfoDataOutSource();
@@ -1971,59 +1974,59 @@ getStaticSfr(Operation &op) {
   return llvm::TypeSwitch<
              Operation *,
              FailureOr<std::tuple<std::uint64_t, std::vector<sfr_data_t>>>>(&op)
-      .Case<TaskStaticSfrDotProductEngineOp>([&](auto op) {
+      .Case<task::StaticSfrDotProductEngineOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrDotProductEngine(op));
       })
-      .Case<TaskStaticSfrMainCommitUnitOp>([&](auto op) {
+      .Case<task::StaticSfrMainCommitUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrMainCommitUnit(op));
       })
-      .Case<TaskStaticSfrMainDataPathUnitOp>([&](auto op) {
+      .Case<task::StaticSfrMainDataPathUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrMainDataPathUnit(op));
       })
-      .Case<TaskStaticSfrMainFetchUnitOp>([&](auto op) {
+      .Case<task::StaticSfrMainFetchUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrMainFetchUnit(op));
       })
-      .Case<TaskStaticSfrRegisterConfigUnitOp>([&](auto op) {
+      .Case<task::StaticSfrRegisterConfigUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrRegisterConfigUnit(op));
       })
-      .Case<TaskStaticSfrSubCommitUnitOp>([&](auto op) {
+      .Case<task::StaticSfrSubCommitUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrSubCommitUnit(op));
       })
-      .Case<TaskStaticSfrSubDataPathUnitOp>([&](auto op) {
+      .Case<task::StaticSfrSubDataPathUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrSubDataPathUnit(op));
       })
-      .Case<TaskStaticSfrSubFetchUnitOp>([&](auto op) {
+      .Case<task::StaticSfrSubFetchUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrSubFetchUnit(op));
       })
-      .Case<TaskStaticSfrTensorRegisterFileOp>([&](auto op) {
+      .Case<task::StaticSfrTensorRegisterFileOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrTensorRegisterFile(op));
       })
-      .Case<TaskStaticSfrTransposeEngineOp>([&](auto op) {
+      .Case<task::StaticSfrTransposeEngineOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrTransposeEngine(op));
       })
-      .Case<TaskStaticSfrVectorArithmeticUnitOp>([&](auto op) {
+      .Case<task::StaticSfrVectorArithmeticUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrVectorArithmeticUnit(op));
       })
-      .Case<TaskStaticSfrVectorReduceUnitOp>([&](auto op) {
+      .Case<task::StaticSfrVectorReduceUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrVectorReduceUnit(op));
       })
-      .Case<TaskStaticSfrVectorRegisterFileOp>([&](auto op) {
+      .Case<task::StaticSfrVectorRegisterFileOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrVectorRegisterFile(op));
       })
-      .Case<TaskStaticSfrVectorRouteUnitOp>([&](auto op) {
+      .Case<task::StaticSfrVectorRouteUnitOp>([&](auto op) {
         return std::make_tuple<std::uint64_t, std::vector<sfr_data_t>>(
             op.getSfrAddr(), getSfrVectorRouteUnit(op));
       })
@@ -2035,33 +2038,33 @@ getStaticSfr(Operation &op) {
 
 FailureOr<std::vector<sfr_data_t>> getSfr(Operation &op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::vector<sfr_data_t>>>(&op)
-      .Case<TaskSfrDotProductEngineOp>(
+      .Case<task::SfrDotProductEngineOp>(
           [&](auto op) { return getSfrDotProductEngine(op); })
-      .Case<TaskSfrMainCommitUnitOp>(
+      .Case<task::SfrMainCommitUnitOp>(
           [&](auto op) { return getSfrMainCommitUnit(op); })
-      .Case<TaskSfrMainDataPathUnitOp>(
+      .Case<task::SfrMainDataPathUnitOp>(
           [&](auto op) { return getSfrMainDataPathUnit(op); })
-      .Case<TaskSfrMainFetchUnitOp>(
+      .Case<task::SfrMainFetchUnitOp>(
           [&](auto op) { return getSfrMainFetchUnit(op); })
-      .Case<TaskSfrRegisterConfigUnitOp>(
+      .Case<task::SfrRegisterConfigUnitOp>(
           [&](auto op) { return getSfrRegisterConfigUnit(op); })
-      .Case<TaskSfrSubCommitUnitOp>(
+      .Case<task::SfrSubCommitUnitOp>(
           [&](auto op) { return getSfrSubCommitUnit(op); })
-      .Case<TaskSfrSubDataPathUnitOp>(
+      .Case<task::SfrSubDataPathUnitOp>(
           [&](auto op) { return getSfrSubDataPathUnit(op); })
-      .Case<TaskSfrSubFetchUnitOp>(
+      .Case<task::SfrSubFetchUnitOp>(
           [&](auto op) { return getSfrSubFetchUnit(op); })
-      .Case<TaskSfrTensorRegisterFileOp>(
+      .Case<task::SfrTensorRegisterFileOp>(
           [&](auto op) { return getSfrTensorRegisterFile(op); })
-      .Case<TaskSfrTransposeEngineOp>(
+      .Case<task::SfrTransposeEngineOp>(
           [&](auto op) { return getSfrTransposeEngine(op); })
-      .Case<TaskSfrVectorArithmeticUnitOp>(
+      .Case<task::SfrVectorArithmeticUnitOp>(
           [&](auto op) { return getSfrVectorArithmeticUnit(op); })
-      .Case<TaskSfrVectorReduceUnitOp>(
+      .Case<task::SfrVectorReduceUnitOp>(
           [&](auto op) { return getSfrVectorReduceUnit(op); })
-      .Case<TaskSfrVectorRegisterFileOp>(
+      .Case<task::SfrVectorRegisterFileOp>(
           [&](auto op) { return getSfrVectorRegisterFile(op); })
-      .Case<TaskSfrVectorRouteUnitOp>(
+      .Case<task::SfrVectorRouteUnitOp>(
           [&](auto op) { return getSfrVectorRouteUnit(op); })
       .Default([&](Operation *) {
         return op.emitOpError(
@@ -2070,8 +2073,8 @@ FailureOr<std::vector<sfr_data_t>> getSfr(Operation &op) {
 }
 
 template <typename T,
-          std::enable_if_t<std::is_same_v<T, TaskStaticDmaDescriptorOp> ||
-                               std::is_same_v<T, TaskDmaDescriptorOp>,
+          std::enable_if_t<std::is_same_v<T, task::StaticDmaDescriptorOp> ||
+                               std::is_same_v<T, task::DmaDescriptorOp>,
                            bool> = true>
 FailureOr<TensorDmaDescriptor> getDmaDescriptor(T &op) {
   TensorDmaDescriptor descriptor{};
