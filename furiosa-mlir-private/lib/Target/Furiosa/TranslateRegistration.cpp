@@ -2,6 +2,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
+#include "mlir/Dialect/Tosa/IR/TosaOps.h"
 #include "mlir/Target/LLVMIR/Dialect/All.h"
 #include "mlir/Target/LLVMIR/Export.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
@@ -23,6 +24,7 @@ void registerFuriosaToBinary() {
         // clang-format off
         registry.insert<mlir::func::FuncDialect,
                         mlir::tensor::TensorDialect,
+                        mlir::tosa::TosaDialect,
                         mlir::furiosa::FuriosaDialect>();
         // clang-format on
       });

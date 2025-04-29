@@ -21,6 +21,7 @@
 #include "mlir/Dialect/SparseTensor/IR/SparseTensor.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Dialect/Tensor/IR/TensorInferTypeOpInterfaceImpl.h"
+#include "mlir/Dialect/Tosa/IR/TosaOps.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/Transforms/Passes.h"
 
@@ -28,8 +29,8 @@
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 
 void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
-  registry.insert<mlir::func::FuncDialect>();
-  registry.insert<mlir::tensor::TensorDialect>();
+  registry.insert<mlir::func::FuncDialect, mlir::tensor::TensorDialect,
+                  mlir::tosa::TosaDialect>();
   registry.insert<mlir::furiosa::FuriosaDialect>();
 }
 

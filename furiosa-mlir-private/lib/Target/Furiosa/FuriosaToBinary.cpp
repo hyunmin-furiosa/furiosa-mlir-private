@@ -602,12 +602,11 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
         std::uint64_t address = addressAttr.getAddress();
         std::uint64_t size = tensorType.getNumElements() *
                              tensorType.getElementTypeBitWidth() / CHAR_BIT;
-        furiosaBinary.arguments.push_back(std::make_pair(address, size));
+        llvm::SmallVector<std::uint8_t> data(size, 1);
+        furiosaBinary.tensors.push_back(tensor_t{address, size, data});
       }
     }
   }
-  furiosaBinary.metadata.argumentSize = furiosaBinary.arguments.size();
-
   for (auto res : functionOp.getResultTypes()) {
     if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
       if (auto addressAttr =
@@ -615,11 +614,13 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
         std::uint64_t address = addressAttr.getAddress();
         std::uint64_t size = tensorType.getNumElements() *
                              tensorType.getElementTypeBitWidth() / CHAR_BIT;
-        furiosaBinary.results.push_back(std::make_pair(address, size));
+        llvm::SmallVector<std::uint8_t> data(size, 1);
+        furiosaBinary.tensors.push_back(tensor_t{address, size, data});
       }
     }
   }
-  furiosaBinary.metadata.resultSize = furiosaBinary.results.size();
+  furiosaBinary.metadata.numArguments = functionOp.getNumArguments();
+  furiosaBinary.metadata.numResults = functionOp.getNumResults();
 
   if (failed(writeFuriosaBinary("furiosa.bin", furiosaBinary))) {
     return failure();
