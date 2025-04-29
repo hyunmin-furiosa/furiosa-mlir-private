@@ -24,12 +24,13 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 //===----------------------------------------------------------------------===//
 
 class TensorUnitCommandOp<string mnemonic, list<Trait> traits = []>
-    : Furiosa_Op<mnemonic, traits> {
+    : Furiosa_Op<"tuc."#mnemonic, traits> {
+  let cppNamespace = Furiosa_Dialect.cppNamespace#"::tuc";
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
 
-def TucItosfrOp : TensorUnitCommandOp<"tuc.itosfr"> {
+def ItosfrOp : TensorUnitCommandOp<"itosfr"> {
   let summary = "Immediate to special register file";
   let description = [{}];
   let arguments = (ins
@@ -39,7 +40,7 @@ def TucItosfrOp : TensorUnitCommandOp<"tuc.itosfr"> {
   );
 }
 
-def TucRtosfrOp : TensorUnitCommandOp<"tuc.rtosfr"> {
+def RtosfrOp : TensorUnitCommandOp<"rtosfr"> {
   let summary = "Register to special register file";
   let description = [{}];
   let arguments = (ins
@@ -49,7 +50,7 @@ def TucRtosfrOp : TensorUnitCommandOp<"tuc.rtosfr"> {
   );
 }
 
-def TucRtosfriOp : TensorUnitCommandOp<"tuc.rtosfri"> {
+def RtosfriOp : TensorUnitCommandOp<"rtosfri"> {
   let summary = "Register to special register file immediate";
   let description = [{}];
   let arguments = (ins
@@ -59,7 +60,7 @@ def TucRtosfriOp : TensorUnitCommandOp<"tuc.rtosfri"> {
   );
 }
 
-def TucMtosfrOp : TensorUnitCommandOp<"tuc.mtosfr"> {
+def MtosfrOp : TensorUnitCommandOp<"mtosfr"> {
   let summary = "Memory to special register file";
   let description = [{}];
   let arguments = (ins
@@ -69,7 +70,7 @@ def TucMtosfrOp : TensorUnitCommandOp<"tuc.mtosfr"> {
   );
 }
 
-def TucStosfrOp : TensorUnitCommandOp<"tuc.stosfr"> {
+def StosfrOp : TensorUnitCommandOp<"stosfr"> {
   let summary = "SRAM to special register file";
   let description = [{}];
   let arguments = (ins
@@ -86,7 +87,7 @@ def TucStosfrOp : TensorUnitCommandOp<"tuc.stosfr"> {
   );
 }
 
-def TucSfrtosOp : TensorUnitCommandOp<"tuc.sfrtos"> {
+def SfrtosOp : TensorUnitCommandOp<"sfrtos"> {
   let summary = "special register file to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -96,7 +97,7 @@ def TucSfrtosOp : TensorUnitCommandOp<"tuc.sfrtos"> {
   );
 }
 
-def TucStallOp : TensorUnitCommandOp<"tuc.stall"> {
+def StallOp : TensorUnitCommandOp<"stall"> {
   let summary = "Stall";
   let description = [{}];
   let arguments = (ins
@@ -104,7 +105,7 @@ def TucStallOp : TensorUnitCommandOp<"tuc.stall"> {
   );
 }
 
-def TucItosOp : TensorUnitCommandOp<"tuc.itos"> {
+def ItosOp : TensorUnitCommandOp<"itos"> {
   let summary = "Immediate to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -117,7 +118,7 @@ def TucItosOp : TensorUnitCommandOp<"tuc.itos"> {
   );
 }
 
-def TucItosiOp : TensorUnitCommandOp<"tuc.itosi"> {
+def ItosiOp : TensorUnitCommandOp<"itosi"> {
   let summary = "Immediate to SRAM immediate";
   let description = [{}];
   let arguments = (ins
@@ -127,7 +128,7 @@ def TucItosiOp : TensorUnitCommandOp<"tuc.itosi"> {
   );
 }
 
-def TucStosOp : TensorUnitCommandOp<"tuc.stos"> {
+def StosOp : TensorUnitCommandOp<"stos"> {
   let summary = "SRAM to SRAM";
   let description = [{}];
   let arguments = (ins
@@ -140,7 +141,7 @@ def TucStosOp : TensorUnitCommandOp<"tuc.stos"> {
   );
 }
 
-def TucStotabOp : TensorUnitCommandOp<"tuc.stotab"> {
+def StotabOp : TensorUnitCommandOp<"stotab"> {
   let summary = "SRAM to table";
   let description = [{}];
   let arguments = (ins
@@ -156,7 +157,7 @@ def TucStotabOp : TensorUnitCommandOp<"tuc.stotab"> {
   );
 }
 
-def TucStotrfOp : TensorUnitCommandOp<"tuc.stotrf"> {
+def StotrfOp : TensorUnitCommandOp<"stotrf"> {
   let summary = "SRAM to tensor register file";
   let description = [{}];
   let arguments = (ins
@@ -180,7 +181,7 @@ def TucStotrfOp : TensorUnitCommandOp<"tuc.stotrf"> {
   );
 }
 
-def TucStovrfOp : TensorUnitCommandOp<"tuc.stovrf"> {
+def StovrfOp : TensorUnitCommandOp<"stovrf"> {
   let summary = "SRAM to vector register file";
   let description = [{}];
   let arguments = (ins
@@ -199,7 +200,7 @@ def TucStovrfOp : TensorUnitCommandOp<"tuc.stovrf"> {
   );
 }
 
-def TucExecutionOp : TensorUnitCommandOp<"tuc.exec"> {
+def ExecutionOp : TensorUnitCommandOp<"exec"> {
   let summary = "Tensor unit execution";
   let description = [{}];
   let arguments = (ins
@@ -209,7 +210,7 @@ def TucExecutionOp : TensorUnitCommandOp<"tuc.exec"> {
   );
 }
 
-def TucWaitOp : TensorUnitCommandOp<"tuc.wait"> {
+def WaitOp : TensorUnitCommandOp<"wait"> {
   let summary = "Wait";
   let description = [{}];
   let arguments = (ins
@@ -219,7 +220,7 @@ def TucWaitOp : TensorUnitCommandOp<"tuc.wait"> {
   );
 }
 
-def TucWaitiOp : TensorUnitCommandOp<"tuc.waiti"> {
+def WaitiOp : TensorUnitCommandOp<"waiti"> {
   let summary = "Wait interrupt";
   let description = [{}];
   let arguments = (ins
@@ -229,13 +230,13 @@ def TucWaitiOp : TensorUnitCommandOp<"tuc.waiti"> {
   );
 }
 
-def TucInterruptOp : TensorUnitCommandOp<"tuc.interrupt"> {
+def InterruptOp : TensorUnitCommandOp<"interrupt"> {
   let summary = "SRAM to tensor register file";
   let description = [{}];
   let arguments = (ins);
 }
 
-def TucDmaOp : TensorUnitCommandOp<"tuc.dma"> {
+def DmaOp : TensorUnitCommandOp<"dma"> {
   let summary = "Direct memory access";
   let description = [{}];
   let arguments = (ins
@@ -249,7 +250,7 @@ def TucDmaOp : TensorUnitCommandOp<"tuc.dma"> {
   );
 }
 
-def TucDma1Op : TensorUnitCommandOp<"tuc.dma1"> {
+def Dma1Op : TensorUnitCommandOp<"dma1"> {
   let summary = "Direct memory access 1";
   let description = [{}];
   let arguments = (ins
@@ -261,7 +262,7 @@ def TucDma1Op : TensorUnitCommandOp<"tuc.dma1"> {
   );
 }
 
-def TucDmawOp : TensorUnitCommandOp<"tuc.dmaw"> {
+def DmawOp : TensorUnitCommandOp<"dmaw"> {
   let summary = "Direct memory access wide";
   let description = [{}];
   let arguments = (ins
@@ -275,7 +276,7 @@ def TucDmawOp : TensorUnitCommandOp<"tuc.dmaw"> {
   );
 }
 
-def TucProfileOp : TensorUnitCommandOp<"tuc.profile"> {
+def ProfileOp : TensorUnitCommandOp<"profile"> {
   let summary = "Profile";
   let description = [{}];
   let arguments = (ins
@@ -283,7 +284,7 @@ def TucProfileOp : TensorUnitCommandOp<"tuc.profile"> {
   );
 }
 
-def TucProfileiOp : TensorUnitCommandOp<"tuc.profilei"> {
+def ProfileiOp : TensorUnitCommandOp<"profilei"> {
   let summary = "Profile immediate";
   let description = [{}];
   let arguments = (ins
@@ -291,7 +292,7 @@ def TucProfileiOp : TensorUnitCommandOp<"tuc.profilei"> {
   );
 }
 
-def TucPrflushOp : TensorUnitCommandOp<"tuc.prflush"> {
+def PrflushOp : TensorUnitCommandOp<"prflush"> {
   let summary = "Profile flush";
   let description = [{}];
   let arguments = (ins);

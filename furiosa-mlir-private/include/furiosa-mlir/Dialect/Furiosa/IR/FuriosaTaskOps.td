@@ -1306,7 +1306,9 @@ def DmaDescriptor
 //===----------------------------------------------------------------------===//
 
 class TaskOp<string mnemonic, list<Trait> traits = []>
-    : Furiosa_Op<mnemonic, traits> {}
+    : Furiosa_Op<"task."#mnemonic, traits> {
+  let cppNamespace = Furiosa_Dialect.cppNamespace#"::task";
+}
 
 class TaskStaticSfrOp<string mnemonic, list<Trait> traits = []>
     : TaskOp<mnemonic, traits> {
@@ -1323,8 +1325,8 @@ class TaskSfrOp<string mnemonic, list<Trait> traits = []>
 }
 
 foreach nd = Sfr in {
-  def TaskStaticSfr#!cast<string>(nd)#Op
-      : TaskStaticSfrOp<"task.static.sfr."#nd.mnemonic> {
+  def StaticSfr#!cast<string>(nd)#Op
+      : TaskStaticSfrOp<"static.sfr."#nd.mnemonic> {
     let summary = "Static special function register for "#!cast<string>(nd);
     let description = [{}];
     let arguments = !con((ins
@@ -1333,14 +1335,14 @@ foreach nd = Sfr in {
                          nd.data);
   }
 
-  def TaskSfr#!cast<string>(nd)#Op : TaskSfrOp<"task.sfr."#nd.mnemonic> {
+  def Sfr#!cast<string>(nd)#Op : TaskSfrOp<"sfr."#nd.mnemonic> {
     let summary = "Special function register for "#!cast<string>(nd);
     let description = [{}];
     let arguments = nd.data;
   }
 }
 
-def TaskStaticDmaDescriptorOp : TaskOp<"task.static.dma_descriptor"> {
+def StaticDmaDescriptorOp : TaskOp<"static.dma_descriptor"> {
   let summary = "Static direct memory access descriptor";
   let description = [{}];
   let arguments = !con((ins
@@ -1351,7 +1353,7 @@ def TaskStaticDmaDescriptorOp : TaskOp<"task.static.dma_descriptor"> {
   let assemblyFormat = "attr-dict";
 }
 
-def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
+def DmaDescriptorOp : TaskOp<"dma_descriptor"> {
   let summary = "Direct memory access descriptor";
   let description = [{}];
   let arguments = DmaDescriptor.data;
@@ -1361,7 +1363,7 @@ def TaskDmaDescriptorOp : TaskOp<"task.dma_descriptor"> {
   let assemblyFormat = "attr-dict";
 }
 
-def TaskMtosfrOp : TaskOp<"task.mtosfr"> {
+def MtosfrOp : TaskOp<"mtosfr"> {
   let summary = "Dynamic memory to special register file";
   let description = [{}];
   let arguments = (ins
@@ -1372,7 +1374,7 @@ def TaskMtosfrOp : TaskOp<"task.mtosfr"> {
   let assemblyFormat = "$sfr attr-dict";
 }
 
-def TaskDmawOp : TaskOp<"task.dmaw"> {
+def DmawOp : TaskOp<"dmaw"> {
   let summary = "Dynamic direct memory access wide";
   let description = [{}];
   let arguments = (ins

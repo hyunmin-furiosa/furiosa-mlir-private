@@ -9,6 +9,8 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 
 #include "mlir/IR/Attributes.h"
@@ -33,6 +35,14 @@ void FuriosaDialect::initialize() {
 #define GET_OP_LIST
   addOperations<
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.cpp.inc"
+      >();
+#define GET_OP_LIST
+  addOperations<
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.cpp.inc"
+      >();
+#define GET_OP_LIST
+  addOperations<
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.cpp.inc"
       >();
   addAttributes<
 #define GET_ATTRDEF_LIST
