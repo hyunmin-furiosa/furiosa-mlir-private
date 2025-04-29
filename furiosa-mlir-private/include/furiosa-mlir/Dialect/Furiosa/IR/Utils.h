@@ -1,7 +1,9 @@
 #pragma once
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/Commands.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskSfrOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Sfr.h"
 
