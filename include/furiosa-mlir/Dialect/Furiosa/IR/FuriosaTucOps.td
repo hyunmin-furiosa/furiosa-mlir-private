@@ -23,13 +23,6 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 // Tensor unit commands.
 //===----------------------------------------------------------------------===//
 
-class TensorUnitCommandOp<string mnemonic, list<Trait> traits = []>
-    : Furiosa_Op<"tuc."#mnemonic, traits> {
-  let cppNamespace = Furiosa_Dialect.cppNamespace#"::tuc";
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
-
 def ItosfrOp : TensorUnitCommandOp<"itosfr"> {
   let summary = "Immediate to special register file";
   let description = [{}];

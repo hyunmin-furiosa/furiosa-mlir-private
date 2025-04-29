@@ -20,7 +20,32 @@ def Furiosa_Dialect : Dialect {
   let useDefaultAttributePrinterParser = 1;
 }
 
+//===----------------------------------------------------------------------===//
+// Furiosa operation type definitions
+//===----------------------------------------------------------------------===//
+
 class Furiosa_Op<string mnemonic, list<Trait> traits = []>
     : Op<Furiosa_Dialect, mnemonic, traits> {}
+
+class TaskOp<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<"task."#mnemonic, traits> {
+  let cppNamespace = Furiosa_Dialect.cppNamespace#"::task";
+}
+
+class TensorUnitCommandOp<string mnemonic, list<Trait> traits = []>
+    : Furiosa_Op<"tuc."#mnemonic, traits> {
+  let cppNamespace = Furiosa_Dialect.cppNamespace#"::tuc";
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+//===----------------------------------------------------------------------===//
+// Shared dag type definitions
+//===----------------------------------------------------------------------===//
+
+class NamedDag<string m, dag d> {
+  string mnemonic = m;
+  dag data = d;
+}
 
 #endif // FURIOSA_BASE_TD
