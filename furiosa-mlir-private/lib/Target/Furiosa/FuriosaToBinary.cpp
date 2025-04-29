@@ -87,7 +87,8 @@ private:
   std::stack<int64_t> labelInScopeCount;
 };
 
-static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
+static LogicalResult printTensorUnitCommand(ArmCEmitter &emitter,
+                                            Operation *op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op);
 
@@ -681,7 +682,7 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
                 furiosa::tuc::Dma1Op, furiosa::tuc::DmawOp,
                 furiosa::tuc::ProfileOp, furiosa::tuc::ProfileiOp,
                 furiosa::tuc::PrflushOp>([&](auto op) {
-            return printFuriosaCommand(*this, op.getOperation());
+            return printTensorUnitCommand(*this, op.getOperation());
           })
           .Case<furiosa::task::StaticSfrDotProductEngineOp,
                 furiosa::task::StaticSfrMainCommitUnitOp,
