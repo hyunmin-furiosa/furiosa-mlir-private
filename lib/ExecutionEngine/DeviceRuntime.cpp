@@ -1,7 +1,9 @@
 #include "furiosa_torch.h"
 
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/Format.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
 
@@ -21,28 +23,25 @@ void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
       furiosaBinary.metadata.binaryAddress, furiosaBinary.binary.size()));
 
   // write arguments
-  std::vector<std::vector<std::uint8_t>> argumentsBuffer;
-  argumentsBuffer.reserve(furiosaBinary.arguments.size());
-  for (auto [address, size] : furiosaBinary.arguments) {
-    std::vector<std::uint8_t> argument(size, 1);
-    argumentsBuffer.push_back(argument);
+  for (auto i = 0u; i < furiosaBinary.metadata.numArguments; i++) {
+    auto &[address, size, data] = furiosaBinary.tensors[i];
     hal_programs.push_back(furiosa_torch::hal_program_write_at(
-        reinterpret_cast<const std::uint64_t>(argumentsBuffer.back().data()),
-        address, argument.size()));
+        reinterpret_cast<const std::uint64_t>(data.data()), address, size));
   }
 
   hal_programs.push_back(furiosa_torch::hal_program_execute(pe_program));
 
   // read results
-  std::vector<std::vector<std::uint8_t>> resultsBuffer;
-  resultsBuffer.reserve(furiosaBinary.results.size());
-  for (auto [address, size] : furiosaBinary.results) {
-    std::vector<std::uint8_t> result(size, 0);
-    resultsBuffer.push_back(result);
+  llvm::SmallVector<llvm::SmallVector<std::uint8_t>> resultsBuffer;
+  resultsBuffer.reserve(furiosaBinary.metadata.numResults);
+  for (auto i = 0u; i < furiosaBinary.metadata.numResults; i++) {
+    auto &[address, size, data] =
+        furiosaBinary.tensors[furiosaBinary.metadata.numArguments + i];
+    resultsBuffer.push_back(llvm::SmallVector<std::uint8_t>(size, 0));
     hal_programs.push_back(furiosa_torch::hal_program_read_at(
         address,
         reinterpret_cast<const std::uint64_t>(resultsBuffer.back().data()),
-        result.size()));
+        size));
   }
 
   // initialize device and execute hal program
@@ -53,10 +52,24 @@ void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
                                           furiosaBinary.metadata.peEnd);
   furiosa_torch::device_execute(device, hal_program);
 
-  // compare results
-  if (argumentsBuffer[0] == resultsBuffer[0]) {
-    llvm::dbgs() << "Results match!\n";
-  } else {
-    llvm::dbgs() << "Results do not match!\n";
+  for (auto i = 0u; i < furiosaBinary.metadata.numResults; i++) {
+    auto &[address, size, expected_data] =
+        furiosaBinary.tensors[furiosaBinary.metadata.numArguments + i];
+    auto &actual_data = resultsBuffer[i];
+    if (expected_data != actual_data) {
+      llvm::dbgs() << "Results do not match!\n";
+      llvm::dbgs() << "Expected: ";
+      for (auto byte : expected_data) {
+        llvm::dbgs() << llvm::format_hex(byte, 2) << " ";
+      }
+      llvm::dbgs() << "\n";
+      llvm::dbgs() << "Actual: ";
+      for (auto byte : actual_data) {
+        llvm::dbgs() << llvm::format_hex(byte, 2) << " ";
+      }
+      llvm::dbgs() << "\n";
+    } else {
+      llvm::dbgs() << "Results match!\n";
+    }
   }
 }
