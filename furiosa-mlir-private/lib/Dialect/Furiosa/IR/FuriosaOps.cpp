@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaHostOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskSfrOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
@@ -44,6 +45,9 @@ using namespace mlir::furiosa;
 
 #define GET_OP_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.cpp.inc"
+
+#define GET_OP_CLASSES
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaHostOps.cpp.inc"
 
 #define GET_OP_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.cpp.inc"
