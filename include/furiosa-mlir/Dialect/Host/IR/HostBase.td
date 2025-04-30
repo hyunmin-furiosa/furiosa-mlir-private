@@ -13,7 +13,7 @@
 include "mlir/IR/OpBase.td"
 
 def Host_Dialect : Dialect {
-  let name = "host";
+  let name = "furiosa_host";
   let cppNamespace = "::mlir::furiosa::host";
   let description = [{Furiosa host dialect}];
 }
