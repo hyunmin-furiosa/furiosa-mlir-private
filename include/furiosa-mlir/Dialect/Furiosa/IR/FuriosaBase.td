@@ -27,11 +27,6 @@ def Furiosa_Dialect : Dialect {
 class Furiosa_Op<string mnemonic, list<Trait> traits = []>
     : Op<Furiosa_Dialect, mnemonic, traits> {}
 
-class HostOp<string mnemonic, list<Trait> traits = []>
-    : Furiosa_Op<"host."#mnemonic, traits> {
-  let cppNamespace = Furiosa_Dialect.cppNamespace#"::host";
-}
-
 class TaskOp<string mnemonic, list<Trait> traits = []>
     : Furiosa_Op<"task."#mnemonic, traits> {
   let cppNamespace = Furiosa_Dialect.cppNamespace#"::task";

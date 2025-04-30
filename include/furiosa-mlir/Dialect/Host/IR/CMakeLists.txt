@@ -1,0 +1,10 @@
+set(LLVM_TARGET_DEFINITIONS HostOps.td)
+mlir_tablegen(HostOps.h.inc -gen-op-decls)
+mlir_tablegen(HostOps.cpp.inc -gen-op-defs)
+mlir_tablegen(HostDialect.h.inc -gen-dialect-decls -dialect=host)
+mlir_tablegen(HostDialect.cpp.inc -gen-dialect-defs -dialect=host)
+add_public_tablegen_target(FuriosaMLIRHostOpsIncGen)
+add_dependencies(mlir-headers FuriosaMLIRHostOpsIncGen)
+
+add_mlir_doc(HostBase HostDialect Host/ -gen-dialect-doc)
+add_mlir_doc(HostOps HostOps Host/ -gen-op-doc)

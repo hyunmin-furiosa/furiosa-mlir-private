@@ -18,6 +18,7 @@ set(LinkedLibs
   MLIRSupport
 
   # Dialects.
+  FuriosaMLIRHostDialect
   FuriosaMLIRFuriosaDialect
 
   # Dialect passes.

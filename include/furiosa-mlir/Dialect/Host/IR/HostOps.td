@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_HOST_OPS_TD
-#define FURIOSA_HOST_OPS_TD
+#ifndef HOST_OPS_TD
+#define HOST_OPS_TD
 
 include "mlir/IR/BuiltinAttributes.td"
 include "mlir/IR/OpAsmInterface.td"
@@ -16,8 +16,7 @@ include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
+include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
 
 //===----------------------------------------------------------------------===//
 // Host operations.
@@ -31,4 +30,4 @@ def DeviceExecuteOp : HostOp<"device_execute"> {
   let assemblyFormat = "attr-dict";
 }
 
-#endif // FURIOSA_HOST_OPS_TD
+#endif // HOST_OPS_TD
