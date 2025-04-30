@@ -1,4 +1,3 @@
-// example.mlir
 module {
   func.func @kernel(%arg0: tensor<256xf32, #furiosa.address<0x10000>>) -> (tensor<256xf32, #furiosa.address<0x20000>>) attributes {address = #furiosa.address<0x0>, target = #furiosa.target<npu 0 pe 0:0>} {
     furiosa.tuc.rtosfr {sfr_address = 0 : i64, size = 1 : i64, value = 12424 : i64}
