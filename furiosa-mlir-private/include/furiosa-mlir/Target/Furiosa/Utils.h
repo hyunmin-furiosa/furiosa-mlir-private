@@ -65,12 +65,12 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
   invocation->getLangOpts().Freestanding = 1; // -ffreestanding
 
   // Check compile command
-  auto command = invocation->getCC1CommandLine();
-  llvm::dbgs() << "clang ";
-  for (auto arg : command) {
-    llvm::dbgs() << arg << " ";
-  }
-  llvm::dbgs() << "\n";
+  // auto command = invocation->getCC1CommandLine();
+  // llvm::dbgs() << "clang ";
+  // for (auto arg : command) {
+  //   llvm::dbgs() << arg << " ";
+  // }
+  // llvm::dbgs() << "\n";
 
   // Compile
   compiler.setInvocation(std::move(invocation));
