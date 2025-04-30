@@ -1,6 +1,6 @@
 module {
   func.func @main() {
-    furiosa.host.device_execute
+    host.device_execute
     return
   }
 }
