@@ -1,10 +1,14 @@
 #include "furiosa_torch.h"
 
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+
+#include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaHostOps.h"
 #include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
 
 void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
@@ -73,3 +77,50 @@ void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {
     }
   }
 }
+
+using namespace mlir;
+
+namespace mlir::furiosa {
+
+LogicalResult executeOperation(furiosa::host::DeviceExecuteOp op) {
+  op.dump();
+  return success();
+}
+
+LogicalResult executeOperation(Operation &op) {
+  LogicalResult status =
+      llvm::TypeSwitch<Operation *, LogicalResult>(&op)
+          .Case<func::ReturnOp>([&](auto op) { return success(); })
+          .Case<furiosa::host::DeviceExecuteOp>(
+              [&](auto op) { return executeOperation(op); })
+          .Default([&](Operation *) {
+            return op.emitOpError("unable to find executor for op");
+          });
+
+  if (failed(status))
+    return failure();
+
+  return success();
+}
+
+LogicalResult executeFunction(Operation *module, StringRef entryPoint,
+                              StringRef entryPointType) {
+  auto mainFunction = dyn_cast_or_null<func::FuncOp>(
+      SymbolTable::lookupSymbolIn(module, entryPoint));
+  if (!mainFunction || mainFunction.empty()) {
+    llvm::report_fatal_error(llvm::Twine("entry point not found"));
+    return failure();
+  }
+
+  // Emit the body of the function.
+  for (Block &block : mainFunction.getBlocks()) {
+    for (Operation &op : block.getOperations()) {
+      if (failed(executeOperation(op)))
+        return failure();
+    }
+  }
+
+  return success();
+}
+
+} // namespace mlir::furiosa

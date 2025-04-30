@@ -1,4 +1,5 @@
 #include "furiosa-mlir/ExecutionEngine/JitRunner.h"
+#include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
 
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/ExecutionEngine/ExecutionEngine.h"
@@ -103,6 +104,12 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
                           &context);
   if (!m) {
     llvm::errs() << "could not parse the input IR\n";
+    return 1;
+  }
+
+  if (failed(executeFunction(m.get(), options.mainFuncName.getValue(),
+                             options.mainFuncType.getValue()))) {
+    llvm::errs() << "could not execute the input IR\n";
     return 1;
   }
 
