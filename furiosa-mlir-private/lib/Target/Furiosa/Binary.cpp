@@ -82,7 +82,7 @@ FailureOr<FuriosaBinary> readFuriosaBinary(llvm::Twine filepath) {
 
   llvm::SmallVector<tensor_t> tensors;
   auto numTensors = metadata.numArguments + metadata.numResults;
-  for (auto i = 0; i < numTensors; ++i) {
+  for (auto i = 0u; i < numTensors; ++i) {
     tensor_t tensor;
     if (reader.readInteger(tensor.address)) {
       return failure();
