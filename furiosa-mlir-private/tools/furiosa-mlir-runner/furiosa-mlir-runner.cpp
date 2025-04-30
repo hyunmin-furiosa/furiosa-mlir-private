@@ -12,6 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
+#include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 #include "furiosa-mlir/ExecutionEngine/JitRunner.h"
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
@@ -21,6 +22,7 @@ int main(int argc, char **argv) {
   mlir::DialectRegistry registry;
   registry.insert<mlir::func::FuncDialect>();
   mlir::furiosa::registerFuriosaDialect(registry);
+  mlir::furiosa::host::registerHostDialect(registry);
 
   mlir::furiosa::JitRunnerConfig jitRunnerConfig;
   return mlir::furiosa::JitRunnerMain(argc, argv, registry, jitRunnerConfig);

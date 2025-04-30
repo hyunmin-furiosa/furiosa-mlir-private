@@ -8,7 +8,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaHostOps.h"
+#include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
 #include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
 
 void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary) {

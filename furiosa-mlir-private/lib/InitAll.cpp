@@ -27,11 +27,13 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
+#include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 
 void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<mlir::func::FuncDialect, mlir::tensor::TensorDialect,
                   mlir::tosa::TosaDialect>();
-  registerFuriosaDialect(registry);
+  mlir::furiosa::registerFuriosaDialect(registry);
+  mlir::furiosa::host::registerHostDialect(registry);
 }
 
 void mlir::furiosa::registerAllExtensions(mlir::DialectRegistry &registry) {
