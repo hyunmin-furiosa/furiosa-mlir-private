@@ -31,7 +31,7 @@
 void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<mlir::func::FuncDialect, mlir::tensor::TensorDialect,
                   mlir::tosa::TosaDialect>();
-  registry.insert<mlir::furiosa::FuriosaDialect>();
+  registerFuriosaDialect(registry);
 }
 
 void mlir::furiosa::registerAllExtensions(mlir::DialectRegistry &registry) {

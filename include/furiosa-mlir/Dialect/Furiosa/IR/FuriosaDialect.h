@@ -12,3 +12,9 @@
 #include "mlir/IR/Dialect.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h.inc"
+
+namespace mlir::furiosa {
+
+void registerFuriosaDialect(DialectRegistry &registry);
+
+} // namespace mlir::furiosa

@@ -58,3 +58,7 @@ void FuriosaDialect::initialize() {
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.cpp.inc"
       >();
 }
+
+void mlir::furiosa::registerFuriosaDialect(DialectRegistry &registry) {
+  registry.insert<FuriosaDialect>();
+}

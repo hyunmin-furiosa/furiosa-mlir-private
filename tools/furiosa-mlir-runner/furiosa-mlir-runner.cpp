@@ -11,13 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir/ExecutionEngine/JitRunner.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
+#include "furiosa-mlir/ExecutionEngine/JitRunner.h"
+
 #include "mlir/IR/Dialect.h"
 
 using namespace mlir;
 
 int main(int argc, char **argv) {
   mlir::DialectRegistry registry;
-  mlir::JitRunnerConfig jitRunnerConfig;
-  return mlir::JitRunnerMain(argc, argv, registry, jitRunnerConfig);
+  mlir::furiosa::registerFuriosaDialect(registry);
+
+  mlir::furiosa::JitRunnerConfig jitRunnerConfig;
+  return mlir::furiosa::JitRunnerMain(argc, argv, registry, jitRunnerConfig);
 }
