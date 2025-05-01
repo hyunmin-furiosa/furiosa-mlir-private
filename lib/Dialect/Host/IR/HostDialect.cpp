@@ -9,6 +9,7 @@
 
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
+#include "furiosa-mlir/Dialect/Host/IR/HostTypes.h"
 
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/DialectImplementation.h"
@@ -22,10 +23,24 @@ using namespace mlir::furiosa::host;
 
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.cpp.inc"
 
+#define GET_ATTRDEF_CLASSES
+#include "furiosa-mlir/Dialect/Host/IR/HostAttrs.cpp.inc"
+
+#define GET_TYPEDEF_CLASSES
+#include "furiosa-mlir/Dialect/Host/IR/HostTypes.cpp.inc"
+
 void HostDialect::initialize() {
 #define GET_OP_LIST
   addOperations<
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.cpp.inc"
+      >();
+  addAttributes<
+#define GET_ATTRDEF_LIST
+#include "furiosa-mlir/Dialect/Host/IR/HostAttrs.cpp.inc"
+      >();
+  addTypes<
+#define GET_TYPEDEF_LIST
+#include "furiosa-mlir/Dialect/Host/IR/HostTypes.cpp.inc"
       >();
 }
 

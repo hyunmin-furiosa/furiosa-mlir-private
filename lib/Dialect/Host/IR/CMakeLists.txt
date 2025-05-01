@@ -7,6 +7,7 @@ add_mlir_library(FuriosaMLIRHostDialect
 
   DEPENDS
   FuriosaMLIRHostOpsIncGen
+  FuriosaMLIRHostTypesIncGen
 
   LINK_LIBS PUBLIC
   MLIRDialectUtils
