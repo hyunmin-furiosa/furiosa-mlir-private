@@ -17,17 +17,134 @@ include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
+include "furiosa-mlir/Dialect/Host/IR/HostTypes.td"
 
 //===----------------------------------------------------------------------===//
 // Host operations.
 //===----------------------------------------------------------------------===//
 
-def DeviceExecuteOp : HostOp<"device_execute"> {
-  let summary = "Host device execute";
+def AllocOp : HostOp<"alloc"> {
+  let summary = "Host memory allocation";
   let description = [{}];
-  let arguments = (ins);
-  let results = (outs);
+  let arguments = (ins
+      I64Attr:$size,
+      OptionalAttr<ByteArrayAttr>:$data
+  );
+  let results = (outs
+      BufferType:$buffer
+  );
   let assemblyFormat = "attr-dict";
+}
+
+def PeProgramLoadInstOp : HostOp<"pe_program_load_inst"> {
+  let summary = "PE program load instruction";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$dram_address,
+      I64Attr:$spm_address,
+      I64Attr:$size
+  );
+  let results = (outs
+      PeProgramType:$pe_program
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def PeProgramLaunchOp : HostOp<"pe_program_launch"> {
+  let summary = "PE program launch";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$spm_address
+  );
+  let results = (outs
+      PeProgramType:$pe_program
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def PeProgramSeqOp : HostOp<"pe_program_seq"> {
+  let summary = "PE program sequence";
+  let description = [{}];
+  let arguments = (ins
+      Variadic<PeProgramType>:$pe_programs
+  );
+  let results = (outs
+      PeProgramType:$pe_program
+  );
+  let assemblyFormat = "$pe_programs attr-dict";
+}
+
+def HalProgramWriteAtOp : HostOp<"hal_program_write_at"> {
+  let summary = "HAL program write at";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$dram_address,
+      BufferType:$buffer
+  );
+  let results = (outs
+      HalProgramType:$hal_program
+  );
+  let assemblyFormat = "$buffer attr-dict";
+}
+
+def HalProgramReadAtOp : HostOp<"hal_program_read_at"> {
+  let summary = "HAL program read at";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$dram_address,
+      BufferType:$buffer
+  );
+  let results = (outs
+      HalProgramType:$hal_program
+  );
+  let assemblyFormat = "$buffer attr-dict";
+}
+
+def HalProgramExecuteOp : HostOp<"hal_program_execute"> {
+  let summary = "HAL program execute";
+  let description = [{}];
+  let arguments = (ins
+      PeProgramType:$pe_program
+  );
+  let results = (outs
+      HalProgramType:$hal_program
+  );
+  let assemblyFormat = "$pe_program attr-dict";
+}
+
+def HalProgramSeqOp : HostOp<"hal_program_seq"> {
+  let summary = "HAL program sequence";
+  let description = [{}];
+  let arguments = (ins
+      Variadic<HalProgramType>:$hal_programs
+  );
+  let results = (outs
+      HalProgramType:$hal_program
+  );
+  let assemblyFormat = "$hal_programs attr-dict";
+}
+
+def DeviceNewOp : HostOp<"device_new"> {
+  let summary = "Device new";
+  let description = [{}];
+  let arguments = (ins
+      TargetAttr:$target
+  );
+  let results = (outs
+      DeviceType:$device
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def DeviceExecuteOp : HostOp<"device_execute"> {
+  let summary = "Device execute";
+  let description = [{}];
+  let arguments = (ins
+      DeviceType:$device,
+      HalProgramType:$hal_program
+  );
+  let results = (outs);
+  let assemblyFormat = "$device $hal_program attr-dict";
 }
 
 #endif // HOST_OPS_TD

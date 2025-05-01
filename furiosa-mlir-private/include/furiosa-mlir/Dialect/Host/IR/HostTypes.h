@@ -9,15 +9,13 @@
 
 #pragma once
 
-#include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
-#include "furiosa-mlir/Dialect/Host/IR/HostTypes.h"
-
-#include "mlir/Bytecode/BytecodeOpInterface.h"
+#include "mlir/IR/Builders.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinTypes.h"
-#include "mlir/IR/OpDefinition.h"
-#include "mlir/IR/OpImplementation.h"
-#include "mlir/Interfaces/InferTypeOpInterface.h"
-#include "mlir/Interfaces/SideEffectInterfaces.h"
+#include "llvm/ADT/TypeSwitch.h"
 
-#define GET_OP_CLASSES
-#include "furiosa-mlir/Dialect/Host/IR/HostOps.h.inc"
+#define GET_ATTRDEF_CLASSES
+#include "furiosa-mlir/Dialect/Host/IR/HostAttrs.h.inc"
+
+#define GET_TYPEDEF_CLASSES
+#include "furiosa-mlir/Dialect/Host/IR/HostTypes.h.inc"
