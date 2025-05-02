@@ -19,18 +19,6 @@ include "mlir/IR/CommonTypeConstraints.td"
 include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
 
 //===----------------------------------------------------------------------===//
-// Common attribute definitions
-//===----------------------------------------------------------------------===//
-
-def DenseByteArrayAttr
-    : DenseArrayAttrBase<"DenseByteArrayAttr", "uint8_t", "ui8">;
-
-def ByteArrayAttr
-    : TypedArrayAttrBase<UI8Attr, "8-bit unsigned integer array attribute"> {
-  let constBuilderCall = "$_builder.getByteArrayAttr($0)";
-}
-
-//===----------------------------------------------------------------------===//
 // Host attribute definitions
 //===----------------------------------------------------------------------===//
 
