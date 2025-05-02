@@ -28,7 +28,19 @@ def AllocOp : HostOp<"alloc"> {
   let description = [{}];
   let arguments = (ins
       I64Attr:$size,
-      OptionalAttr<ByteArrayAttr>:$data
+      OptionalAttr<I64ArrayAttr>:$data
+  );
+  let results = (outs
+      BufferType:$buffer
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+def FuncAllocOp : HostOp<"func_alloc"> {
+  let summary = "Host memory allocation for kernel function";
+  let description = [{}];
+  let arguments = (ins
+      FlatSymbolRefAttr:$function
   );
   let results = (outs
       BufferType:$buffer
