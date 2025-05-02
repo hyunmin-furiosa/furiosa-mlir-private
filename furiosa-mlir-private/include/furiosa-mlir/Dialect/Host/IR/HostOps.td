@@ -54,12 +54,12 @@ def PeProgramLoadInstOp : HostOp<"pe_program_load_inst"> {
   let arguments = (ins
       I64Attr:$dram_address,
       I64Attr:$spm_address,
-      I64Attr:$size
+      BufferType:$binary
   );
   let results = (outs
       PeProgramType:$pe_program
   );
-  let assemblyFormat = "attr-dict";
+  let assemblyFormat = "$binary attr-dict";
 }
 
 def PeProgramLaunchOp : HostOp<"pe_program_launch"> {

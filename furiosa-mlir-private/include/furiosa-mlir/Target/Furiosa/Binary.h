@@ -11,6 +11,7 @@ namespace mlir::furiosa {
 static constexpr auto MIN_BINARY_SIZE = 256;
 
 using address_size_t = std::pair<std::uint64_t, std::uint64_t>; // address, size
+using binary_t = llvm::SmallString<MIN_BINARY_SIZE>;
 
 struct tensor_t {
   std::uint64_t address;
