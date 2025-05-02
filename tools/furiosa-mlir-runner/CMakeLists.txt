@@ -11,4 +11,5 @@ target_link_libraries(furiosa-mlir-runner PRIVATE
   FuriosaMLIRExecutionEngine
   FuriosaMLIRFuriosaDialect
   FuriosaMLIRHostDialect
+  FuriosaMLIRTargetFuriosa
 )

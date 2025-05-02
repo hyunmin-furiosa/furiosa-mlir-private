@@ -350,7 +350,7 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
   return success();
 }
 
-static LogicalResult printKernelFunction(func::FuncOp functionOp) {
+static FailureOr<binary_t> printKernelFunction(func::FuncOp functionOp) {
   int fd;
   llvm::Twine symName = functionOp.getSymName();
   llvm::Twine filepath_c = symName + ".c";
@@ -603,59 +603,51 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   furiosaBinary.metadata.peBegin = targetAttr.getPeBegin();
   furiosaBinary.metadata.peEnd = targetAttr.getPeEnd();
 
-  auto addressAttr = functionOp->getAttrOfType<furiosa::AddressAttr>("address");
-  furiosaBinary.metadata.binaryAddress = addressAttr.getAddress();
+  // auto addressAttr =
+  // functionOp->getAttrOfType<furiosa::AddressAttr>("address");
+  // furiosaBinary.metadata.binaryAddress = addressAttr.getAddress();
 
   std::string filepath_o = *convertArmCToObject(filepath_c);
   std::string filepath_link = *linkObject(filepath_o);
   furiosaBinary.binary = *convertObjectToBinary(filepath_link);
   furiosaBinary.metadata.binarySize = furiosaBinary.binary.size();
 
-  for (auto arg : functionOp.getArgumentTypes()) {
-    if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
-      if (auto addressAttr =
-              llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
-        std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = tensorType.getNumElements() *
-                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
-        llvm::SmallVector<std::uint8_t> data(size, 1);
-        furiosaBinary.tensors.push_back(tensor_t{address, size, data});
-      }
-    }
-  }
-  for (auto res : functionOp.getResultTypes()) {
-    if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
-      if (auto addressAttr =
-              llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
-        std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = tensorType.getNumElements() *
-                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
-        llvm::SmallVector<std::uint8_t> data(size, 1);
-        furiosaBinary.tensors.push_back(tensor_t{address, size, data});
-      }
-    }
-  }
-  furiosaBinary.metadata.numArguments = functionOp.getNumArguments();
-  furiosaBinary.metadata.numResults = functionOp.getNumResults();
+  // for (auto arg : functionOp.getArgumentTypes()) {
+  //   if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
+  //     if (auto addressAttr =
+  //             llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
+  //       std::uint64_t address = addressAttr.getAddress();
+  //       std::uint64_t size = tensorType.getNumElements() *
+  //                            tensorType.getElementTypeBitWidth() / CHAR_BIT;
+  //       llvm::SmallVector<std::uint8_t> data(size, 1);
+  //       furiosaBinary.tensors.push_back(tensor_t{address, size, data});
+  //     }
+  //   }
+  // }
+  // for (auto res : functionOp.getResultTypes()) {
+  //   if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
+  //     if (auto addressAttr =
+  //             llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
+  //       std::uint64_t address = addressAttr.getAddress();
+  //       std::uint64_t size = tensorType.getNumElements() *
+  //                            tensorType.getElementTypeBitWidth() / CHAR_BIT;
+  //       llvm::SmallVector<std::uint8_t> data(size, 1);
+  //       furiosaBinary.tensors.push_back(tensor_t{address, size, data});
+  //     }
+  //   }
+  // }
+  // furiosaBinary.metadata.numArguments = functionOp.getNumArguments();
+  // furiosaBinary.metadata.numResults = functionOp.getNumResults();
 
   if (failed(writeFuriosaBinary("furiosa.bin", furiosaBinary))) {
     return failure();
   }
 
-  return success();
+  return furiosaBinary.binary;
 }
 
 static LogicalResult printOperation(FuriosaEmitter &emitter,
                                     func::CallOp callOp) {
-  raw_ostream &os = emitter.ostream();
-  StringRef callee = callOp.getCallee();
-  os << callee << "();\n";
-  for (auto operand : callOp.getOperands()) {
-    if (auto tensorType = llvm::dyn_cast<RankedTensorType>(operand.getType())) {
-      os << tensorType.getNumElements() << "\n";
-    }
-  }
-
   return success();
 }
 
@@ -663,7 +655,8 @@ static LogicalResult printOperation(FuriosaEmitter &emitter,
                                     func::FuncOp functionOp) {
   if (auto targetAttr =
           functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
-    return printKernelFunction(functionOp);
+    auto binary = printKernelFunction(functionOp);
+    return success();
   } else {
     for (Block &block : functionOp.getBlocks()) {
       for (Operation &op : block.getOperations()) {
@@ -791,6 +784,10 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
     return failure();
 
   return success();
+}
+
+FailureOr<binary_t> translateKernelToBinary(func::FuncOp functionOp) {
+  return printKernelFunction(functionOp);
 }
 
 LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os) {
