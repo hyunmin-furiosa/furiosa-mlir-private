@@ -1,5 +1,5 @@
 module {
-  func.func @kernel(%arg0: tensor<256xf32, #furiosa.address<0x10000>>) -> (tensor<256xf32, #furiosa.address<0x20000>>) attributes {address = #furiosa.address<0x0>, target = #furiosa.target<npu 0 pe 0:0>} {
+  func.func @kernel() attributes { target = #furiosa.target<npu 0 pe 0:0> } {
     furiosa.tuc.rtosfr {sfr_address = 0 : i64, size = 1 : i64, value = 12424 : i64}
     furiosa.tuc.wait {dma_tag_id = 0 : i32, target_context = false, type = false}
     %0 = furiosa.task.dma_descriptor {opcode = 0, source_base = 0xC000010000, destination_base = 0x0010000000, source_limits = [4,1,1,1,1,1,1,1], source_strides = [256,0,0,0,0,0,0,0], destination_limits = [4,1,1,1,1,1,1,1], destination_strides = [256,0,0,0,0,0,0,0]}
@@ -16,14 +16,13 @@ module {
     %4 = furiosa.task.dma_descriptor {opcode = 0, source_base = 0x0010010000, destination_base = 0xC000020000, source_limits = [4,1,1,1,1,1,1,1], source_strides = [256,0,0,0,0,0,0,0], destination_limits = [4,1,1,1,1,1,1,1], destination_strides = [256,0,0,0,0,0,0,0]}
     furiosa.task.dmaw %4 {dma_tag_id = 1, profile = false, profile_id = 0}
     furiosa.tuc.wait {dma_tag_id = 1 : i32, type = true, target_context = false}
-    %5 = tensor.empty() : tensor<256xf32, #furiosa.address<0x20000>>
-    return %5 : tensor<256xf32, #furiosa.address<0x20000>>
+    return
   }
   func.func @main() {
     %binary = furiosa_host.func_alloc { function = @kernel }
     %arg0 = furiosa_host.alloc { size = 0x400, data = [1] }
     %res0 = furiosa_host.alloc { size = 0x400, data = [1] }
-    %pe0 = furiosa_host.pe_program_load_inst { dram_address = 0x0, spm_address = 0x0, size = 0x100 }
+    %pe0 = furiosa_host.pe_program_load_inst %binary { dram_address = 0x0, spm_address = 0x0 }
     %pe1 = furiosa_host.pe_program_launch { spm_address = 0x0 }
     %pe = furiosa_host.pe_program_seq %pe0, %pe1
     %hal0 = furiosa_host.hal_program_write_at %binary { dram_address = 0x0 }
