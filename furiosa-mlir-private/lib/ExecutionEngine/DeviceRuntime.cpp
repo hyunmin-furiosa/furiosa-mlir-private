@@ -1,8 +1,3 @@
-#include <any>
-#include <stack>
-
-#include "furiosa_torch.h"
-
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
@@ -87,30 +82,6 @@ using namespace mlir;
 
 namespace mlir::furiosa {
 
-using byte_array_t = SmallVector<std::uint8_t>;
-using pe_program_t = SmallVector<furiosa_torch::PeProgram *>;
-using hal_program_t = SmallVector<furiosa_torch::HalProgram *>;
-using device_t = furiosa_torch::Device *;
-
-struct ExecutionContext {
-  Operation *module;
-
-  void createValue(Value val, std::any data) {
-    if (!valueMapper.count(val)) {
-      valueMapper.insert_or_assign(val, data);
-    }
-  }
-
-  /// get current data of value
-  std::any &getValue(Value val) { return valueMapper[val]; }
-
-private:
-  using ValueMapper = llvm::DenseMap<Value, std::any>;
-
-  /// Map from value to its data
-  ValueMapper valueMapper;
-};
-
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::AllocOp op) {
   auto size = op.getSize();
@@ -119,8 +90,14 @@ LogicalResult executeOperation(ExecutionContext &context,
   for (auto d : *data) {
     data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
   }
+  auto input_data_size = data_buffer.size();
+  data_buffer.reserve(CEIL(size, input_data_size));
+  for (auto i = 0u; i < CEIL(size, input_data_size); i += input_data_size) {
+    std::copy_n(data_buffer.begin(), input_data_size,
+                std::back_inserter(data_buffer));
+  }
   data_buffer.resize(size);
-  data_buffer.resize(((data_buffer.size() - 1) / 256 + 1) * 256);
+  data_buffer.resize(CEIL(data_buffer.size(), 256));
   context.createValue(op->getResult(0),
                       std::make_any<byte_array_t>(data_buffer));
 
@@ -145,7 +122,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   for (auto d : *binary) {
     data_buffer.push_back(reinterpret_cast<std::uint8_t &>(d));
   }
-  data_buffer.resize(((data_buffer.size() - 1) / 256 + 1) * 256);
+  data_buffer.resize(CEIL(data_buffer.size(), 256));
   context.createValue(op->getResult(0),
                       std::make_any<byte_array_t>(data_buffer));
 
