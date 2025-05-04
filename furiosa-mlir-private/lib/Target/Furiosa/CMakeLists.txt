@@ -1,10 +1,11 @@
 add_mlir_translation_library(FuriosaMLIRTargetFuriosa
-  Binary.cpp
   FuriosaToBinary.cpp
   TranslateRegistration.cpp
 
   LINK_LIBS PUBLIC
   FuriosaMLIRFuriosaDialect
+  FuriosaMLIRHostDialect
+  FuriosaMLIRInitAll
 )
 
 target_link_libraries(FuriosaMLIRTargetFuriosa PRIVATE

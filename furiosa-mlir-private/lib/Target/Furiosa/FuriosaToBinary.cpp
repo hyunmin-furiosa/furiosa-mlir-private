@@ -1,7 +1,6 @@
 #include <stack>
 
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
-#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -22,27 +21,12 @@
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
-#include "furiosa-mlir/Target/Furiosa/Binary.h"
+#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
 #include "furiosa-mlir/Target/Furiosa/Utils.h"
 
 using namespace mlir;
 
 namespace mlir::furiosa {
-
-/// Emitter for outer code
-struct FuriosaEmitter {
-  explicit FuriosaEmitter(raw_ostream &os);
-
-  /// Emits operation 'op' or returns failure.
-  LogicalResult emitOperation(Operation &op);
-
-  /// Returns the output stream.
-  raw_indented_ostream &ostream() { return os; };
-
-private:
-  /// Output stream to emit to.
-  raw_indented_ostream os;
-};
 
 /// Emitter that uses dialect specific emitters to emit Arm C code.
 struct ArmCEmitter {
@@ -350,24 +334,13 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
   return success();
 }
 
-static FailureOr<binary_t> printKernelFunction(func::FuncOp functionOp) {
-  int fd;
-  llvm::Twine symName = functionOp.getSymName();
-  llvm::Twine filepath_c = symName + ".c";
-  if (std::error_code error = llvm::sys::fs::openFileForWrite(filepath_c, fd)) {
-    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
-                             error.message());
-    return failure();
-  }
-  {
-    // C file needs to be closed to be compiled properly
-    llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
-    ArmCEmitter armCEmitter(fd_os);
-    raw_indented_ostream &os = armCEmitter.ostream();
-    ArmCEmitter::Scope scope(armCEmitter);
+static LogicalResult printKernelFunction(ArmCEmitter &emitter,
+                                         func::FuncOp functionOp) {
+  raw_indented_ostream &os = emitter.ostream();
+  ArmCEmitter::Scope scope(emitter);
 
-    // Necessary defines and includes
-    os << R"""(#include <stdalign.h>
+  // Necessary defines and includes
+  os << R"""(#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -575,88 +548,28 @@ struct shared_field_t
 /* Shared data structure */
 static volatile struct shared_field_t *const shared = (struct shared_field_t *)SHARED_FIELDS_ADDR;
 )""";
-    os << "\n";
+  os << "\n";
 
-    // Define function
-    os << "__attribute__ ((section (\".text.main\"))) void "
-       << functionOp.getName() << "(";
-    Operation *operation = functionOp.getOperation();
-    if (failed(printFunctionArgs(armCEmitter, operation,
-                                 functionOp.getArguments())))
-      return failure();
-    os << ") {\n";
-    if (failed(
-            printFunctionBody(armCEmitter, operation, functionOp.getBlocks())))
-      return failure();
-    os << "\n";
-    os << "}\n";
-
-    if (fd_os.has_error())
-      llvm::report_fatal_error(llvm::Twine("Error emitting the IR to file '") +
-                               filepath_c);
-  }
-
-  FuriosaBinary furiosaBinary{};
-
-  auto targetAttr = functionOp->getAttrOfType<furiosa::TargetAttr>("target");
-  furiosaBinary.metadata.npu = targetAttr.getNpu();
-  furiosaBinary.metadata.peBegin = targetAttr.getPeBegin();
-  furiosaBinary.metadata.peEnd = targetAttr.getPeEnd();
-
-  // auto addressAttr =
-  // functionOp->getAttrOfType<furiosa::AddressAttr>("address");
-  // furiosaBinary.metadata.binaryAddress = addressAttr.getAddress();
-
-  std::string filepath_o = *convertArmCToObject(filepath_c);
-  std::string filepath_link = *linkObject(filepath_o);
-  furiosaBinary.binary = *convertObjectToBinary(filepath_link);
-  furiosaBinary.metadata.binarySize = furiosaBinary.binary.size();
-
-  // for (auto arg : functionOp.getArgumentTypes()) {
-  //   if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
-  //     if (auto addressAttr =
-  //             llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
-  //       std::uint64_t address = addressAttr.getAddress();
-  //       std::uint64_t size = tensorType.getNumElements() *
-  //                            tensorType.getElementTypeBitWidth() / CHAR_BIT;
-  //       llvm::SmallVector<std::uint8_t> data(size, 1);
-  //       furiosaBinary.tensors.push_back(tensor_t{address, size, data});
-  //     }
-  //   }
-  // }
-  // for (auto res : functionOp.getResultTypes()) {
-  //   if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
-  //     if (auto addressAttr =
-  //             llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
-  //       std::uint64_t address = addressAttr.getAddress();
-  //       std::uint64_t size = tensorType.getNumElements() *
-  //                            tensorType.getElementTypeBitWidth() / CHAR_BIT;
-  //       llvm::SmallVector<std::uint8_t> data(size, 1);
-  //       furiosaBinary.tensors.push_back(tensor_t{address, size, data});
-  //     }
-  //   }
-  // }
-  // furiosaBinary.metadata.numArguments = functionOp.getNumArguments();
-  // furiosaBinary.metadata.numResults = functionOp.getNumResults();
-
-  if (failed(writeFuriosaBinary("furiosa.bin", furiosaBinary))) {
+  // Define function
+  os << "__attribute__ ((section (\".text.main\"))) void "
+     << functionOp.getName() << "(";
+  Operation *operation = functionOp.getOperation();
+  if (failed(printFunctionArgs(emitter, operation, functionOp.getArguments())))
     return failure();
-  }
+  os << ") {\n";
+  if (failed(printFunctionBody(emitter, operation, functionOp.getBlocks())))
+    return failure();
+  os << "\n";
+  os << "}\n";
 
-  return furiosaBinary.binary;
-}
-
-static LogicalResult printOperation(FuriosaEmitter &emitter,
-                                    func::CallOp callOp) {
   return success();
 }
 
-static LogicalResult printOperation(FuriosaEmitter &emitter,
+static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::FuncOp functionOp) {
   if (auto targetAttr =
           functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
-    auto binary = printKernelFunction(functionOp);
-    return success();
+    return printKernelFunction(emitter, functionOp);
   } else {
     for (Block &block : functionOp.getBlocks()) {
       for (Operation &op : block.getOperations()) {
@@ -668,8 +581,7 @@ static LogicalResult printOperation(FuriosaEmitter &emitter,
   return success();
 }
 
-static LogicalResult printOperation(FuriosaEmitter &emitter,
-                                    func::ReturnOp returnOp) {
+static LogicalResult printOperation(ArmCEmitter &emitter, func::CallOp callOp) {
   return success();
 }
 
@@ -680,35 +592,13 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
   return success();
 }
 
-static LogicalResult printOperation(FuriosaEmitter &emitter,
-                                    ModuleOp moduleOp) {
+static LogicalResult printOperation(ArmCEmitter &emitter, ModuleOp moduleOp) {
   // raw_indented_ostream &os = emitter.ostream();
   for (Operation &op : moduleOp) {
     if (failed(emitter.emitOperation(op)))
       return failure();
     // os << "\n";
   }
-  return success();
-}
-
-FuriosaEmitter::FuriosaEmitter(raw_ostream &os) : os(os) {}
-
-LogicalResult FuriosaEmitter::emitOperation(Operation &op) {
-  LogicalResult status =
-      llvm::TypeSwitch<Operation *, LogicalResult>(&op)
-          // Builtin ops.
-          .Case<ModuleOp>([&](auto op) { return printOperation(*this, op); })
-          // Func ops.
-          .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
-              [&](auto op) { return printOperation(*this, op); })
-          .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Default([&](Operation *) {
-            return op.emitOpError("unable to find printer for op");
-          });
-
-  if (failed(status))
-    return failure();
-
   return success();
 }
 
@@ -720,10 +610,11 @@ ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {
 LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
+          // Builtin ops.
+          .Case<ModuleOp>([&](auto op) { return printOperation(*this, op); })
           // Func ops.
-          .Case<func::ReturnOp>(
+          .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
-          .Case<tensor::EmptyOp>([&](auto op) { return success(); })
           .Case<furiosa::tuc::ItosfrOp, furiosa::tuc::RtosfrOp,
                 furiosa::tuc::RtosfriOp, furiosa::tuc::MtosfrOp,
                 furiosa::tuc::StosfrOp, furiosa::tuc::SfrtosOp,
@@ -776,9 +667,7 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
               [&](auto op) { return printDynamicMtosfr(*this, op); })
           .Case<furiosa::task::DmawOp>(
               [&](auto op) { return printDynamicDmaw(*this, op); })
-          .Default([&](Operation *) {
-            return op.emitOpError("unable to find printer for op");
-          });
+          .Default([&](Operation *) { return success(); });
 
   if (failed(status))
     return failure();
@@ -786,12 +675,63 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   return success();
 }
 
-FailureOr<binary_t> translateKernelToBinary(func::FuncOp functionOp) {
-  return printKernelFunction(functionOp);
+FailureOr<binary_t> translateKernelFunctionToBinary(func::FuncOp functionOp) {
+  int fd;
+  llvm::Twine symName = functionOp.getSymName();
+
+  SmallVector<char> filepath_c;
+  llvm::sys::fs::createTemporaryFile(symName, "c", fd, filepath_c);
+  if (std::error_code error = llvm::sys::fs::openFileForWrite(filepath_c, fd)) {
+    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
+                             error.message());
+    return failure();
+  }
+  {
+    llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
+    ArmCEmitter emitter(fd_os);
+
+    if (failed(printKernelFunction(emitter, functionOp)))
+      llvm::report_fatal_error(
+          llvm::Twine("kernel function translation failed"));
+
+    if (fd_os.has_error())
+      llvm::report_fatal_error(llvm::Twine("Error emitting the IR to file '") +
+                               filepath_c);
+  }
+
+  SmallVector<char> filepath_o;
+  llvm::sys::fs::createTemporaryFile(symName, "o", fd, filepath_o);
+  if (failed(convertArmCToObject(filepath_c, filepath_o))) {
+    return failure();
+  }
+
+  SmallVector<char> filepath_o_linked;
+  llvm::sys::fs::createTemporaryFile(symName, "o", fd, filepath_o_linked);
+  if (failed(linkObject(filepath_o, filepath_o_linked))) {
+    return failure();
+  }
+
+  SmallVector<char> filepath_bin;
+  llvm::sys::fs::createTemporaryFile(symName, "bin", fd, filepath_bin);
+  if (failed(convertObjectToBinary(filepath_o_linked, filepath_bin))) {
+    return failure();
+  }
+
+  auto status = llvm::MemoryBuffer::getFile(filepath_bin);
+  if (!status) {
+    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
+                             status.getError().message());
+  }
+  llvm::BinaryByteStream stream(status->get()->getBuffer(),
+                                llvm::endianness::native);
+
+  binary_t binary = stream.str();
+
+  return binary;
 }
 
-LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os) {
-  FuriosaEmitter emitter(os);
+LogicalResult translateFuriosaToArmC(Operation *op, llvm::raw_ostream &os) {
+  ArmCEmitter emitter(os);
   LogicalResult status = emitter.emitOperation(*op);
   if (failed(status))
     return failure();

@@ -1,14 +1,16 @@
 #pragma once
 
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Operation.h"
 #include "mlir/Support/LogicalResult.h"
 
-#include "furiosa-mlir/Target/Furiosa/Binary.h"
-
 namespace mlir::furiosa {
 
-FailureOr<binary_t> translateKernelToBinary(func::FuncOp functionOp);
+static constexpr auto MIN_BINARY_SIZE = 256;
+using binary_t = llvm::SmallString<MIN_BINARY_SIZE>;
 
-LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os);
+FailureOr<binary_t> translateKernelFunctionToBinary(func::FuncOp functionOp);
+
+LogicalResult translateFuriosaToArmC(Operation *op, llvm::raw_ostream &os);
 
 } // namespace mlir::furiosa
