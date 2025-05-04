@@ -12,8 +12,6 @@
 
 #define CEIL(a, b) (((a + b - 1) / b) * b)
 
-void launchKernel(mlir::furiosa::FuriosaBinary furiosaBinary);
-
 namespace mlir::furiosa {
 
 using byte_array_t = SmallVector<std::uint8_t, 256>;
