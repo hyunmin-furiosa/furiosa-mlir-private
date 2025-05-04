@@ -45,7 +45,7 @@ private:
   ValueMapper valueMapper;
 };
 
-LogicalResult executeFunction(Operation *module, StringRef entryPoint,
-                              StringRef entryPointType);
+LogicalResult executeFunction(Operation *module, StringRef entry_point,
+                              StringRef entry_point_type);
 
 } // namespace mlir::furiosa
