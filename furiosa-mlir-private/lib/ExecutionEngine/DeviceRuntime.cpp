@@ -85,13 +85,13 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::PeProgramLoadInstOp op) {
-  auto dramAddress = op.getDramAddress();
-  auto spmAddress = op.getSpmAddress();
+  auto dram_address = op.getDramAddress();
+  auto spm_address = op.getSpmAddress();
   auto &buffer =
       std::any_cast<byte_array_t &>(context.getValue(op.getBinary()));
   pe_program_t programs;
   programs.push_back(furiosa_torch::pe_program_load_inst(
-      dramAddress, spmAddress, buffer.size()));
+      dram_address, spm_address, buffer.size()));
   context.createValue(op->getResult(0), std::make_any<pe_program_t>(programs));
 
   return success();
@@ -99,9 +99,9 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::PeProgramLaunchOp op) {
-  auto spmAddress = op.getSpmAddress();
+  auto spm_address = op.getSpmAddress();
   pe_program_t programs;
-  programs.push_back(furiosa_torch::pe_program_launch(spmAddress, nullptr));
+  programs.push_back(furiosa_torch::pe_program_launch(spm_address, nullptr));
   context.createValue(op->getResult(0), std::make_any<pe_program_t>(programs));
 
   return success();
@@ -109,29 +109,29 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::PeProgramSeqOp op) {
-  auto pePrograms = op.getPePrograms();
-  pe_program_t programList;
-  for (auto peProgram : pePrograms) {
-    auto &program = std::any_cast<pe_program_t &>(context.getValue(peProgram));
-    programList.insert(programList.end(), program.begin(), program.end());
+  auto pe_programs = op.getPePrograms();
+  pe_program_t program_list;
+  for (auto pe_program : pe_programs) {
+    auto &program = std::any_cast<pe_program_t &>(context.getValue(pe_program));
+    program_list.insert(program_list.end(), program.begin(), program.end());
   }
-  pe_program_t mergedPrograms;
-  mergedPrograms.push_back(
-      furiosa_torch::pe_program_seq(programList.data(), programList.size()));
+  pe_program_t merged_programs;
+  merged_programs.push_back(
+      furiosa_torch::pe_program_seq(program_list.data(), program_list.size()));
   context.createValue(op->getResult(0),
-                      std::make_any<pe_program_t>(mergedPrograms));
+                      std::make_any<pe_program_t>(merged_programs));
 
   return success();
 }
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramWriteAtOp op) {
-  auto dramAddress = op.getDramAddress();
+  auto dram_address = op.getDramAddress();
   auto &buffer =
       std::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(furiosa_torch::hal_program_write_at(
-      reinterpret_cast<std::uint64_t>(buffer.data()), dramAddress,
+      reinterpret_cast<std::uint64_t>(buffer.data()), dram_address,
       buffer.size()));
   context.createValue(op->getResult(0), std::make_any<hal_program_t>(programs));
 
@@ -140,12 +140,12 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramReadAtOp op) {
-  auto dramAddress = op.getDramAddress();
+  auto dram_address = op.getDramAddress();
   auto &buffer =
       std::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(furiosa_torch::hal_program_read_at(
-      dramAddress, reinterpret_cast<std::uint64_t>(buffer.data()),
+      dram_address, reinterpret_cast<std::uint64_t>(buffer.data()),
       buffer.size()));
   context.createValue(op->getResult(0), std::make_any<hal_program_t>(programs));
 
@@ -154,11 +154,11 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramExecuteOp op) {
-  auto &peProgram =
+  auto &pe_program =
       std::any_cast<pe_program_t &>(context.getValue(op.getPeProgram()));
   hal_program_t programs;
-  assert(peProgram.size() == 1);
-  programs.push_back(furiosa_torch::hal_program_execute(peProgram[0]));
+  assert(pe_program.size() == 1);
+  programs.push_back(furiosa_torch::hal_program_execute(pe_program[0]));
   context.createValue(op->getResult(0), std::make_any<hal_program_t>(programs));
 
   return success();
@@ -166,18 +166,18 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramSeqOp op) {
-  auto halPrograms = op.getHalPrograms();
-  hal_program_t programList;
-  for (auto halProgram : halPrograms) {
+  auto hal_programs = op.getHalPrograms();
+  hal_program_t program_list;
+  for (auto hal_program : hal_programs) {
     auto &program =
-        std::any_cast<hal_program_t &>(context.getValue(halProgram));
-    programList.insert(programList.end(), program.begin(), program.end());
+        std::any_cast<hal_program_t &>(context.getValue(hal_program));
+    program_list.insert(program_list.end(), program.begin(), program.end());
   }
-  hal_program_t mergedPrograms;
-  mergedPrograms.push_back(
-      furiosa_torch::hal_program_seq(programList.data(), programList.size()));
+  hal_program_t merged_programs;
+  merged_programs.push_back(
+      furiosa_torch::hal_program_seq(program_list.data(), program_list.size()));
   context.createValue(op->getResult(0),
-                      std::make_any<hal_program_t>(mergedPrograms));
+                      std::make_any<hal_program_t>(merged_programs));
 
   return success();
 }
@@ -186,9 +186,9 @@ LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::DeviceNewOp op) {
   auto target = op.getTarget();
   auto npu = target.getNpu();
-  auto peBegin = target.getPeBegin();
-  auto peEnd = target.getPeEnd();
-  device_t device = furiosa_torch::device_new(npu, peBegin, peEnd);
+  auto pe_begin = target.getPeBegin();
+  auto pe_end = target.getPeEnd();
+  device_t device = furiosa_torch::device_new(npu, pe_begin, pe_end);
   context.createValue(op->getResult(0), std::make_any<device_t>(device));
 
   return success();
@@ -196,11 +196,11 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::DeviceExecuteOp op) {
-  auto &halProgram =
+  auto &hal_program =
       std::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
   auto &device = std::any_cast<device_t &>(context.getValue(op.getDevice()));
-  assert(halProgram.size() == 1);
-  furiosa_torch::device_execute(device, halProgram[0]);
+  assert(hal_program.size() == 1);
+  furiosa_torch::device_execute(device, hal_program[0]);
 
   return success();
 }
@@ -229,20 +229,20 @@ LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
   return success();
 }
 
-LogicalResult executeFunction(Operation *module, StringRef entryPoint,
-                              StringRef entryPointType) {
+LogicalResult executeFunction(Operation *module, StringRef entry_point,
+                              StringRef entry_point_type) {
   ExecutionContext context;
   context.module = module;
 
-  auto mainFunction = dyn_cast_or_null<func::FuncOp>(
-      SymbolTable::lookupSymbolIn(module, entryPoint));
-  if (!mainFunction || mainFunction.empty()) {
+  auto main_function = dyn_cast_or_null<func::FuncOp>(
+      SymbolTable::lookupSymbolIn(module, entry_point));
+  if (!main_function || main_function.empty()) {
     llvm::report_fatal_error(llvm::Twine("entry point not found"));
     return failure();
   }
 
   // Emit the body of the function.
-  for (Block &block : mainFunction.getBlocks()) {
+  for (Block &block : main_function.getBlocks()) {
     for (Operation &op : block.getOperations()) {
       if (failed(executeOperation(context, op)))
         return failure();
