@@ -1,7 +1,6 @@
 #include <stack>
 
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
-#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -17,9 +16,12 @@
 #include "llvm/Support/Error.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskSfrOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
-#include "furiosa-mlir/Target/Furiosa/Binary.h"
+#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
 #include "furiosa-mlir/Target/Furiosa/Utils.h"
 
 using namespace mlir;
@@ -84,7 +86,8 @@ private:
   std::stack<int64_t> labelInScopeCount;
 };
 
-static LogicalResult printFuriosaCommand(ArmCEmitter &emitter, Operation *op) {
+static LogicalResult printTensorUnitCommand(ArmCEmitter &emitter,
+                                            Operation *op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op);
 
@@ -144,7 +147,7 @@ static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
 
 static LogicalResult
 printStaticDmaDescriptor(ArmCEmitter &emitter,
-                         furiosa::TaskStaticDmaDescriptorOp op) {
+                         furiosa::task::StaticDmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
@@ -195,7 +198,7 @@ printStaticDmaDescriptor(ArmCEmitter &emitter,
 }
 
 static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
-                                        furiosa::TaskDmaDescriptorOp op) {
+                                        furiosa::task::DmaDescriptorOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto descriptor = *getDmaDescriptor(op);
 
@@ -239,7 +242,8 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   return success();
 };
 
-static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter, TaskMtosfrOp op) {
+static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter,
+                                        task::MtosfrOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op.getOperation());
 
@@ -260,20 +264,32 @@ static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter, TaskMtosfrOp op) {
   return success();
 }
 
-static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, TaskDmawOp op) {
+static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, task::DmawOp op) {
   raw_indented_ostream &os = emitter.ostream();
   auto [command, registers] = *getCommand(*op.getOperation());
+
+  static constexpr std::uint64_t remotePeBase = 0x80'0000'0000;
+  static constexpr std::uint64_t peSize = 0x2000'0000; // 512MB
+  std::uint64_t remotePeOffset = 0;
+  if (auto functionOp = op->getParentOfType<func::FuncOp>()) {
+    auto targetAttr = functionOp->getAttrOfType<furiosa::TargetAttr>("target");
+    auto clusterPeBegin = targetAttr.getPeBegin() % 4; // within cluster
+    remotePeOffset = remotePeBase + clusterPeBegin * peSize;
+  }
 
   Value operand = op->getOperand(0);
   auto operandName = emitter.getOrCreateName(operand);
   os << "TUC_GENERAL_REGISTERS[0] = " << llvm::format_hex(registers[0].value, 0)
      << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
   os << "TUC_GENERAL_REGISTERS[1] = " << llvm::format_hex(registers[1].value, 0)
-     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff) | "
+     << llvm::format_hex(remotePeOffset, 0) << ";\n"; // remote pe0
   os << "TUC_GENERAL_REGISTERS[2] = " << llvm::format_hex(registers[2].value, 0)
-     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff) | "
+     << llvm::format_hex(remotePeOffset, 0) << ";\n"; // remote pe0
   os << "TUC_GENERAL_REGISTERS[3] = " << llvm::format_hex(registers[3].value, 0)
-     << " | ((uint64_t) &" << operandName << " & 0xffffffffff);\n";
+     << " | ((uint64_t) &" << operandName << " & 0xffffffffff) | "
+     << llvm::format_hex(remotePeOffset, 0) << ";\n"; // remote pe0
   command.setReg(0, 0);
   command.setReg(1, 1);
   command.setReg(2, 2);
@@ -318,24 +334,13 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
   return success();
 }
 
-static LogicalResult printKernelFunction(func::FuncOp functionOp) {
-  int fd;
-  llvm::Twine symName = functionOp.getSymName();
-  llvm::Twine filepath_c = symName + ".c";
-  if (std::error_code error = llvm::sys::fs::openFileForWrite(filepath_c, fd)) {
-    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
-                             error.message());
-    return failure();
-  }
-  {
-    // C file needs to be closed to be compiled properly
-    llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
-    ArmCEmitter armCEmitter(fd_os);
-    raw_indented_ostream &os = armCEmitter.ostream();
-    ArmCEmitter::Scope scope(armCEmitter);
+static LogicalResult printKernelFunction(ArmCEmitter &emitter,
+                                         func::FuncOp functionOp) {
+  raw_indented_ostream &os = emitter.ostream();
+  ArmCEmitter::Scope scope(emitter);
 
-    // Necessary defines and includes
-    os << R"""(#include <stdalign.h>
+  // Necessary defines and includes
+  os << R"""(#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -543,71 +548,19 @@ struct shared_field_t
 /* Shared data structure */
 static volatile struct shared_field_t *const shared = (struct shared_field_t *)SHARED_FIELDS_ADDR;
 )""";
-    os << "\n";
+  os << "\n";
 
-    // Define function
-    os << "__attribute__ ((section (\".text.main\"))) void "
-       << functionOp.getName() << "(";
-    Operation *operation = functionOp.getOperation();
-    if (failed(printFunctionArgs(armCEmitter, operation,
-                                 functionOp.getArguments())))
-      return failure();
-    os << ") {\n";
-    if (failed(
-            printFunctionBody(armCEmitter, operation, functionOp.getBlocks())))
-      return failure();
-    os << "\n";
-    os << "}\n";
-
-    if (fd_os.has_error())
-      llvm::report_fatal_error(llvm::Twine("Error emitting the IR to file '") +
-                               filepath_c);
-  }
-
-  FuriosaBinary furiosaBinary{};
-
-  auto targetAttr = functionOp->getAttrOfType<furiosa::TargetAttr>("target");
-  furiosaBinary.metadata.npu = targetAttr.getNpu();
-  furiosaBinary.metadata.peBegin = targetAttr.getPeBegin();
-  furiosaBinary.metadata.peEnd = targetAttr.getPeEnd();
-
-  auto addressAttr = functionOp->getAttrOfType<furiosa::AddressAttr>("address");
-  furiosaBinary.metadata.binaryAddress = addressAttr.getAddress();
-
-  std::string filepath_o = *convertArmCToObject(filepath_c);
-  std::string filepath_link = *linkObject(filepath_o);
-  furiosaBinary.binary = *convertObjectToBinary(filepath_link);
-  furiosaBinary.metadata.binarySize = furiosaBinary.binary.size();
-
-  for (auto arg : functionOp.getArgumentTypes()) {
-    if (auto tensorType = llvm::cast<RankedTensorType>(arg)) {
-      if (auto addressAttr =
-              llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
-        std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = tensorType.getNumElements() *
-                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
-        furiosaBinary.arguments.push_back(std::make_pair(address, size));
-      }
-    }
-  }
-  furiosaBinary.metadata.argumentSize = furiosaBinary.arguments.size();
-
-  for (auto res : functionOp.getResultTypes()) {
-    if (auto tensorType = llvm::cast<RankedTensorType>(res)) {
-      if (auto addressAttr =
-              llvm::cast<furiosa::AddressAttr>(tensorType.getEncoding())) {
-        std::uint64_t address = addressAttr.getAddress();
-        std::uint64_t size = tensorType.getNumElements() *
-                             tensorType.getElementTypeBitWidth() / CHAR_BIT;
-        furiosaBinary.results.push_back(std::make_pair(address, size));
-      }
-    }
-  }
-  furiosaBinary.metadata.resultSize = furiosaBinary.results.size();
-
-  if (failed(writeFuriosaBinary("furiosa.bin", furiosaBinary))) {
+  // Define function
+  os << "__attribute__ ((section (\".text.main\"))) void "
+     << functionOp.getName() << "(";
+  Operation *operation = functionOp.getOperation();
+  if (failed(printFunctionArgs(emitter, operation, functionOp.getArguments())))
     return failure();
-  }
+  os << ") {\n";
+  if (failed(printFunctionBody(emitter, operation, functionOp.getBlocks())))
+    return failure();
+  os << "\n";
+  os << "}\n";
 
   return success();
 }
@@ -616,8 +569,19 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
                                     func::FuncOp functionOp) {
   if (auto targetAttr =
           functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
-    return printKernelFunction(functionOp);
+    return printKernelFunction(emitter, functionOp);
+  } else {
+    for (Block &block : functionOp.getBlocks()) {
+      for (Operation &op : block.getOperations()) {
+        if (failed(emitter.emitOperation(op)))
+          return failure();
+      }
+    }
   }
+  return success();
+}
+
+static LogicalResult printOperation(ArmCEmitter &emitter, func::CallOp callOp) {
   return success();
 }
 
@@ -649,42 +613,61 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           // Builtin ops.
           .Case<ModuleOp>([&](auto op) { return printOperation(*this, op); })
           // Func ops.
-          .Case<func::FuncOp, func::ReturnOp>(
+          .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
-          .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Case<
-              furiosa::TucItosfrOp, furiosa::TucRtosfrOp, furiosa::TucRtosfriOp,
-              furiosa::TucMtosfrOp, furiosa::TucStosfrOp, furiosa::TucSfrtosOp,
-              furiosa::TucStallOp, furiosa::TucItosOp, furiosa::TucItosiOp,
-              furiosa::TucStosOp, furiosa::TucStotabOp, furiosa::TucStotrfOp,
-              furiosa::TucStovrfOp, furiosa::TucExecutionOp, furiosa::TucWaitOp,
-              furiosa::TucWaitiOp, furiosa::TucInterruptOp, furiosa::TucDmaOp,
-              furiosa::TucDma1Op, furiosa::TucDmawOp, furiosa::TucProfileOp,
-              furiosa::TucProfileiOp, furiosa::TucPrflushOp>([&](auto op) {
-            return printFuriosaCommand(*this, op.getOperation());
+          .Case<furiosa::tuc::ItosfrOp, furiosa::tuc::RtosfrOp,
+                furiosa::tuc::RtosfriOp, furiosa::tuc::MtosfrOp,
+                furiosa::tuc::StosfrOp, furiosa::tuc::SfrtosOp,
+                furiosa::tuc::StallOp, furiosa::tuc::ItosOp,
+                furiosa::tuc::ItosiOp, furiosa::tuc::StosOp,
+                furiosa::tuc::StotabOp, furiosa::tuc::StotrfOp,
+                furiosa::tuc::StovrfOp, furiosa::tuc::ExecutionOp,
+                furiosa::tuc::WaitOp, furiosa::tuc::WaitiOp,
+                furiosa::tuc::InterruptOp, furiosa::tuc::DmaOp,
+                furiosa::tuc::Dma1Op, furiosa::tuc::DmawOp,
+                furiosa::tuc::ProfileOp, furiosa::tuc::ProfileiOp,
+                furiosa::tuc::PrflushOp>([&](auto op) {
+            return printTensorUnitCommand(*this, op.getOperation());
           })
-          .Case<furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubDataPathOp>(
+          .Case<furiosa::task::StaticSfrDotProductEngineOp,
+                furiosa::task::StaticSfrMainCommitUnitOp,
+                furiosa::task::StaticSfrMainDataPathUnitOp,
+                furiosa::task::StaticSfrMainFetchUnitOp,
+                furiosa::task::StaticSfrRegisterConfigUnitOp,
+                furiosa::task::StaticSfrSubCommitUnitOp,
+                furiosa::task::StaticSfrSubDataPathUnitOp,
+                furiosa::task::StaticSfrSubFetchUnitOp,
+                furiosa::task::StaticSfrTensorRegisterFileOp,
+                furiosa::task::StaticSfrTransposeEngineOp,
+                furiosa::task::StaticSfrVectorArithmeticUnitOp,
+                furiosa::task::StaticSfrVectorReduceUnitOp,
+                furiosa::task::StaticSfrVectorRegisterFileOp,
+                furiosa::task::StaticSfrVectorRouteUnitOp>(
               [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubFetchOp,
-                furiosa::TaskStaticSfrSubDataPathOp>(
-              [&](auto op) { return printStaticSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskSfrSubFetchOp, furiosa::TaskSfrSubCommitOp,
-                furiosa::TaskSfrSubDataPathOp>(
+          .Case<furiosa::task::SfrDotProductEngineOp,
+                furiosa::task::SfrMainCommitUnitOp,
+                furiosa::task::SfrMainDataPathUnitOp,
+                furiosa::task::SfrMainFetchUnitOp,
+                furiosa::task::SfrRegisterConfigUnitOp,
+                furiosa::task::SfrSubCommitUnitOp,
+                furiosa::task::SfrSubDataPathUnitOp,
+                furiosa::task::SfrSubFetchUnitOp,
+                furiosa::task::SfrTensorRegisterFileOp,
+                furiosa::task::SfrTransposeEngineOp,
+                furiosa::task::SfrVectorArithmeticUnitOp,
+                furiosa::task::SfrVectorReduceUnitOp,
+                furiosa::task::SfrVectorRegisterFileOp,
+                furiosa::task::SfrVectorRouteUnitOp>(
               [&](auto op) { return printSfr(*this, op.getOperation()); })
-          .Case<furiosa::TaskStaticDmaDescriptorOp>(
+          .Case<furiosa::task::StaticDmaDescriptorOp>(
               [&](auto op) { return printStaticDmaDescriptor(*this, op); })
-          .Case<furiosa::TaskDmaDescriptorOp>(
+          .Case<furiosa::task::DmaDescriptorOp>(
               [&](auto op) { return printDmaDescriptor(*this, op); })
-          .Case<furiosa::TaskMtosfrOp>(
+          .Case<furiosa::task::MtosfrOp>(
               [&](auto op) { return printDynamicMtosfr(*this, op); })
-          .Case<furiosa::TaskDmawOp>(
+          .Case<furiosa::task::DmawOp>(
               [&](auto op) { return printDynamicDmaw(*this, op); })
-          .Default([&](Operation *) {
-            return op.emitOpError("unable to find printer for op");
-          });
+          .Default([&](Operation *) { return success(); });
 
   if (failed(status))
     return failure();
@@ -692,7 +675,62 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   return success();
 }
 
-LogicalResult translateFuriosaToBinary(Operation *op, llvm::raw_ostream &os) {
+FailureOr<binary_t> translateKernelFunctionToBinary(func::FuncOp functionOp) {
+  int fd;
+  llvm::Twine symName = functionOp.getSymName();
+
+  SmallVector<char> filepath_c;
+  llvm::sys::fs::createTemporaryFile(symName, "c", fd, filepath_c);
+  if (std::error_code error = llvm::sys::fs::openFileForWrite(filepath_c, fd)) {
+    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
+                             error.message());
+    return failure();
+  }
+  {
+    llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
+    ArmCEmitter emitter(fd_os);
+
+    if (failed(printKernelFunction(emitter, functionOp)))
+      llvm::report_fatal_error(
+          llvm::Twine("kernel function translation failed"));
+
+    if (fd_os.has_error())
+      llvm::report_fatal_error(llvm::Twine("Error emitting the IR to file '") +
+                               filepath_c);
+  }
+
+  SmallVector<char> filepath_o;
+  llvm::sys::fs::createTemporaryFile(symName, "o", fd, filepath_o);
+  if (failed(convertArmCToObject(filepath_c, filepath_o))) {
+    return failure();
+  }
+
+  SmallVector<char> filepath_o_linked;
+  llvm::sys::fs::createTemporaryFile(symName, "o", fd, filepath_o_linked);
+  if (failed(linkObject(filepath_o, filepath_o_linked))) {
+    return failure();
+  }
+
+  SmallVector<char> filepath_bin;
+  llvm::sys::fs::createTemporaryFile(symName, "bin", fd, filepath_bin);
+  if (failed(convertObjectToBinary(filepath_o_linked, filepath_bin))) {
+    return failure();
+  }
+
+  auto status = llvm::MemoryBuffer::getFile(filepath_bin);
+  if (!status) {
+    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
+                             status.getError().message());
+  }
+  llvm::BinaryByteStream stream(status->get()->getBuffer(),
+                                llvm::endianness::native);
+
+  binary_t binary = stream.str();
+
+  return binary;
+}
+
+LogicalResult translateFuriosaToArmC(Operation *op, llvm::raw_ostream &os) {
   ArmCEmitter emitter(os);
   LogicalResult status = emitter.emitOperation(*op);
   if (failed(status))

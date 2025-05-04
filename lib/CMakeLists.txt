@@ -8,6 +8,7 @@ set(LinkedLibs
   MLIRComplexDialect
   MLIRFuncDialect
   MLIRFuncInlinerExtension
+  MLIRFuncToLLVM
   MLIRIR
   MLIRMLProgramDialect
   MLIRMemRefDialect
@@ -17,6 +18,7 @@ set(LinkedLibs
   MLIRSupport
 
   # Dialects.
+  FuriosaMLIRHostDialect
   FuriosaMLIRFuriosaDialect
 
   # Dialect passes.
