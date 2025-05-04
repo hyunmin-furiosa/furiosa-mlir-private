@@ -17,7 +17,7 @@ Interfaces: `InferTypeOpInterface`
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>data</code></td><td>::mlir::ArrayAttr</td><td>8-bit unsigned integer array attribute</td></tr>
+<tr><td><code>data</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -25,6 +25,32 @@ Interfaces: `InferTypeOpInterface`
 | Result | Description |
 | :----: | ----------- |
 | `buffer` | Host memory buffer type |
+
+
+### `furiosa_host.compare` (furiosa::host::CompareOp)
+
+_Host tensor compare_
+
+Syntax:
+
+```
+operation ::= `furiosa_host.compare` $buffer0 $buffer1 attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `buffer0` | Host memory buffer type |
+| `buffer1` | Host memory buffer type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `result` | 1-bit signless integer |
 
 
 ### `furiosa_host.device_execute` (furiosa::host::DeviceExecuteOp)
@@ -69,6 +95,32 @@ Interfaces: `InferTypeOpInterface`
 | Result | Description |
 | :----: | ----------- |
 | `device` | Device type |
+
+
+### `furiosa_host.func_alloc` (furiosa::host::FuncAllocOp)
+
+_Host memory allocation for kernel function_
+
+Syntax:
+
+```
+operation ::= `furiosa_host.func_alloc` attr-dict
+```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>function</code></td><td>::mlir::FlatSymbolRefAttr</td><td>flat symbol reference attribute</td></tr>
+</table>
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `buffer` | Host memory buffer type |
 
 
 ### `furiosa_host.hal_program_execute` (furiosa::host::HalProgramExecuteOp)
@@ -218,7 +270,7 @@ _PE program load instruction_
 Syntax:
 
 ```
-operation ::= `furiosa_host.pe_program_load_inst` attr-dict
+operation ::= `furiosa_host.pe_program_load_inst` $binary attr-dict
 ```
 
 Interfaces: `InferTypeOpInterface`
@@ -229,8 +281,13 @@ Interfaces: `InferTypeOpInterface`
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>dram_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>spm_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
-<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `binary` | Host memory buffer type |
 
 #### Results:
 
