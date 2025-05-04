@@ -9,6 +9,9 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskSfrOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 
 #include "mlir/IR/Attributes.h"
@@ -34,6 +37,18 @@ void FuriosaDialect::initialize() {
   addOperations<
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.cpp.inc"
       >();
+#define GET_OP_LIST
+  addOperations<
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskOps.cpp.inc"
+      >();
+#define GET_OP_LIST
+  addOperations<
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTaskSfrOps.cpp.inc"
+      >();
+#define GET_OP_LIST
+  addOperations<
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.cpp.inc"
+      >();
   addAttributes<
 #define GET_ATTRDEF_LIST
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttrs.cpp.inc"
@@ -42,4 +57,8 @@ void FuriosaDialect::initialize() {
 #define GET_TYPEDEF_LIST
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.cpp.inc"
       >();
+}
+
+void mlir::furiosa::registerFuriosaDialect(DialectRegistry &registry) {
+  registry.insert<FuriosaDialect>();
 }

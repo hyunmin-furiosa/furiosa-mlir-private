@@ -39,7 +39,7 @@ furiosa-mlir: configure
 
 docs furiosa-mlir-doc: configure
 	$(CMAKE) --build $(BUILD_DIR) --target mlir-doc --parallel $(JOBS)
-	cp $(BUILD_DIR)/docs/Furiosa/*.md $(CURDIR)/docs
+	cp -r $(BUILD_DIR)/docs $(CURDIR)
 
 configure:
 	mkdir -p $(BUILD_DIR)

@@ -7,10 +7,14 @@
 #include "lld/Common/Driver.h"
 
 #include "llvm/Object/ELFObjectFile.h"
+#include "llvm/Support/BinaryByteStream.h"
+#include "llvm/Support/BinaryStreamWriter.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
+
+#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
 
 // for linkObject
 LLD_HAS_DRIVER(elf)
@@ -26,14 +30,14 @@ LogicalResult InitializeAArch64() {
   return success();
 }
 
-FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
+LogicalResult convertArmCToObject(llvm::Twine filepath_in,
+                                  llvm::Twine filepath_out) {
   if (failed(InitializeAArch64())) {
     llvm::report_fatal_error("Failed to initialize AArch64 target");
     return failure();
   }
 
   // Compile the C code
-  llvm::Twine filepath_out = filepath + ".o";
   auto invocation = std::make_shared<clang::CompilerInvocation>();
   const char *args[] = {""}; // -v to make verbose
   clang::CompilerInstance compiler;
@@ -43,8 +47,8 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
   invocation->getTargetOpts().Triple =
       "aarch64-unknown-none-elf"; // -triple aarch64-unknown-none-elf
   invocation->getFrontendOpts().Inputs.clear(); // remove default input '-'
-  invocation->getFrontendOpts().Inputs.push_back(
-      clang::FrontendInputFile(filepath.str(), clang::Language::C)); // filepath
+  invocation->getFrontendOpts().Inputs.push_back(clang::FrontendInputFile(
+      filepath_in.str(), clang::Language::C)); // filepath
   invocation->getFrontendOpts().OutputFile =
       filepath_out.str(); // -o filepath_out
   invocation->getHeaderSearchOpts().UseStandardSystemIncludes =
@@ -65,12 +69,12 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
   invocation->getLangOpts().Freestanding = 1; // -ffreestanding
 
   // Check compile command
-  auto command = invocation->getCC1CommandLine();
-  llvm::dbgs() << "clang ";
-  for (auto arg : command) {
-    llvm::dbgs() << arg << " ";
-  }
-  llvm::dbgs() << "\n";
+  // auto command = invocation->getCC1CommandLine();
+  // llvm::dbgs() << "clang ";
+  // for (auto arg : command) {
+  //   llvm::dbgs() << arg << " ";
+  // }
+  // llvm::dbgs() << "\n";
 
   // Compile
   compiler.setInvocation(std::move(invocation));
@@ -78,22 +82,12 @@ FailureOr<std::string> convertArmCToObject(llvm::Twine filepath) {
       std::make_unique<clang::EmitObjAction>();
   compiler.ExecuteAction(*action);
 
-  // Check if object file exists
-  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> bufferOrErr =
-      llvm::MemoryBuffer::getFile(filepath_out);
-  if (!bufferOrErr) {
-    llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
-                             bufferOrErr.getError().message());
-  }
-
-  return filepath_out.str();
+  return success();
 }
 
-FailureOr<std::string> linkObject(llvm::Twine filepath) {
-  llvm::Twine filepath_out = filepath + ".o";
-
+LogicalResult linkObject(llvm::Twine filepath_in, llvm::Twine filepath_out) {
   auto linker = std::string("-T") + CLANG_CROSS_COMPILE_LIBPE + "/linker.ld";
-  auto input = filepath.str();
+  auto input = filepath_in.str();
   auto output = std::string("-o") + filepath_out.str();
   const char *args[] = {"ld.lld", linker.c_str(), input.c_str(), output.c_str(),
                         "-e0"}; // -v to make verbose
@@ -111,11 +105,12 @@ FailureOr<std::string> linkObject(llvm::Twine filepath) {
   // driver.link(args);
   // CommonLinkerContext::destroy();
 
-  return filepath_out.str();
+  return success();
 }
 
-FailureOr<std::string> convertObjectToBinary(llvm::Twine filepath) {
-  auto status = llvm::MemoryBuffer::getFile(filepath);
+LogicalResult convertObjectToBinary(llvm::Twine filepath_in,
+                                    llvm::Twine filepath_out) {
+  auto status = llvm::MemoryBuffer::getFile(filepath_in);
   if (!status) {
     llvm::report_fatal_error(llvm::Twine("Failed to open file: ") +
                              status.getError().message());
@@ -131,7 +126,7 @@ FailureOr<std::string> convertObjectToBinary(llvm::Twine filepath) {
   if (!obj) {
     return failure();
   }
-  std::string binBuffer;
+  binary_t binBuffer;
   for (llvm::object::ELFSectionRef section : obj->sections()) {
     if ((section.getFlags() & llvm::ELF::SHF_ALLOC) &&
         section.getType() != llvm::ELF::SHT_NOBITS && section.getSize() > 0) {
@@ -146,7 +141,24 @@ FailureOr<std::string> convertObjectToBinary(llvm::Twine filepath) {
     }
   }
 
-  return binBuffer;
+  llvm::Expected<std::unique_ptr<llvm::FileOutputBuffer>> fileBuffer =
+      llvm::FileOutputBuffer::create(filepath_out.str(), binBuffer.size());
+  if (!fileBuffer) {
+    llvm::report_fatal_error(
+        llvm::Twine(llvm::toString(fileBuffer.takeError())));
+    return failure();
+  }
+  llvm::FileBufferByteStream fileStream(std::move(fileBuffer.get()),
+                                        llvm::endianness::native);
+  llvm::BinaryStreamWriter fileWriter(fileStream);
+  if (fileWriter.writeFixedString(binBuffer)) {
+    return failure();
+  }
+  if (fileStream.commit()) {
+    return failure();
+  }
+
+  return success();
 }
 
 } // namespace mlir::furiosa

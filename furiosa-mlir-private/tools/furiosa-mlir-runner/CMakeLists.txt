@@ -8,4 +8,8 @@ COMPONENT furiosa-mlir-runner)
 target_link_libraries(furiosa-mlir-runner PRIVATE
   MLIRExecutionEngine
   MLIRJitRunner
+  FuriosaMLIRExecutionEngine
+  FuriosaMLIRFuriosaDialect
+  FuriosaMLIRHostDialect
+  FuriosaMLIRTargetFuriosa
 )

@@ -9,6 +9,8 @@
 
 #include "furiosa-mlir/InitAll.h"
 
+#include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h"
+#include "mlir/Conversion/Passes.h"
 #include "mlir/Dialect/Complex/IR/Complex.h"
 #include "mlir/Dialect/Func/Extensions/InlinerExtension.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
@@ -19,44 +21,31 @@
 #include "mlir/Dialect/SparseTensor/IR/SparseTensor.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Dialect/Tensor/IR/TensorInferTypeOpInterfaceImpl.h"
+#include "mlir/Dialect/Tosa/IR/TosaOps.h"
 #include "mlir/IR/Dialect.h"
+#include "mlir/Transforms/Passes.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
-
-#ifdef TORCH_MLIR_ENABLE_STABLEHLO
-#include "stablehlo/conversions/linalg/transforms/Passes.h"
-#include "stablehlo/transforms/Passes.h"
-#endif
-
-#ifdef TORCH_MLIR_ENABLE_TOSA
-#include "mlir/Dialect/Tosa/IR/TosaOps.h"
-#endif
+#include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 
 void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
-  registry.insert<mlir::func::FuncDialect>();
-  registry.insert<mlir::tensor::TensorDialect>();
-  registry.insert<mlir::furiosa::FuriosaDialect>();
+  registry.insert<mlir::arith::ArithDialect, mlir::func::FuncDialect,
+                  mlir::tensor::TensorDialect, mlir::tosa::TosaDialect>();
+  mlir::furiosa::registerFuriosaDialect(registry);
+  mlir::furiosa::host::registerHostDialect(registry);
 }
 
 void mlir::furiosa::registerAllExtensions(mlir::DialectRegistry &registry) {
-  mlir::func::registerInlinerExtension(registry);
-  tensor::registerInferTypeOpInterfaceExternalModels(registry);
+  registerConvertFuncToLLVMInterface(registry);
 }
 
 void mlir::furiosa::registerAllPasses() {
+  // General passes
+  registerTransformsPasses();
+
+  // Conversion passes
+  registerConvertFuncToLLVMPass();
+
   mlir::furiosa::registerFuriosaPasses();
-
-#ifdef TORCH_MLIR_ENABLE_STABLEHLO
-  mlir::stablehlo::registerStablehloLegalizeToLinalgPass();
-  mlir::stablehlo::registerStablehloAggressiveSimplificationPass();
-  mlir::stablehlo::registerStablehloRefineShapesPass();
-  mlir::stablehlo::registerStablehloConvertToSignlessPass();
-  mlir::stablehlo::registerShapeLegalizeToStablehloPass();
-  mlir::stablehlo::registerStablehloLegalizeDeprecatedOpsPass();
-#endif
-
-#ifdef TORCH_MLIR_ENABLE_REFBACKEND
-  mlir::torch::RefBackend::registerRefBackendPasses();
-#endif
 }
