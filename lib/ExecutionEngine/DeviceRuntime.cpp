@@ -30,7 +30,7 @@ LogicalResult executeOperation(ExecutionContext &context,
                 std::back_inserter(data_buffer));
   }
   data_buffer.resize(size);
-  data_buffer.resize(CEIL(data_buffer.size(), 256));
+  data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
   context.createValue(op->getResult(0),
                       std::make_any<byte_array_t>(data_buffer));
 
@@ -46,7 +46,7 @@ LogicalResult executeOperation(ExecutionContext &context,
     llvm::report_fatal_error(llvm::Twine("entry point not found"));
     return failure();
   }
-  auto binary = translateKernelToBinary(function);
+  auto binary = translateKernelFunctionToBinary(function);
   if (failed(binary)) {
     llvm::report_fatal_error(llvm::Twine("failed to translate kernel"));
     return failure();
@@ -55,7 +55,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   for (auto d : *binary) {
     data_buffer.push_back(reinterpret_cast<std::uint8_t &>(d));
   }
-  data_buffer.resize(CEIL(data_buffer.size(), 256));
+  data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
   context.createValue(op->getResult(0),
                       std::make_any<byte_array_t>(data_buffer));
 

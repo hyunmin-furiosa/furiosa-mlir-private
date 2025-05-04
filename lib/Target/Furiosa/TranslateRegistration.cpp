@@ -8,6 +8,7 @@
 #include "mlir/Tools/mlir-translate/Translation.h"
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
+#include "furiosa-mlir/InitAll.h"
 #include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
 
 using namespace mlir;
@@ -16,17 +17,12 @@ namespace mlir::furiosa {
 
 void registerFuriosaToBinary() {
   TranslateFromMLIRRegistration reg(
-      "furiosa-to-binary", "translate furiosa to binary",
+      "furiosa-to-arm-c", "translate furiosa to arm c",
       [](Operation *op, llvm::raw_ostream &os) -> LogicalResult {
-        return translateFuriosaToBinary(op, os);
+        return translateFuriosaToArmC(op, os);
       },
       [](DialectRegistry &registry) {
-        // clang-format off
-        registry.insert<mlir::func::FuncDialect,
-                        mlir::tensor::TensorDialect,
-                        mlir::tosa::TosaDialect,
-                        mlir::furiosa::FuriosaDialect>();
-        // clang-format on
+        mlir::furiosa::registerAllDialects(registry);
       });
 }
 

@@ -8,13 +8,15 @@
 
 #include "llvm/ADT/ArrayRef.h"
 
-#include "furiosa-mlir/Target/Furiosa/Binary.h"
+#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
 
 #define CEIL(a, b) (((a + b - 1) / b) * b)
 
 namespace mlir::furiosa {
 
-using byte_array_t = SmallVector<std::uint8_t, 256>;
+static constexpr auto MIN_BYTE_ARRAY_SIZE = 256;
+static constexpr auto DRAM_ACCESS_WIDTH = 256;
+using byte_array_t = SmallVector<std::uint8_t, MIN_BYTE_ARRAY_SIZE>;
 using pe_program_t = SmallVector<furiosa_torch::PeProgram *>;
 using hal_program_t = SmallVector<furiosa_torch::HalProgram *>;
 using device_t = furiosa_torch::Device *;
