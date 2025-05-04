@@ -18,10 +18,10 @@ module {
     furiosa.tuc.wait {dma_tag_id = 1 : i32, type = true, target_context = false}
     return
   }
-  func.func @main() {
+  func.func @main() -> i1 {
     %binary = furiosa_host.func_alloc { function = @kernel }
     %arg0 = furiosa_host.alloc { size = 0x400, data = [1] }
-    %res0 = furiosa_host.alloc { size = 0x400, data = [1] }
+    %res0 = furiosa_host.alloc { size = 0x400, data = [0] }
     %pe0 = furiosa_host.pe_program_load_inst %binary { dram_address = 0x0, spm_address = 0x0 }
     %pe1 = furiosa_host.pe_program_launch { spm_address = 0x0 }
     %pe = furiosa_host.pe_program_seq %pe0, %pe1
@@ -32,6 +32,7 @@ module {
     %hal = furiosa_host.hal_program_seq %hal0, %hal1, %hal2, %hal3
     %dev = furiosa_host.device_new { target = #furiosa_host.target<npu 0 pe 0:0> }
     furiosa_host.device_execute %dev %hal
-    return
+    %result = furiosa_host.compare %arg0 %res0
+    return %result : i1
   }
 }
