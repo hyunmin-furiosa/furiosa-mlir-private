@@ -10,9 +10,9 @@
 
 #include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
 
-#define CEIL(a, b) (((a + b - 1) / b) * b)
-
 namespace mlir::furiosa {
+
+#define CEIL(a, b) (((a + b - 1) / b) * b)
 
 static constexpr auto MIN_BYTE_ARRAY_SIZE = 256;
 static constexpr auto DRAM_ACCESS_WIDTH = 256;
