@@ -11,8 +11,7 @@
 
 #include "mlir/IR/Dialect.h"
 
-namespace mlir {
-namespace furiosa {
+namespace mlir::furiosa {
 
 // Registers all dialects that this project produces and any dependencies.
 void registerAllDialects(mlir::DialectRegistry &registry);
@@ -26,5 +25,4 @@ void registerOptionalInputDialects(mlir::DialectRegistry &registry);
 
 void registerAllPasses();
 
-} // namespace furiosa
-} // namespace mlir
+} // namespace mlir::furiosa
