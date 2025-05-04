@@ -28,6 +28,21 @@ using namespace mlir;
 
 namespace mlir::furiosa {
 
+/// Emitter for outer code
+struct FuriosaEmitter {
+  explicit FuriosaEmitter(raw_ostream &os);
+
+  /// Emits operation 'op' or returns failure.
+  LogicalResult emitOperation(Operation &op);
+
+  /// Returns the output stream.
+  raw_indented_ostream &ostream() { return os; };
+
+private:
+  /// Output stream to emit to.
+  raw_indented_ostream os;
+};
+
 /// Emitter that uses dialect specific emitters to emit Arm C code.
 struct ArmCEmitter {
   explicit ArmCEmitter(raw_ostream &os);
@@ -565,11 +580,18 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   return success();
 }
 
-static LogicalResult printOperation(ArmCEmitter &emitter,
+static LogicalResult printOperation(FuriosaEmitter &emitter,
+                                    func::CallOp callOp) {
+  return success();
+}
+
+static LogicalResult printOperation(FuriosaEmitter &emitter,
                                     func::FuncOp functionOp) {
+  raw_indented_ostream &os = emitter.ostream();
+  ArmCEmitter armCEmitter(os);
   if (auto targetAttr =
           functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
-    return printKernelFunction(emitter, functionOp);
+    return printKernelFunction(armCEmitter, functionOp);
   } else {
     for (Block &block : functionOp.getBlocks()) {
       for (Operation &op : block.getOperations()) {
@@ -581,7 +603,8 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
   return success();
 }
 
-static LogicalResult printOperation(ArmCEmitter &emitter, func::CallOp callOp) {
+static LogicalResult printOperation(FuriosaEmitter &emitter,
+                                    func::ReturnOp returnOp) {
   return success();
 }
 
@@ -592,13 +615,34 @@ static LogicalResult printOperation(ArmCEmitter &emitter,
   return success();
 }
 
-static LogicalResult printOperation(ArmCEmitter &emitter, ModuleOp moduleOp) {
-  // raw_indented_ostream &os = emitter.ostream();
+static LogicalResult printOperation(FuriosaEmitter &emitter,
+                                    ModuleOp moduleOp) {
   for (Operation &op : moduleOp) {
     if (failed(emitter.emitOperation(op)))
       return failure();
     // os << "\n";
   }
+  return success();
+}
+
+FuriosaEmitter::FuriosaEmitter(raw_ostream &os) : os(os) {}
+
+LogicalResult FuriosaEmitter::emitOperation(Operation &op) {
+  LogicalResult status =
+      llvm::TypeSwitch<Operation *, LogicalResult>(&op)
+          // Builtin ops.
+          .Case<ModuleOp>([&](auto op) { return printOperation(*this, op); })
+          // Func ops.
+          .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
+              [&](auto op) { return printOperation(*this, op); })
+          .Case<tensor::EmptyOp>([&](auto op) { return success(); })
+          .Default([&](Operation *) {
+            return op.emitOpError("unable to find printer for op");
+          });
+
+  if (failed(status))
+    return failure();
+
   return success();
 }
 
@@ -610,10 +654,8 @@ ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {
 LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
-          // Builtin ops.
-          .Case<ModuleOp>([&](auto op) { return printOperation(*this, op); })
           // Func ops.
-          .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
+          .Case<func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<furiosa::tuc::ItosfrOp, furiosa::tuc::RtosfrOp,
                 furiosa::tuc::RtosfriOp, furiosa::tuc::MtosfrOp,
@@ -731,7 +773,7 @@ FailureOr<binary_t> translateKernelFunctionToBinary(func::FuncOp functionOp) {
 }
 
 LogicalResult translateFuriosaToArmC(Operation *op, llvm::raw_ostream &os) {
-  ArmCEmitter emitter(os);
+  FuriosaEmitter emitter(os);
   LogicalResult status = emitter.emitOperation(*op);
   if (failed(status))
     return failure();
