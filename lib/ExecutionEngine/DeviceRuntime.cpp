@@ -15,6 +15,15 @@ using namespace mlir;
 
 namespace mlir::furiosa {
 
+LogicalResult executeOperation(ExecutionContext &context, func::ReturnOp op) {
+  for (auto &&operand : op.getOperands()) {
+    auto &operand_data = std::any_cast<bool &>(context.getValue(operand));
+    llvm::outs() << operand_data << " ";
+  }
+
+  return success();
+}
+
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::AllocOp op) {
   auto size = op.getSize();
@@ -63,10 +72,23 @@ LogicalResult executeOperation(ExecutionContext &context,
 }
 
 LogicalResult executeOperation(ExecutionContext &context,
+                               furiosa::host::CompareOp op) {
+  auto &buffer0 =
+      std::any_cast<byte_array_t &>(context.getValue(op.getBuffer0()));
+  auto &buffer1 =
+      std::any_cast<byte_array_t &>(context.getValue(op.getBuffer1()));
+  context.createValue(op->getResult(0),
+                      std::make_any<bool>(buffer0 == buffer1));
+
+  return success();
+}
+
+LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::PeProgramLoadInstOp op) {
   auto dramAddress = op.getDramAddress();
   auto spmAddress = op.getSpmAddress();
-  auto buffer = std::any_cast<byte_array_t>(context.getValue(op.getBinary()));
+  auto &buffer =
+      std::any_cast<byte_array_t &>(context.getValue(op.getBinary()));
   pe_program_t programs;
   programs.push_back(furiosa_torch::pe_program_load_inst(
       dramAddress, spmAddress, buffer.size()));
@@ -90,7 +112,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto pePrograms = op.getPePrograms();
   pe_program_t programList;
   for (auto peProgram : pePrograms) {
-    auto program = std::any_cast<pe_program_t>(context.getValue(peProgram));
+    auto &program = std::any_cast<pe_program_t &>(context.getValue(peProgram));
     programList.insert(programList.end(), program.begin(), program.end());
   }
   pe_program_t mergedPrograms;
@@ -132,8 +154,8 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramExecuteOp op) {
-  auto peProgram =
-      std::any_cast<pe_program_t>(context.getValue(op.getPeProgram()));
+  auto &peProgram =
+      std::any_cast<pe_program_t &>(context.getValue(op.getPeProgram()));
   hal_program_t programs;
   assert(peProgram.size() == 1);
   programs.push_back(furiosa_torch::hal_program_execute(peProgram[0]));
@@ -147,7 +169,8 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto halPrograms = op.getHalPrograms();
   hal_program_t programList;
   for (auto halProgram : halPrograms) {
-    auto program = std::any_cast<hal_program_t>(context.getValue(halProgram));
+    auto &program =
+        std::any_cast<hal_program_t &>(context.getValue(halProgram));
     programList.insert(programList.end(), program.begin(), program.end());
   }
   hal_program_t mergedPrograms;
@@ -173,9 +196,9 @@ LogicalResult executeOperation(ExecutionContext &context,
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::DeviceExecuteOp op) {
-  auto halProgram =
-      std::any_cast<hal_program_t>(context.getValue(op.getHalProgram()));
-  auto device = std::any_cast<device_t>(context.getValue(op.getDevice()));
+  auto &halProgram =
+      std::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
+  auto &device = std::any_cast<device_t &>(context.getValue(op.getDevice()));
   assert(halProgram.size() == 1);
   furiosa_torch::device_execute(device, halProgram[0]);
 
@@ -185,9 +208,10 @@ LogicalResult executeOperation(ExecutionContext &context,
 LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
-          .Case<func::ReturnOp>([&](auto op) { return success(); })
+          .Case<func::ReturnOp>(
+              [&](auto op) { return executeOperation(context, op); })
           .Case<furiosa::host::AllocOp, furiosa::host::FuncAllocOp,
-                furiosa::host::PeProgramLoadInstOp,
+                furiosa::host::CompareOp, furiosa::host::PeProgramLoadInstOp,
                 furiosa::host::PeProgramLaunchOp, furiosa::host::PeProgramSeqOp,
                 furiosa::host::HalProgramWriteAtOp,
                 furiosa::host::HalProgramReadAtOp,

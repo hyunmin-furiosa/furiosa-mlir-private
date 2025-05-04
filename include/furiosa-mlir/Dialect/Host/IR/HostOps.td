@@ -11,6 +11,7 @@
 #define HOST_OPS_TD
 
 include "mlir/IR/BuiltinAttributes.td"
+include "mlir/IR/BuiltinTypes.td"
 include "mlir/IR/OpAsmInterface.td"
 include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
@@ -47,6 +48,23 @@ def FuncAllocOp : HostOp<"func_alloc"> {
   );
   let assemblyFormat = "attr-dict";
 }
+
+def CompareOp : HostOp<"compare"> {
+  let summary = "Host tensor compare";
+  let description = [{}];
+  let arguments = (ins
+      BufferType:$buffer0,
+      BufferType:$buffer1
+  );
+  let results = (outs
+      I1:$result
+  );
+  let assemblyFormat = "$buffer0 $buffer1 attr-dict";
+}
+
+//===----------------------------------------------------------------------===//
+// Device runtime compatible operations.
+//===----------------------------------------------------------------------===//
 
 def PeProgramLoadInstOp : HostOp<"pe_program_load_inst"> {
   let summary = "PE program load instruction";
