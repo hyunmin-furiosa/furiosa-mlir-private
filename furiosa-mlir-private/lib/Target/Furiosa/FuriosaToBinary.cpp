@@ -731,10 +731,15 @@ FailureOr<binary_t> translateKernelFunctionToBinary(func::FuncOp functionOp) {
   {
     llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
     ArmCEmitter emitter(fd_os);
-
-    if (failed(printKernelFunction(emitter, functionOp)))
+    if (auto targetAttr =
+            functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
+      if (failed(printKernelFunction(emitter, functionOp)))
+        llvm::report_fatal_error(
+            llvm::Twine("kernel function translation failed"));
+    } else {
       llvm::report_fatal_error(
-          llvm::Twine("kernel function translation failed"));
+          llvm::Twine("this function does not have target"));
+    }
 
     if (fd_os.has_error())
       llvm::report_fatal_error(llvm::Twine("Error emitting the IR to file '") +

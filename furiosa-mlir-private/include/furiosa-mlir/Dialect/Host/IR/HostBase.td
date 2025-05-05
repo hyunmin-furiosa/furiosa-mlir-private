@@ -16,7 +16,6 @@ def Host_Dialect : Dialect {
   let name = "furiosa_host";
   let cppNamespace = "::mlir::furiosa::host";
   let description = [{Furiosa host dialect}];
-  let useDefaultAttributePrinterParser = 1;
   let useDefaultTypePrinterParser = 1;
 }
 
