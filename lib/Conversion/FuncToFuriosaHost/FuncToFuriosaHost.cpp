@@ -1,5 +1,7 @@
 #include "furiosa-mlir/Conversion/FuncToFuriosaHost/FuncToFuriosaHost.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
+#include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/BuiltinOps.h"
@@ -17,12 +19,13 @@ namespace furiosa {
 using namespace mlir;
 namespace {
 
-template <typename Op>
-struct FuncOpToFuriosaHostOp : public OpRewritePattern<Op> {
+struct CallOpLowering : public OpRewritePattern<func::CallOp> {
 public:
-  using OpRewritePattern<Op>::OpRewritePattern;
+  CallOpLowering(MLIRContext *context)
+      : OpRewritePattern<func::CallOp>(context) {}
 
-  LogicalResult matchAndRewrite(Op op, PatternRewriter &rewriter) const final;
+  LogicalResult matchAndRewrite(func::CallOp op,
+                                PatternRewriter &rewriter) const final;
 };
 
 struct ConvertFuncToFuriosaHost
@@ -35,19 +38,131 @@ public:
 
 } // namespace
 
-template <typename Op>
-LogicalResult
-FuncOpToFuriosaHostOp<Op>::matchAndRewrite(Op op,
-                                           PatternRewriter &rewriter) const {
+LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
+                                              PatternRewriter &rewriter) const {
+  auto callee = op.getCalleeAttr();
+  auto function_op = dyn_cast_or_null<func::FuncOp>(
+      SymbolTable::lookupSymbolIn(op->getParentOfType<ModuleOp>(), callee));
+  if (!function_op || function_op.empty()) {
+    llvm::report_fatal_error(llvm::Twine("function not found"));
+    return failure();
+  }
+  if (!function_op->hasAttr("target")) {
+    llvm::report_fatal_error(
+        llvm::Twine("this function does not have target attribute"));
+  }
+
+  auto func_alloc_op =
+      rewriter.create<furiosa::host::FuncAllocOp>(op.getLoc(), callee);
+  rewriter.moveOpBefore(func_alloc_op, op);
+
+  auto address_attr =
+      function_op->getAttrOfType<furiosa::AddressAttr>("address");
+  auto pe_binary_dram_address_attr =
+      rewriter.getI64IntegerAttr(address_attr.getAddress());
+  auto pe_binary_spm_address_attr = rewriter.getI64IntegerAttr(0);
+  auto pe_program_load_inst_op =
+      rewriter.create<furiosa::host::PeProgramLoadInstOp>(
+          op.getLoc(), pe_binary_dram_address_attr, pe_binary_spm_address_attr,
+          func_alloc_op);
+  rewriter.moveOpBefore(pe_program_load_inst_op, op);
+
+  auto pe_program_launch_op = rewriter.create<furiosa::host::PeProgramLaunchOp>(
+      op.getLoc(), pe_binary_spm_address_attr);
+  rewriter.moveOpBefore(pe_program_launch_op, op);
+
+  auto pe_binary_write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
+      op.getLoc(), pe_binary_dram_address_attr, func_alloc_op);
+  rewriter.moveOpBefore(pe_binary_write_op, op);
+
+  SmallVector<Value> operand_write_ops;
+  for (auto operand : op.getOperands()) {
+    if (auto tensor_type = llvm::cast<RankedTensorType>(operand.getType())) {
+      if (auto address_attr =
+              llvm::cast<furiosa::AddressAttr>(tensor_type.getEncoding())) {
+        auto dram_address_attr =
+            rewriter.getI64IntegerAttr(address_attr.getAddress());
+        std::uint64_t size = tensor_type.getNumElements() *
+                             tensor_type.getElementTypeBitWidth() / CHAR_BIT;
+        auto size_attr = rewriter.getI64IntegerAttr(size);
+        auto data_attr = rewriter.getI64ArrayAttr({0});
+        auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
+            op.getLoc(), size_attr, data_attr);
+        rewriter.moveOpBefore(alloc_op, op);
+        auto write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
+            op.getLoc(), dram_address_attr, alloc_op);
+        operand_write_ops.push_back(write_op);
+        rewriter.moveOpBefore(write_op, op);
+      }
+    }
+  }
+
+  SmallVector<Value> result_read_ops;
+  for (auto result : op.getResults()) {
+    if (auto tensor_type = llvm::cast<RankedTensorType>(result.getType())) {
+      if (auto address_attr =
+              llvm::cast<furiosa::AddressAttr>(tensor_type.getEncoding())) {
+        auto dram_address_attr =
+            rewriter.getI64IntegerAttr(address_attr.getAddress());
+        std::uint64_t size = tensor_type.getNumElements() *
+                             tensor_type.getElementTypeBitWidth() / CHAR_BIT;
+        auto size_attr = rewriter.getI64IntegerAttr(size);
+        auto data_attr = rewriter.getI64ArrayAttr({0});
+        auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
+            op.getLoc(), size_attr, data_attr);
+        rewriter.moveOpBefore(alloc_op, op);
+        auto read_op = rewriter.create<furiosa::host::HalProgramReadAtOp>(
+            op.getLoc(), dram_address_attr, alloc_op);
+        result_read_ops.push_back(read_op);
+        rewriter.moveOpBefore(read_op, op);
+      }
+    }
+  }
+
+  auto pe_program_seq_op = rewriter.create<furiosa::host::PeProgramSeqOp>(
+      op.getLoc(), ValueRange({pe_program_load_inst_op, pe_program_launch_op}));
+  rewriter.moveOpBefore(pe_program_seq_op, op);
+
+  auto hal_program_execute_op =
+      rewriter.create<furiosa::host::HalProgramExecuteOp>(op.getLoc(),
+                                                          pe_program_seq_op);
+  rewriter.moveOpBefore(hal_program_execute_op, op);
+
+  SmallVector<Value> hal_programs;
+  hal_programs.push_back(pe_binary_write_op);
+  hal_programs.insert(hal_programs.end(), operand_write_ops.begin(),
+                      operand_write_ops.end());
+  hal_programs.push_back(hal_program_execute_op);
+  hal_programs.insert(hal_programs.end(), result_read_ops.begin(),
+                      result_read_ops.end());
+  auto hal_program_seq_op = rewriter.create<furiosa::host::HalProgramSeqOp>(
+      op.getLoc(), ValueRange(hal_programs));
+  rewriter.moveOpBefore(hal_program_seq_op, op);
+
+  auto target_attr = function_op->getAttrOfType<furiosa::TargetAttr>("target");
+  auto device_new_op =
+      rewriter.create<furiosa::host::DeviceNewOp>(op.getLoc(), target_attr);
+  rewriter.moveOpBefore(device_new_op, op);
+
+  auto device_execute_op = rewriter.create<furiosa::host::DeviceExecuteOp>(
+      op.getLoc(), device_new_op, hal_program_seq_op);
+  rewriter.moveOpBefore(device_execute_op, op);
+
+  for (auto operand : op.getOperands()) {
+    rewriter.eraseOp(operand.getDefiningOp());
+  }
+  rewriter.eraseOp(op);
+
   return success();
 }
 
 void ConvertFuncToFuriosaHost::runOnOperation() {
   ConversionTarget target(getContext());
-  target.addLegalDialect<func::FuncDialect>();
+  target.addLegalDialect<func::FuncDialect, furiosa::host::HostDialect>();
+  target.addIllegalOp<func::CallOp>();
 
   RewritePatternSet patterns(&getContext());
-  patterns.add<FuncOpToFuriosaHostOp<func::CallOp>>(patterns.getContext());
+  patterns.add<CallOpLowering>(patterns.getContext());
 
   if (failed(
           applyPartialConversion(getOperation(), target, std::move(patterns))))

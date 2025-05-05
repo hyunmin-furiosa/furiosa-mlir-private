@@ -17,6 +17,7 @@ include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
+include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
 include "furiosa-mlir/Dialect/Host/IR/HostTypes.td"
 
