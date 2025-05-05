@@ -19,7 +19,7 @@ module {
     %5 = tensor.empty() : tensor<256xf32, #furiosa.address<0x20000>>
     return %5 : tensor<256xf32, #furiosa.address<0x20000>>
   }
-  func.func @test() {
+  func.func @main() {
     %0 = tensor.empty() : tensor<256xf32, #furiosa.address<0x10000>>
     %1 = func.call @kernel(%0) : (tensor<256xf32, #furiosa.address<0x10000>>) -> (tensor<256xf32, #furiosa.address<0x20000>>)
     return
