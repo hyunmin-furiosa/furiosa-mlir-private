@@ -98,6 +98,10 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
           op.getLoc(), dram_address_attr, alloc_op);
       result_read_ops.push_back(read_op);
       rewriter.moveOpBefore(read_op, op);
+    } else {
+      llvm::report_fatal_error(
+          llvm::Twine("arguments to kernel function need to have either "
+                      "operand or result attribute"));
     }
   }
 
@@ -121,7 +125,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
       op.getLoc(), ValueRange(hal_programs));
   rewriter.moveOpBefore(hal_program_seq_op, op);
 
-  auto target_attr = function_op->getAttrOfType<furiosa::TargetAttr>("target");
+  auto target_attr = op->getAttrOfType<furiosa::TargetAttr>("target");
   auto device_new_op =
       rewriter.create<furiosa::host::DeviceNewOp>(op.getLoc(), target_attr);
   rewriter.moveOpBefore(device_new_op, op);
