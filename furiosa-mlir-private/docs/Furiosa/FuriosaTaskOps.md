@@ -7,8 +7,10 @@ _Direct memory access descriptor_
 Syntax:
 
 ```
-operation ::= `furiosa.task.dma_descriptor` attr-dict
+operation ::= `furiosa.task.dma_descriptor` (`source` $source^)? (`destination` $destination^)? attr-dict
 ```
+
+Traits: `AttrSizedOperandSegments`
 
 Interfaces: `InferTypeOpInterface`
 
@@ -24,6 +26,13 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `source` | 64-bit signless integer |
+| `destination` | 64-bit signless integer |
 
 #### Results:
 
