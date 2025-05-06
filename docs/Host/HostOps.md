@@ -87,7 +87,7 @@ Interfaces: `InferTypeOpInterface`
 
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>target</code></td><td>::mlir::furiosa::host::TargetAttr</td><td>Target attribute</td></tr>
+<tr><td><code>target</code></td><td>::mlir::furiosa::TargetAttr</td><td>Target attribute</td></tr>
 </table>
 
 #### Results:
