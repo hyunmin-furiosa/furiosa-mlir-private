@@ -49,14 +49,19 @@ def StaticDmaDescriptorOp : TaskOp<"static.dma_descriptor"> {
   let assemblyFormat = "attr-dict";
 }
 
-def DmaDescriptorOp : TaskOp<"dma_descriptor"> {
+def DmaDescriptorOp : TaskOp<"dma_descriptor", [AttrSizedOperandSegments]> {
   let summary = "Direct memory access descriptor";
   let description = [{}];
-  let arguments = DmaDescriptor.data;
+  let arguments = !con((ins
+                           Optional<I64>:$source,
+                           Optional<I64>:$destination
+                       ),
+                       DmaDescriptor.data);
   let results = (outs
       DmaDescriptorType:$desc
   );
-  let assemblyFormat = "attr-dict";
+  let assemblyFormat = "(`source` $source^)? (`destination` "
+                       "$destination^)? attr-dict";
 }
 
 def MtosfrOp : TaskOp<"mtosfr"> {
