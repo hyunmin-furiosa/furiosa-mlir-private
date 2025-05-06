@@ -56,11 +56,10 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
       rewriter.create<furiosa::host::FuncAllocOp>(op.getLoc(), callee);
   rewriter.moveOpBefore(func_alloc_op, op);
 
-  auto address_attr =
-      function_op->getAttrOfType<furiosa::AddressAttr>("address");
   auto pe_binary_dram_address_attr =
-      rewriter.getI64IntegerAttr(address_attr.getAddress());
-  auto pe_binary_spm_address_attr = rewriter.getI64IntegerAttr(0);
+      op->getAttrOfType<IntegerAttr>("dram_address");
+  auto pe_binary_spm_address_attr =
+      op->getAttrOfType<IntegerAttr>("spm_address");
   auto pe_program_load_inst_op =
       rewriter.create<furiosa::host::PeProgramLoadInstOp>(
           op.getLoc(), pe_binary_dram_address_attr, pe_binary_spm_address_attr,
@@ -76,46 +75,29 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
   rewriter.moveOpBefore(pe_binary_write_op, op);
 
   SmallVector<Value> operand_write_ops;
-  for (auto operand : op.getOperands()) {
-    if (auto tensor_type = llvm::cast<RankedTensorType>(operand.getType())) {
-      if (auto address_attr =
-              llvm::cast<furiosa::AddressAttr>(tensor_type.getEncoding())) {
-        auto dram_address_attr =
-            rewriter.getI64IntegerAttr(address_attr.getAddress());
-        std::uint64_t size = tensor_type.getNumElements() *
-                             tensor_type.getElementTypeBitWidth() / CHAR_BIT;
-        auto size_attr = rewriter.getI64IntegerAttr(size);
-        auto data_attr = rewriter.getI64ArrayAttr({0});
-        auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
-            op.getLoc(), size_attr, data_attr);
-        rewriter.moveOpBefore(alloc_op, op);
-        auto write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
-            op.getLoc(), dram_address_attr, alloc_op);
-        operand_write_ops.push_back(write_op);
-        rewriter.moveOpBefore(write_op, op);
-      }
-    }
-  }
-
   SmallVector<Value> result_read_ops;
-  for (auto result : op.getResults()) {
-    if (auto tensor_type = llvm::cast<RankedTensorType>(result.getType())) {
-      if (auto address_attr =
-              llvm::cast<furiosa::AddressAttr>(tensor_type.getEncoding())) {
-        auto dram_address_attr =
-            rewriter.getI64IntegerAttr(address_attr.getAddress());
-        std::uint64_t size = tensor_type.getNumElements() *
-                             tensor_type.getElementTypeBitWidth() / CHAR_BIT;
-        auto size_attr = rewriter.getI64IntegerAttr(size);
-        auto data_attr = rewriter.getI64ArrayAttr({0});
-        auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
-            op.getLoc(), size_attr, data_attr);
-        rewriter.moveOpBefore(alloc_op, op);
-        auto read_op = rewriter.create<furiosa::host::HalProgramReadAtOp>(
-            op.getLoc(), dram_address_attr, alloc_op);
-        result_read_ops.push_back(read_op);
-        rewriter.moveOpBefore(read_op, op);
-      }
+  for (auto operand : op.getOperands()) {
+    auto defining_op = operand.getDefiningOp();
+    auto tensor_type = llvm::cast<RankedTensorType>(operand.getType());
+    auto dram_address_attr =
+        defining_op->getAttrOfType<IntegerAttr>("dram_address");
+    auto size = tensor_type.getNumElements() *
+                tensor_type.getElementTypeBitWidth() / CHAR_BIT;
+    auto size_attr = rewriter.getI64IntegerAttr(size);
+    auto data_attr = rewriter.getI64ArrayAttr({0});
+    auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
+        op.getLoc(), size_attr, data_attr);
+    rewriter.moveOpBefore(alloc_op, op);
+    if (defining_op->hasAttr("operand")) {
+      auto write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
+          op.getLoc(), dram_address_attr, alloc_op);
+      operand_write_ops.push_back(write_op);
+      rewriter.moveOpBefore(write_op, op);
+    } else if (defining_op->hasAttr("result")) {
+      auto read_op = rewriter.create<furiosa::host::HalProgramReadAtOp>(
+          op.getLoc(), dram_address_attr, alloc_op);
+      result_read_ops.push_back(read_op);
+      rewriter.moveOpBefore(read_op, op);
     }
   }
 
