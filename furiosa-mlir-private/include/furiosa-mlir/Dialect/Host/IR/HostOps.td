@@ -174,8 +174,20 @@ def DeviceExecuteOp : HostOp<"device_execute"> {
       DeviceType:$device,
       HalProgramType:$hal_program
   );
-  let results = (outs);
+  let results = (outs
+      ExecutionType:$execution
+  );
   let assemblyFormat = "$device $hal_program attr-dict";
+}
+
+def DeviceExecutionWaitOp : HostOp<"device_execution_wait"> {
+  let summary = "Device execution wait";
+  let description = [{}];
+  let arguments = (ins
+      ExecutionType:$execution
+  );
+  let results = (outs);
+  let assemblyFormat = "$execution attr-dict";
 }
 
 #endif // HOST_OPS_TD

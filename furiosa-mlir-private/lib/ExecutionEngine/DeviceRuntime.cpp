@@ -200,7 +200,20 @@ LogicalResult executeOperation(ExecutionContext &context,
       std::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
   auto &device = std::any_cast<device_t &>(context.getValue(op.getDevice()));
   assert(hal_program.size() == 1);
-  furiosa_torch::device_execute(device, hal_program[0]);
+  auto execution = furiosa_torch::device_execute(device, hal_program[0]);
+  context.createValue(op->getResult(0), std::make_any<execution_t>(execution));
+
+  return success();
+}
+
+LogicalResult executeOperation(ExecutionContext &context,
+                               furiosa::host::DeviceExecutionWaitOp op) {
+  auto &execution =
+      std::any_cast<execution_t &>(context.getValue(op.getExecution()));
+  if (!furiosa_torch::device_execution_wait(execution)) {
+    llvm::report_fatal_error(llvm::Twine("device execution wait failed"));
+    return failure();
+  }
 
   return success();
 }
@@ -217,7 +230,8 @@ LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
                 furiosa::host::HalProgramReadAtOp,
                 furiosa::host::HalProgramExecuteOp,
                 furiosa::host::HalProgramSeqOp, furiosa::host::DeviceNewOp,
-                furiosa::host::DeviceExecuteOp>(
+                furiosa::host::DeviceExecuteOp,
+                furiosa::host::DeviceExecutionWaitOp>(
               [&](auto op) { return executeOperation(context, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find executor for op");
