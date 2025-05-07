@@ -17,9 +17,10 @@ namespace mlir::furiosa {
 static constexpr auto MIN_BYTE_ARRAY_SIZE = 256;
 static constexpr auto DRAM_ACCESS_WIDTH = 256;
 using byte_array_t = SmallVector<std::uint8_t, MIN_BYTE_ARRAY_SIZE>;
-using pe_program_t = SmallVector<furiosa_torch::PeProgram *>;
-using hal_program_t = SmallVector<furiosa_torch::HalProgram *>;
+using pe_program_t = SmallVector<furiosa_torch::Stmt *>;
+using hal_program_t = SmallVector<furiosa_torch::Program *>;
 using device_t = furiosa_torch::Device *;
+using execution_t = furiosa_torch::Execution *;
 
 struct ExecutionContext {
   Operation *module;

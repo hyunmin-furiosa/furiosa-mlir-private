@@ -134,6 +134,11 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
       op.getLoc(), device_new_op, hal_program_seq_op);
   rewriter.moveOpBefore(device_execute_op, op);
 
+  auto device_execution_wait_op =
+      rewriter.create<furiosa::host::DeviceExecutionWaitOp>(op.getLoc(),
+                                                            device_execute_op);
+  rewriter.moveOpBefore(device_execution_wait_op, op);
+
   for (auto operand : op.getOperands()) {
     rewriter.eraseOp(operand.getDefiningOp());
   }

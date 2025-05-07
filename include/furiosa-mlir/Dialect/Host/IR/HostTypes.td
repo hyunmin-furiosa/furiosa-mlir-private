@@ -55,6 +55,11 @@ def DeviceType : Host_Type<"Device", "device"> {
   let description = [{}];
 }
 
+def ExecutionType : Host_Type<"Execution", "execution"> {
+  let summary = "Execution type";
+  let description = [{}];
+}
+
 def BufferType : Host_Type<"Buffer", "buffer"> {
   let summary = "Host memory buffer type";
   let description = [{}];
