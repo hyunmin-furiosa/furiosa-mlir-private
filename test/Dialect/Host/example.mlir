@@ -30,8 +30,9 @@ module {
     %hal2 = furiosa_host.hal_program_execute %pe
     %hal3 = furiosa_host.hal_program_read_at %res0 { dram_address = 0x20000 }
     %hal = furiosa_host.hal_program_seq %hal0, %hal1, %hal2, %hal3
-    %dev = furiosa_host.device_new { target = #furiosa_host.target<npu 0 pe 0:0> }
-    furiosa_host.device_execute %dev %hal
+    %dev = furiosa_host.device_new { target = #furiosa.target<npu 0 pe 0:0> }
+    %exec = furiosa_host.device_execute %dev %hal
+    furiosa_host.device_execution_wait %exec
     %result = furiosa_host.compare %arg0 %res0
     return %result : i1
   }

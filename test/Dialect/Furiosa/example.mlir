@@ -21,7 +21,7 @@ module {
   func.func @main() {
     %0 = tensor.empty() { dram_address = 0x10000, operand = true } : tensor<256xf32>
     %1 = tensor.empty() { dram_address = 0x20000, result = true } : tensor<256xf32>
-    func.call @kernel(%0, %1) { dram_address = 0x0, spm_address = 0x0, target = #furiosa.target<npu 0 pe 4:5> } : (tensor<256xf32>, tensor<256xf32>) -> ()
+    func.call @kernel(%0, %1) { dram_address = 0x0, spm_address = 0x0, target = #furiosa.target<npu 0 pe 0:0> } : (tensor<256xf32>, tensor<256xf32>) -> ()
     return
   }
 }
