@@ -2081,9 +2081,22 @@ template <typename T,
 FailureOr<TensorDmaDescriptor> getDmaDescriptor(T &op) {
   TensorDmaDescriptor descriptor{};
   descriptor.opcode = op.getOpcode();
-  // descriptor.indirect = op.getIndirect();
-  descriptor.source_base = op.getSourceBase();
-  descriptor.destination_base = op.getDestinationBase();
+  descriptor.indirect.value = op.getIndirect();
+  if constexpr (std::is_same_v<T, task::StaticDmaDescriptorOp>) {
+    descriptor.source_base = op.getSourceBase();
+    descriptor.destination_base = op.getDestinationBase();
+  } else { // DmaDescriptorOp
+    if (auto source_base = op.getSourceBase()) {
+      descriptor.source_base = *source_base;
+    } else if (!op.getSource()) {
+      return op.emitOpError("source is not set");
+    }
+    if (auto destination_base = op.getDestinationBase()) {
+      descriptor.destination_base = *destination_base;
+    } else if (!op.getDestination()) {
+      return op.emitOpError("destination is not set");
+    }
+  }
   auto source_limits = op.getSourceLimits();
   auto source_strides = op.getSourceStrides();
   auto destination_limits = op.getDestinationLimits();
@@ -2100,5 +2113,40 @@ FailureOr<TensorDmaDescriptor> getDmaDescriptor(T &op) {
   }
   return descriptor;
 }
+
+// FailureOr<TensorDmaDescriptor> getDmaDescriptor(task::DmaDescriptorOp &op) {
+//   TensorDmaDescriptor descriptor{};
+//   descriptor.opcode = op.getOpcode();
+//   descriptor.indirect.value = op.getIndirect();
+//   if (op.getSource()) {
+//     descriptor.source_base = 0;
+//   } else if (auto source_base = op.getSourceBase()) {
+//     descriptor.source_base = *source_base;
+//   } else {
+//     return op.emitOpError("source is not set");
+//   }
+//   if (op.getDestination()) {
+//     descriptor.destination_base = 0;
+//   } else if (auto destination_base = op.getDestinationBase()) {
+//     descriptor.destination_base = *destination_base;
+//   } else {
+//     return op.emitOpError("destination is not set");
+//   }
+//   auto source_limits = op.getSourceLimits();
+//   auto source_strides = op.getSourceStrides();
+//   auto destination_limits = op.getDestinationLimits();
+//   auto destination_strides = op.getDestinationStrides();
+//   for (auto i = 0; i < DIMS; ++i) {
+//     descriptor.source_limits[i] =
+//         dyn_cast_or_null<IntegerAttr>(source_limits[i]).getInt();
+//     descriptor.source_strides[i] =
+//         dyn_cast_or_null<IntegerAttr>(source_strides[i]).getInt();
+//     descriptor.destination_limits[i] =
+//         dyn_cast_or_null<IntegerAttr>(destination_limits[i]).getInt();
+//     descriptor.destination_strides[i] =
+//         dyn_cast_or_null<IntegerAttr>(destination_strides[i]).getInt();
+//   }
+//   return descriptor;
+// }
 
 } // namespace mlir::furiosa

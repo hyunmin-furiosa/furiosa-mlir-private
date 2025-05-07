@@ -85,7 +85,8 @@ def PeProgramLaunchOp : HostOp<"pe_program_launch"> {
   let summary = "PE program launch";
   let description = [{}];
   let arguments = (ins
-      I64Attr:$spm_address
+      I64Attr:$spm_address,
+      I64ArrayAttr:$operands
   );
   let results = (outs
       PeProgramType:$pe_program
