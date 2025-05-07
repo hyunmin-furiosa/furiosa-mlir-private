@@ -66,8 +66,9 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
           func_alloc_op);
   rewriter.moveOpBefore(pe_program_load_inst_op, op);
 
+  auto pe_binary_operands_attr = rewriter.getI64ArrayAttr({});
   auto pe_program_launch_op = rewriter.create<furiosa::host::PeProgramLaunchOp>(
-      op.getLoc(), pe_binary_spm_address_attr);
+      op.getLoc(), pe_binary_spm_address_attr, pe_binary_operands_attr);
   rewriter.moveOpBefore(pe_program_launch_op, op);
 
   auto pe_binary_write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
