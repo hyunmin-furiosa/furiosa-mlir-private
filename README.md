@@ -3,18 +3,18 @@ The Furiosa-MLIR project aims to provide a compilation flow that converts arbitr
 
 ## Building Furiosa-MLIR
 
-Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [0aa4cdf](https://github.com/furiosa-ai/furiosa-torch/commit/0aa4cdf5f29483abdded2b4d956d54cd423d6716).
+Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [1b1467c](https://github.com/furiosa-ai/furiosa-torch/commit/1b1467c1c0ffa6f58479bc245a7cf21cf083059e).
 ```shell
 cargo build --release
 ```
 
-Build pert in [device-runtime](https://github.com/furiosa-ai/device-runtime/) at [6d67166](https://github.com/furiosa-ai/device-runtime/commit/6d671664f6823967e69a8c49b729ad0ef6ff1f80)
+Build pert in [device-runtime](https://github.com/furiosa-ai/device-runtime/) at [dcd26a8](https://github.com/furiosa-ai/device-runtime/commit/dcd26a83e9d8a6146163b9b513d3a0658bb291fc)
 ```shell
 cd pert
 make pert
 ```
 
-Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [b95cd40](https://github.com/furiosa-ai/npu-virtual-platform/commit/b95cd408fc21d37389c19afa8111504160fb937e)
+Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [fdd1bd6](https://github.com/furiosa-ai/npu-virtual-platform/commit/fdd1bd6aa77b89c29e0d9b5b052eb94bc29b0140)
 ```shell
 make renegade DEFAULT_PERT_PATH=<device-runtime>/target/aarch64-unknown-none-softfloat/release/pert
 ```
@@ -49,6 +49,11 @@ make LLVM_BUILD_DIR=<llvm-project>/build
 ## Using Furiosa-MLIR
 
 Generated binaries are located in `build/bin`.
+
+Optimize and lower the example MLIR into furiosa host dialect. 
+```shell
+furiosa-mlir-opt test/Dialect/Furiosa/example.mlir -convert-func-to-furiosa-host
+```
 
 Translate the example MLIR into ARM C code. 
 ```shell
