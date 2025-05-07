@@ -28,6 +28,41 @@ using namespace mlir;
 
 namespace mlir::furiosa {
 
+/// Convenience functions to produce interleaved output with functions returning
+/// a LogicalResult. This is different than those in STLExtras as functions used
+/// on each element doesn't return a string.
+template <typename ForwardIterator, typename UnaryFunctor,
+          typename NullaryFunctor>
+inline LogicalResult
+interleaveWithError(ForwardIterator begin, ForwardIterator end,
+                    UnaryFunctor eachFn, NullaryFunctor betweenFn) {
+  if (begin == end)
+    return success();
+  if (failed(eachFn(*begin)))
+    return failure();
+  ++begin;
+  for (; begin != end; ++begin) {
+    betweenFn();
+    if (failed(eachFn(*begin)))
+      return failure();
+  }
+  return success();
+}
+
+template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
+inline LogicalResult interleaveWithError(const Container &c,
+                                         UnaryFunctor eachFn,
+                                         NullaryFunctor betweenFn) {
+  return interleaveWithError(c.begin(), c.end(), eachFn, betweenFn);
+}
+
+template <typename Container, typename UnaryFunctor>
+inline LogicalResult interleaveCommaWithError(const Container &c,
+                                              raw_ostream &os,
+                                              UnaryFunctor eachFn) {
+  return interleaveWithError(c.begin(), c.end(), eachFn, [&]() { os << ", "; });
+}
+
 /// Emitter for outer code
 struct FuriosaEmitter {
   explicit FuriosaEmitter(raw_ostream &os);
@@ -49,6 +84,13 @@ struct ArmCEmitter {
 
   /// Emits operation 'op' or returns failure.
   LogicalResult emitOperation(Operation &op);
+
+  /// Emits a declaration of a variable with the given type and name.
+  LogicalResult emitVariableDeclaration(Location loc, Type type,
+                                        StringRef name);
+
+  /// Emits type 'type' or returns failure.
+  LogicalResult emitType(Location loc, Type type);
 
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val) {
@@ -218,12 +260,20 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   auto descriptor = *getDmaDescriptor(op);
 
   OpResult result = op->getResult(0);
-  os << "static const struct dma_desc_t " << emitter.getOrCreateName(result)
-     << " = { ";
+  os << "struct dma_desc_t " << emitter.getOrCreateName(result) << " = { ";
   os << descriptor.opcode << ", ";
-  os << 0 << ", ";
-  os << llvm::format_hex(descriptor.source_base, 0) << ", ";
-  os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
+  os << descriptor.indirect.value << ", ";
+
+  if (auto source = op.getSource()) {
+    os << emitter.getOrCreateName(source) << ", ";
+  } else {
+    os << llvm::format_hex(descriptor.source_base, 0) << ", ";
+  }
+  if (auto destination = op.getDestination()) {
+    os << emitter.getOrCreateName(destination) << ", ";
+  } else {
+    os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
+  }
   os << "{ ";
   for (auto i = 0u; i < DIMS; i++) {
     os << descriptor.source_limits[i];
@@ -253,6 +303,8 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   }
   os << " } ";
   os << "};\n";
+  os << "flush_cache((void *)&" << emitter.getOrCreateName(result)
+     << ", sizeof(struct dma_desc_t));\n";
 
   return success();
 };
@@ -322,9 +374,12 @@ static LogicalResult printFunctionArgs(ArmCEmitter &emitter,
                                        Operation *functionOp,
                                        Region::BlockArgListType arguments) {
   raw_indented_ostream &os = emitter.ostream();
-  os << "uint64_t *addrs, uint32_t len_addrs, uint16_t profile_base_uid";
-
-  return success();
+  // os << "uint64_t *addrs, uint32_t len_addrs, uint16_t profile_base_uid";
+  return (interleaveCommaWithError(
+      arguments, os, [&](BlockArgument arg) -> LogicalResult {
+        return emitter.emitVariableDeclaration(
+            functionOp->getLoc(), arg.getType(), emitter.getOrCreateName(arg));
+      }));
 }
 
 static LogicalResult printFunctionBody(ArmCEmitter &emitter,
@@ -714,6 +769,19 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
   if (failed(status))
     return failure();
 
+  return success();
+}
+
+LogicalResult ArmCEmitter::emitVariableDeclaration(Location loc, Type type,
+                                                   StringRef name) {
+  if (failed(emitType(loc, type)))
+    return failure();
+  os << " " << name;
+  return success();
+}
+
+LogicalResult ArmCEmitter::emitType(Location loc, Type type) {
+  os << "uint64_t";
   return success();
 }
 
