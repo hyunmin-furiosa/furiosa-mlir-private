@@ -66,7 +66,14 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
           func_alloc_op);
   rewriter.moveOpBefore(pe_program_load_inst_op, op);
 
-  auto pe_binary_operands_attr = rewriter.getI64ArrayAttr({});
+  SmallVector<std::int64_t> operands;
+  for (auto operand : op.getOperands()) {
+    auto defining_op = operand.getDefiningOp();
+    auto dram_address_attr =
+        defining_op->getAttrOfType<IntegerAttr>("dram_address");
+    operands.push_back(dram_address_attr.getInt());
+  }
+  auto pe_binary_operands_attr = rewriter.getI64ArrayAttr(operands);
   auto pe_program_launch_op = rewriter.create<furiosa::host::PeProgramLaunchOp>(
       op.getLoc(), pe_binary_spm_address_attr, pe_binary_operands_attr);
   rewriter.moveOpBefore(pe_program_launch_op, op);
@@ -89,7 +96,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
     auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
         op.getLoc(), size_attr, data_attr);
     rewriter.moveOpBefore(alloc_op, op);
-    if (defining_op->hasAttr("operand")) {
+    if (defining_op->hasAttr("operand") && !defining_op->hasAttr("result")) {
       auto write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
           op.getLoc(), dram_address_attr, alloc_op);
       operand_write_ops.push_back(write_op);
@@ -101,7 +108,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
       rewriter.moveOpBefore(read_op, op);
     } else {
       llvm::report_fatal_error(
-          llvm::Twine("arguments to kernel function need to have either "
+          llvm::Twine("arguments to kernel function need to have either one of "
                       "operand or result attribute"));
     }
   }

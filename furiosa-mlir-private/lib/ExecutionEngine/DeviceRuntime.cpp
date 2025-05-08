@@ -101,7 +101,12 @@ LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::PeProgramLaunchOp op) {
   auto spm_address = op.getSpmAddress();
   pe_program_t programs;
-  programs.push_back(furiosa_torch::pe_program_launch(spm_address, nullptr));
+  std::vector<std::uint64_t> operands;
+  for (auto operand : op.getOperands()) {
+    operands.push_back(dyn_cast_or_null<IntegerAttr>(operand).getInt());
+  }
+  programs.push_back(furiosa_torch::pe_program_launch(
+      spm_address, 0, 0, 0, operands.data(), operands.size()));
   context.createValue(op->getResult(0), std::make_any<pe_program_t>(programs));
 
   return success();
