@@ -95,9 +95,17 @@ struct ArmCEmitter {
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val) {
     if (!valueMapper.count(val)) {
-      valueMapper.insert(val, llvm::formatv("v{0}", ++valueInScopeCount.top()));
+      valueMapper.insert(val, llvm::formatv("v{0}", valueInScopeCount.top()++));
     }
     return *valueMapper.begin(val);
+  }
+
+  /// Return the existing or a new name for a function argument Value.
+  void createArgumentName(Value val) {
+    if (!valueMapper.count(val)) {
+      valueMapper.insert(
+          val, llvm::formatv("addrs[{0}]", valueInScopeCount.top()++));
+    }
   }
 
   /// RAII helper function to manage entering/exiting C++ scopes.
@@ -265,12 +273,12 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   os << descriptor.indirect.value << ", ";
 
   if (auto source = op.getSource()) {
-    os << emitter.getOrCreateName(source) << ", ";
+    os << "DRAM_BASE | " << emitter.getOrCreateName(source) << ", ";
   } else {
     os << llvm::format_hex(descriptor.source_base, 0) << ", ";
   }
   if (auto destination = op.getDestination()) {
-    os << emitter.getOrCreateName(destination) << ", ";
+    os << "DRAM_BASE | " << emitter.getOrCreateName(destination) << ", ";
   } else {
     os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
   }
@@ -374,12 +382,14 @@ static LogicalResult printFunctionArgs(ArmCEmitter &emitter,
                                        Operation *functionOp,
                                        Region::BlockArgListType arguments) {
   raw_indented_ostream &os = emitter.ostream();
-  // os << "uint64_t *addrs, uint32_t len_addrs, uint16_t profile_base_uid";
-  return (interleaveCommaWithError(
-      arguments, os, [&](BlockArgument arg) -> LogicalResult {
-        return emitter.emitVariableDeclaration(
-            functionOp->getLoc(), arg.getType(), emitter.getOrCreateName(arg));
-      }));
+  os << "uint64_t *addrs, uint32_t len_addrs, uint16_t profile_base_uid";
+
+  // register real function arguments under addrs
+  // these are always the first values in the scope (addrs[0], addrs[1], ...)
+  for (auto arg : arguments) {
+    emitter.createArgumentName(arg);
+  }
+  return success();
 }
 
 static LogicalResult printFunctionBody(ArmCEmitter &emitter,
@@ -407,7 +417,6 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
 static LogicalResult printKernelFunction(ArmCEmitter &emitter,
                                          func::FuncOp functionOp) {
   raw_indented_ostream &os = emitter.ostream();
-  ArmCEmitter::Scope scope(emitter);
 
   // Necessary defines and includes
   os << R"""(#include <stdalign.h>
@@ -449,6 +458,26 @@ static LogicalResult printKernelFunction(ArmCEmitter &emitter,
 #define SHARED_AREA_SIZE (1 << 12)
 
 #define NUM_MAX_CLUSTERS 8
+
+#define SRAM_BASE UINT64_C(0x0010000000)
+#define DRAM_BASE UINT64_C(0xC000000000)
+#define TUC_SFR_BASE UINT64_C(0x000E000000)
+#define TDMA_BASE UINT64_C(0x0000C00000)
+#define REMOTE_PE_DATA_BASE UINT64_C(0x8000000000)
+#define REMOTE_ENTRY_SIZE UINT64_C(0x100000000)
+#define REMOTE_ENTRY_SIZE_PER_PE UINT64_C(0x20000000)
+
+#define NUM_SLICES 64
+#define SLICE_SPACE_SIZE UINT64_C(0x400000) /* 4MB */
+
+#define TDMA_DESC_QUEUE_SUB_HEAD ((volatile uint64_t *)(TDMA_BASE + 0x040))
+#define TDMA_DESC_QUEUE_SUB_TAIL ((volatile uint64_t *)(TDMA_BASE + 0x048))
+#define TDMA_DESC_QUEUE_COMP_HEAD ((volatile uint64_t *)(TDMA_BASE + 0x050))
+#define TDMA_DESC_QUEUE_COMP_TAIL ((volatile uint64_t *)(TDMA_BASE + 0x058))
+#define TDMA_DESC_QUEUE_ENTRY ((volatile uint64_t *)(TDMA_BASE + 0x100))
+#define TDMA_DESC_QUEUE_SIZE 32
+
+#define TDMA_WORD_SIZE 32
 
 /**
  * Flushes data cache to scratchpad memory.
@@ -621,6 +650,7 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   os << "\n";
 
   // Define function
+  ArmCEmitter::Scope scope(emitter);
   os << "__attribute__ ((section (\".text.main\"))) void "
      << functionOp.getName() << "(";
   Operation *operation = functionOp.getOperation();
@@ -691,9 +721,7 @@ LogicalResult FuriosaEmitter::emitOperation(Operation &op) {
           .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Default([&](Operation *) {
-            return op.emitOpError("unable to find printer for op");
-          });
+          .Default([&](Operation *) { return success(); });
 
   if (failed(status))
     return failure();
@@ -764,7 +792,9 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
               [&](auto op) { return printDynamicMtosfr(*this, op); })
           .Case<furiosa::task::DmawOp>(
               [&](auto op) { return printDynamicDmaw(*this, op); })
-          .Default([&](Operation *) { return success(); });
+          .Default([&](Operation *) {
+            return op.emitOpError("unable to find printer for op");
+          });
 
   if (failed(status))
     return failure();
