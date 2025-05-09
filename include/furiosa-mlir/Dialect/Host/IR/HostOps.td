@@ -51,7 +51,7 @@ def FuncAllocOp : HostOp<"func_alloc"> {
 }
 
 def CompareOp : HostOp<"compare"> {
-  let summary = "Host tensor compare";
+  let summary = "Host buffer compare";
   let description = [{}];
   let arguments = (ins
       BufferType:$buffer0,
@@ -61,6 +61,16 @@ def CompareOp : HostOp<"compare"> {
       I1:$result
   );
   let assemblyFormat = "$buffer0 $buffer1 attr-dict";
+}
+
+def PrintOp : HostOp<"print"> {
+  let summary = "Host print";
+  let description = [{}];
+  let arguments = (ins
+      AnyType:$buffer
+  );
+  let results = (outs);
+  let assemblyFormat = "$buffer `:` type($buffer) attr-dict";
 }
 
 //===----------------------------------------------------------------------===//

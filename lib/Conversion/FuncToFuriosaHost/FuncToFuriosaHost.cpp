@@ -96,7 +96,8 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
     auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
         op.getLoc(), size_attr, data_attr);
     rewriter.moveOpBefore(alloc_op, op);
-    if (defining_op->hasAttr("operand") && !defining_op->hasAttr("result")) {
+    operand.replaceAllUsesWith(alloc_op);
+    if (defining_op->hasAttr("argument") && !defining_op->hasAttr("result")) {
       auto write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
           op.getLoc(), dram_address_attr, alloc_op);
       operand_write_ops.push_back(write_op);
@@ -108,9 +109,10 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
       rewriter.moveOpBefore(read_op, op);
     } else {
       llvm::report_fatal_error(
-          llvm::Twine("arguments to kernel function need to have either one of "
-                      "operand or result attribute"));
+          llvm::Twine("operands to kernel function need to have either one of "
+                      "argument or result attribute"));
     }
+    rewriter.eraseOp(operand.getDefiningOp());
   }
 
   auto pe_program_seq_op = rewriter.create<furiosa::host::PeProgramSeqOp>(
@@ -147,9 +149,6 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
                                                             device_execute_op);
   rewriter.moveOpBefore(device_execution_wait_op, op);
 
-  for (auto operand : op.getOperands()) {
-    rewriter.eraseOp(operand.getDefiningOp());
-  }
   rewriter.eraseOp(op);
 
   return success();
