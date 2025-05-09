@@ -18,7 +18,9 @@ namespace mlir::furiosa {
 
 class Printer {
 public:
-  static void print(bool value) { llvm::outs() << (value ? "true" : "false"); }
+  static void print(bool value) {
+    llvm::outs() << (value ? "true" : "false") << "\n";
+  }
   static void print(byte_array_t &buffer) {
     llvm::outs() << "[";
     llvm::ListSeparator LS;
