@@ -3,7 +3,7 @@ The Furiosa-MLIR project aims to provide a compilation flow that converts arbitr
 
 ## Building Furiosa-MLIR
 
-Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [1b1467c](https://github.com/furiosa-ai/furiosa-torch/commit/1b1467c1c0ffa6f58479bc245a7cf21cf083059e).
+Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [a8c2503](https://github.com/furiosa-ai/furiosa-torch/commit/a8c2503cbe38be36014290df3e5c7f88ecf38218).
 ```shell
 cargo build --release
 ```
