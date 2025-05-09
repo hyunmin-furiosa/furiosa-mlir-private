@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostTypes.h"
 

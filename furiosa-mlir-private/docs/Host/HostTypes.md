@@ -14,6 +14,13 @@ _Device type_
 Syntax: `!furiosa_host.device`
 
 
+### ExecutionType
+
+_Execution type_
+
+Syntax: `!furiosa_host.execution`
+
+
 ### HalProgramType
 
 _HAL program type_

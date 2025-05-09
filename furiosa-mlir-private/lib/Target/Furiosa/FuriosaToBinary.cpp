@@ -28,6 +28,41 @@ using namespace mlir;
 
 namespace mlir::furiosa {
 
+/// Convenience functions to produce interleaved output with functions returning
+/// a LogicalResult. This is different than those in STLExtras as functions used
+/// on each element doesn't return a string.
+template <typename ForwardIterator, typename UnaryFunctor,
+          typename NullaryFunctor>
+inline LogicalResult
+interleaveWithError(ForwardIterator begin, ForwardIterator end,
+                    UnaryFunctor eachFn, NullaryFunctor betweenFn) {
+  if (begin == end)
+    return success();
+  if (failed(eachFn(*begin)))
+    return failure();
+  ++begin;
+  for (; begin != end; ++begin) {
+    betweenFn();
+    if (failed(eachFn(*begin)))
+      return failure();
+  }
+  return success();
+}
+
+template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
+inline LogicalResult interleaveWithError(const Container &c,
+                                         UnaryFunctor eachFn,
+                                         NullaryFunctor betweenFn) {
+  return interleaveWithError(c.begin(), c.end(), eachFn, betweenFn);
+}
+
+template <typename Container, typename UnaryFunctor>
+inline LogicalResult interleaveCommaWithError(const Container &c,
+                                              raw_ostream &os,
+                                              UnaryFunctor eachFn) {
+  return interleaveWithError(c.begin(), c.end(), eachFn, [&]() { os << ", "; });
+}
+
 /// Emitter for outer code
 struct FuriosaEmitter {
   explicit FuriosaEmitter(raw_ostream &os);
@@ -50,12 +85,27 @@ struct ArmCEmitter {
   /// Emits operation 'op' or returns failure.
   LogicalResult emitOperation(Operation &op);
 
+  /// Emits a declaration of a variable with the given type and name.
+  LogicalResult emitVariableDeclaration(Location loc, Type type,
+                                        StringRef name);
+
+  /// Emits type 'type' or returns failure.
+  LogicalResult emitType(Location loc, Type type);
+
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val) {
     if (!valueMapper.count(val)) {
-      valueMapper.insert(val, llvm::formatv("v{0}", ++valueInScopeCount.top()));
+      valueMapper.insert(val, llvm::formatv("v{0}", valueInScopeCount.top()++));
     }
     return *valueMapper.begin(val);
+  }
+
+  /// Return the existing or a new name for a function argument Value.
+  void createArgumentName(Value val) {
+    if (!valueMapper.count(val)) {
+      valueMapper.insert(
+          val, llvm::formatv("addrs[{0}]", valueInScopeCount.top()++));
+    }
   }
 
   /// RAII helper function to manage entering/exiting C++ scopes.
@@ -218,12 +268,20 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   auto descriptor = *getDmaDescriptor(op);
 
   OpResult result = op->getResult(0);
-  os << "static const struct dma_desc_t " << emitter.getOrCreateName(result)
-     << " = { ";
+  os << "struct dma_desc_t " << emitter.getOrCreateName(result) << " = { ";
   os << descriptor.opcode << ", ";
-  os << 0 << ", ";
-  os << llvm::format_hex(descriptor.source_base, 0) << ", ";
-  os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
+  os << descriptor.indirect.value << ", ";
+
+  if (auto source = op.getSource()) {
+    os << "DRAM_BASE | " << emitter.getOrCreateName(source) << ", ";
+  } else {
+    os << llvm::format_hex(descriptor.source_base, 0) << ", ";
+  }
+  if (auto destination = op.getDestination()) {
+    os << "DRAM_BASE | " << emitter.getOrCreateName(destination) << ", ";
+  } else {
+    os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
+  }
   os << "{ ";
   for (auto i = 0u; i < DIMS; i++) {
     os << descriptor.source_limits[i];
@@ -253,6 +311,8 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   }
   os << " } ";
   os << "};\n";
+  os << "flush_cache((void *)&" << emitter.getOrCreateName(result)
+     << ", sizeof(struct dma_desc_t));\n";
 
   return success();
 };
@@ -324,6 +384,11 @@ static LogicalResult printFunctionArgs(ArmCEmitter &emitter,
   raw_indented_ostream &os = emitter.ostream();
   os << "uint64_t *addrs, uint32_t len_addrs, uint16_t profile_base_uid";
 
+  // register real function arguments under addrs
+  // these are always the first values in the scope (addrs[0], addrs[1], ...)
+  for (auto arg : arguments) {
+    emitter.createArgumentName(arg);
+  }
   return success();
 }
 
@@ -352,7 +417,6 @@ static LogicalResult printFunctionBody(ArmCEmitter &emitter,
 static LogicalResult printKernelFunction(ArmCEmitter &emitter,
                                          func::FuncOp functionOp) {
   raw_indented_ostream &os = emitter.ostream();
-  ArmCEmitter::Scope scope(emitter);
 
   // Necessary defines and includes
   os << R"""(#include <stdalign.h>
@@ -394,6 +458,26 @@ static LogicalResult printKernelFunction(ArmCEmitter &emitter,
 #define SHARED_AREA_SIZE (1 << 12)
 
 #define NUM_MAX_CLUSTERS 8
+
+#define SRAM_BASE UINT64_C(0x0010000000)
+#define DRAM_BASE UINT64_C(0xC000000000)
+#define TUC_SFR_BASE UINT64_C(0x000E000000)
+#define TDMA_BASE UINT64_C(0x0000C00000)
+#define REMOTE_PE_DATA_BASE UINT64_C(0x8000000000)
+#define REMOTE_ENTRY_SIZE UINT64_C(0x100000000)
+#define REMOTE_ENTRY_SIZE_PER_PE UINT64_C(0x20000000)
+
+#define NUM_SLICES 64
+#define SLICE_SPACE_SIZE UINT64_C(0x400000) /* 4MB */
+
+#define TDMA_DESC_QUEUE_SUB_HEAD ((volatile uint64_t *)(TDMA_BASE + 0x040))
+#define TDMA_DESC_QUEUE_SUB_TAIL ((volatile uint64_t *)(TDMA_BASE + 0x048))
+#define TDMA_DESC_QUEUE_COMP_HEAD ((volatile uint64_t *)(TDMA_BASE + 0x050))
+#define TDMA_DESC_QUEUE_COMP_TAIL ((volatile uint64_t *)(TDMA_BASE + 0x058))
+#define TDMA_DESC_QUEUE_ENTRY ((volatile uint64_t *)(TDMA_BASE + 0x100))
+#define TDMA_DESC_QUEUE_SIZE 32
+
+#define TDMA_WORD_SIZE 32
 
 /**
  * Flushes data cache to scratchpad memory.
@@ -566,6 +650,7 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   os << "\n";
 
   // Define function
+  ArmCEmitter::Scope scope(emitter);
   os << "__attribute__ ((section (\".text.main\"))) void "
      << functionOp.getName() << "(";
   Operation *operation = functionOp.getOperation();
@@ -636,9 +721,7 @@ LogicalResult FuriosaEmitter::emitOperation(Operation &op) {
           .Case<func::CallOp, func::FuncOp, func::ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Case<tensor::EmptyOp>([&](auto op) { return success(); })
-          .Default([&](Operation *) {
-            return op.emitOpError("unable to find printer for op");
-          });
+          .Default([&](Operation *) { return success(); });
 
   if (failed(status))
     return failure();
@@ -709,11 +792,26 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
               [&](auto op) { return printDynamicMtosfr(*this, op); })
           .Case<furiosa::task::DmawOp>(
               [&](auto op) { return printDynamicDmaw(*this, op); })
-          .Default([&](Operation *) { return success(); });
+          .Default([&](Operation *) {
+            return op.emitOpError("unable to find printer for op");
+          });
 
   if (failed(status))
     return failure();
 
+  return success();
+}
+
+LogicalResult ArmCEmitter::emitVariableDeclaration(Location loc, Type type,
+                                                   StringRef name) {
+  if (failed(emitType(loc, type)))
+    return failure();
+  os << " " << name;
+  return success();
+}
+
+LogicalResult ArmCEmitter::emitType(Location loc, Type type) {
+  os << "uint64_t";
   return success();
 }
 
@@ -731,10 +829,15 @@ FailureOr<binary_t> translateKernelFunctionToBinary(func::FuncOp functionOp) {
   {
     llvm::raw_fd_ostream fd_os(fd, /*shouldClose=*/true);
     ArmCEmitter emitter(fd_os);
-
-    if (failed(printKernelFunction(emitter, functionOp)))
+    if (auto targetAttr =
+            functionOp->getAttrOfType<furiosa::TargetAttr>("target")) {
+      if (failed(printKernelFunction(emitter, functionOp)))
+        llvm::report_fatal_error(
+            llvm::Twine("kernel function translation failed"));
+    } else {
       llvm::report_fatal_error(
-          llvm::Twine("kernel function translation failed"));
+          llvm::Twine("this function does not have target"));
+    }
 
     if (fd_os.has_error())
       llvm::report_fatal_error(llvm::Twine("Error emitting the IR to file '") +

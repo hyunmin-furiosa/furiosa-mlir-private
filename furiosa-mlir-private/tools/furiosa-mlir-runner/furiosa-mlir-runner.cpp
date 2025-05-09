@@ -16,11 +16,12 @@
 #include "furiosa-mlir/ExecutionEngine/JitRunner.h"
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/Dialect.h"
 
 int main(int argc, char **argv) {
   mlir::DialectRegistry registry;
-  registry.insert<mlir::func::FuncDialect>();
+  registry.insert<mlir::func::FuncDialect, mlir::tensor::TensorDialect>();
   mlir::furiosa::registerFuriosaDialect(registry);
   mlir::furiosa::host::registerHostDialect(registry);
 

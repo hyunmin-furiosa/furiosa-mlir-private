@@ -276,11 +276,14 @@ static constexpr auto DIMS = 8;
 struct TensorDmaDescriptor {
   std::uint64_t opcode;
   struct {
-    std::uint64_t dimension : 8;
-    std::uint64_t entry_type : 1;
-    std::uint64_t : 23;
-    std::uint64_t indirect_descriptor_access_count : 24;
-    std::uint64_t : 8;
+    std::uint64_t value;
+    union {
+      std::uint64_t dimension : 8;
+      std::uint64_t entry_type : 1;
+      std::uint64_t : 23;
+      std::uint64_t indirect_descriptor_access_count : 24;
+      std::uint64_t : 8;
+    };
   } indirect;
   std::uint64_t source_base;
   std::uint64_t destination_base;
