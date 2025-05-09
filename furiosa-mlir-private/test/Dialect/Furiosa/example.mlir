@@ -1,5 +1,5 @@
 module {
-  func.func @kernel(%arg0: tensor<256xf32>, %arg1: tensor<256xf32>) -> () attributes { target = #furiosa.target<npu 0 pe 0:1> } {
+  func.func @kernel(%arg0: tensor<256xf32>, %arg1: tensor<256xf32>) -> () attributes { target = #furiosa.target<npu 0 pe 0:0> } {
     furiosa.tuc.rtosfr {sfr_address = 0 : i64, size = 1 : i64, value = 12424 : i64}
     furiosa.tuc.wait {dma_tag_id = 0 : i32, target_context = false, type = false}
     %0 = furiosa.task.dma_descriptor source %arg0 : tensor<256xf32> {opcode = 0, indirect = 0, destination_base = 0x0010000000, source_limits = [4,1,1,1,1,1,1,1], source_strides = [256,0,0,0,0,0,0,0], destination_limits = [4,1,1,1,1,1,1,1], destination_strides = [256,0,0,0,0,0,0,0]}
