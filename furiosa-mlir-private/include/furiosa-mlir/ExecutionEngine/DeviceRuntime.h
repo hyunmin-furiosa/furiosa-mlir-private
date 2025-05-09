@@ -1,11 +1,10 @@
 #pragma once
 
-#include <any>
-
 #include "furiosa_torch.h"
 
 #include "mlir/IR/BuiltinOps.h"
 
+#include "llvm/ADT/Any.h"
 #include "llvm/ADT/ArrayRef.h"
 
 #include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
@@ -25,14 +24,14 @@ using execution_t = furiosa_torch::Execution *;
 struct ExecutionContext {
   Operation *module;
 
-  void createValue(Value val, std::any data) {
+  void createValue(Value val, llvm::Any data) {
     if (!valueMapper.count(val)) {
       valueMapper.insert_or_assign(val, data);
     }
   }
 
   /// get current data of value
-  std::any &getValue(Value val) {
+  llvm::Any &getValue(Value val) {
     if (!valueMapper.count(val)) {
       llvm::report_fatal_error(llvm::Twine("value does not exist"));
     }
@@ -40,7 +39,7 @@ struct ExecutionContext {
   }
 
 private:
-  using ValueMapper = llvm::DenseMap<Value, std::any>;
+  using ValueMapper = llvm::DenseMap<Value, llvm::Any>;
 
   /// Map from value to its data
   ValueMapper valueMapper;

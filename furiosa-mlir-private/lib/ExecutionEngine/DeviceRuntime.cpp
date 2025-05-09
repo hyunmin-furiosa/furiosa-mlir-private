@@ -1,6 +1,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Format.h"
@@ -15,12 +16,20 @@ using namespace mlir;
 
 namespace mlir::furiosa {
 
-LogicalResult executeOperation(ExecutionContext &context, func::ReturnOp op) {
-  for (auto &&operand : op.getOperands()) {
-    auto &operand_data = std::any_cast<bool &>(context.getValue(operand));
-    llvm::outs() << operand_data << " ";
+class Printer {
+public:
+  static void print(bool value) { llvm::outs() << (value ? "true" : "false"); }
+  static void print(byte_array_t &buffer) {
+    llvm::outs() << "[";
+    llvm::ListSeparator LS;
+    for (auto byte : buffer) {
+      llvm::outs() << LS << llvm::format("0x%02x", byte);
+    }
+    llvm::outs() << "]\n";
   }
+};
 
+LogicalResult executeOperation(ExecutionContext &context, func::ReturnOp op) {
   return success();
 }
 
@@ -40,8 +49,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   }
   data_buffer.resize(size);
   data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
-  context.createValue(op->getResult(0),
-                      std::make_any<byte_array_t>(data_buffer));
+  context.createValue(op->getResult(0), llvm::Any(data_buffer));
 
   return success();
 }
@@ -65,8 +73,7 @@ LogicalResult executeOperation(ExecutionContext &context,
     data_buffer.push_back(reinterpret_cast<std::uint8_t &>(d));
   }
   data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
-  context.createValue(op->getResult(0),
-                      std::make_any<byte_array_t>(data_buffer));
+  context.createValue(op->getResult(0), llvm::Any(data_buffer));
 
   return success();
 }
@@ -74,11 +81,28 @@ LogicalResult executeOperation(ExecutionContext &context,
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::CompareOp op) {
   auto &buffer0 =
-      std::any_cast<byte_array_t &>(context.getValue(op.getBuffer0()));
+      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer0()));
   auto &buffer1 =
-      std::any_cast<byte_array_t &>(context.getValue(op.getBuffer1()));
-  context.createValue(op->getResult(0),
-                      std::make_any<bool>(buffer0 == buffer1));
+      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer1()));
+  context.createValue(op->getResult(0), llvm::Any(buffer0 == buffer1));
+
+  return success();
+}
+
+LogicalResult executeOperation(ExecutionContext &context,
+                               furiosa::host::PrintOp op) {
+  auto buffer = op.getBuffer();
+  auto &buffer_any = context.getValue(buffer);
+  if (llvm::any_cast<bool>(&buffer_any)) {
+    auto &buffer_data = llvm::any_cast<bool &>(buffer_any);
+    Printer::print(buffer_data);
+  } else if (llvm::any_cast<byte_array_t>(&buffer_any)) {
+    auto &buffer_data = llvm::any_cast<byte_array_t &>(buffer_any);
+    Printer::print(buffer_data);
+  } else {
+    llvm::report_fatal_error(llvm::Twine("operand type cannot be printed"));
+    return failure();
+  }
 
   return success();
 }
@@ -88,11 +112,11 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto dram_address = op.getDramAddress();
   auto spm_address = op.getSpmAddress();
   auto &buffer =
-      std::any_cast<byte_array_t &>(context.getValue(op.getBinary()));
+      llvm::any_cast<byte_array_t &>(context.getValue(op.getBinary()));
   pe_program_t programs;
   programs.push_back(furiosa_torch::pe_program_load_inst(
       dram_address, spm_address, buffer.size()));
-  context.createValue(op->getResult(0), std::make_any<pe_program_t>(programs));
+  context.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
@@ -107,7 +131,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   }
   programs.push_back(furiosa_torch::pe_program_launch(
       spm_address, 0, 0, 0, operands.data(), operands.size()));
-  context.createValue(op->getResult(0), std::make_any<pe_program_t>(programs));
+  context.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
@@ -117,14 +141,14 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto pe_programs = op.getPePrograms();
   pe_program_t program_list;
   for (auto pe_program : pe_programs) {
-    auto &program = std::any_cast<pe_program_t &>(context.getValue(pe_program));
+    auto &program =
+        llvm::any_cast<pe_program_t &>(context.getValue(pe_program));
     program_list.insert(program_list.end(), program.begin(), program.end());
   }
   pe_program_t merged_programs;
   merged_programs.push_back(
       furiosa_torch::pe_program_seq(program_list.data(), program_list.size()));
-  context.createValue(op->getResult(0),
-                      std::make_any<pe_program_t>(merged_programs));
+  context.createValue(op->getResult(0), llvm::Any(merged_programs));
 
   return success();
 }
@@ -133,12 +157,12 @@ LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramWriteAtOp op) {
   auto dram_address = op.getDramAddress();
   auto &buffer =
-      std::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
+      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(furiosa_torch::hal_program_write_at(
       reinterpret_cast<std::uint64_t>(buffer.data()), dram_address,
       buffer.size()));
-  context.createValue(op->getResult(0), std::make_any<hal_program_t>(programs));
+  context.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
@@ -147,12 +171,12 @@ LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramReadAtOp op) {
   auto dram_address = op.getDramAddress();
   auto &buffer =
-      std::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
+      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(furiosa_torch::hal_program_read_at(
       dram_address, reinterpret_cast<std::uint64_t>(buffer.data()),
       buffer.size()));
-  context.createValue(op->getResult(0), std::make_any<hal_program_t>(programs));
+  context.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
@@ -160,11 +184,11 @@ LogicalResult executeOperation(ExecutionContext &context,
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::HalProgramExecuteOp op) {
   auto &pe_program =
-      std::any_cast<pe_program_t &>(context.getValue(op.getPeProgram()));
+      llvm::any_cast<pe_program_t &>(context.getValue(op.getPeProgram()));
   hal_program_t programs;
   assert(pe_program.size() == 1);
   programs.push_back(furiosa_torch::hal_program_execute(pe_program[0]));
-  context.createValue(op->getResult(0), std::make_any<hal_program_t>(programs));
+  context.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
@@ -175,14 +199,13 @@ LogicalResult executeOperation(ExecutionContext &context,
   hal_program_t program_list;
   for (auto hal_program : hal_programs) {
     auto &program =
-        std::any_cast<hal_program_t &>(context.getValue(hal_program));
+        llvm::any_cast<hal_program_t &>(context.getValue(hal_program));
     program_list.insert(program_list.end(), program.begin(), program.end());
   }
   hal_program_t merged_programs;
   merged_programs.push_back(
       furiosa_torch::hal_program_seq(program_list.data(), program_list.size()));
-  context.createValue(op->getResult(0),
-                      std::make_any<hal_program_t>(merged_programs));
+  context.createValue(op->getResult(0), llvm::Any(merged_programs));
 
   return success();
 }
@@ -194,7 +217,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto pe_begin = target.getPeBegin();
   auto pe_end = target.getPeEnd();
   device_t device = furiosa_torch::device_new(npu, pe_begin, pe_end);
-  context.createValue(op->getResult(0), std::make_any<device_t>(device));
+  context.createValue(op->getResult(0), llvm::Any(device));
 
   return success();
 }
@@ -202,11 +225,11 @@ LogicalResult executeOperation(ExecutionContext &context,
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::DeviceExecuteOp op) {
   auto &hal_program =
-      std::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
-  auto &device = std::any_cast<device_t &>(context.getValue(op.getDevice()));
+      llvm::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
+  auto &device = llvm::any_cast<device_t &>(context.getValue(op.getDevice()));
   assert(hal_program.size() == 1);
   auto execution = furiosa_torch::device_execute(device, hal_program[0]);
-  context.createValue(op->getResult(0), std::make_any<execution_t>(execution));
+  context.createValue(op->getResult(0), llvm::Any(execution));
 
   return success();
 }
@@ -214,7 +237,7 @@ LogicalResult executeOperation(ExecutionContext &context,
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::DeviceExecutionWaitOp op) {
   auto &execution =
-      std::any_cast<execution_t &>(context.getValue(op.getExecution()));
+      llvm::any_cast<execution_t &>(context.getValue(op.getExecution()));
   if (!furiosa_torch::device_execution_wait(execution)) {
     llvm::report_fatal_error(llvm::Twine("device execution wait failed"));
     return failure();
@@ -229,7 +252,8 @@ LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
           .Case<func::ReturnOp>(
               [&](auto op) { return executeOperation(context, op); })
           .Case<furiosa::host::AllocOp, furiosa::host::FuncAllocOp,
-                furiosa::host::CompareOp, furiosa::host::PeProgramLoadInstOp,
+                furiosa::host::CompareOp, furiosa::host::PrintOp,
+                furiosa::host::PeProgramLoadInstOp,
                 furiosa::host::PeProgramLaunchOp, furiosa::host::PeProgramSeqOp,
                 furiosa::host::HalProgramWriteAtOp,
                 furiosa::host::HalProgramReadAtOp,

@@ -18,7 +18,7 @@ module {
     furiosa.tuc.wait {dma_tag_id = 1 : i32, type = true, target_context = false}
     return
   }
-  func.func @main() -> i1 {
+  func.func @main() {
     %binary = furiosa_host.func_alloc { function = @kernel }
     %arg0 = furiosa_host.alloc { size = 0x400, data = [1] }
     %res0 = furiosa_host.alloc { size = 0x400, data = [0] }
@@ -33,7 +33,8 @@ module {
     %dev = furiosa_host.device_new { target = #furiosa.target<npu 0 pe 0:0> }
     %exec = furiosa_host.device_execute %dev %hal
     furiosa_host.device_execution_wait %exec
-    %result = furiosa_host.compare %arg0 %res0
-    return %result : i1
+    %comp = furiosa_host.compare %arg0 %res0
+    furiosa_host.print %comp : i1
+    return
   }
 }
