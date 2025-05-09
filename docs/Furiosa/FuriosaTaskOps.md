@@ -7,8 +7,10 @@ _Direct memory access descriptor_
 Syntax:
 
 ```
-operation ::= `furiosa.task.dma_descriptor` attr-dict
+operation ::= `furiosa.task.dma_descriptor` (`source` $source^ `:` type($source))? (`destination` $destination^ `:` type($destination))? attr-dict
 ```
+
+Traits: `AttrSizedOperandSegments`
 
 Interfaces: `InferTypeOpInterface`
 
@@ -17,6 +19,7 @@ Interfaces: `InferTypeOpInterface`
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
@@ -24,6 +27,13 @@ Interfaces: `InferTypeOpInterface`
 <tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `source` | any type |
+| `destination` | any type |
 
 #### Results:
 
@@ -98,6 +108,7 @@ operation ::= `furiosa.task.static.dma_descriptor` attr-dict
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>desc_addr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>opcode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>indirect</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>destination_base</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>source_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>

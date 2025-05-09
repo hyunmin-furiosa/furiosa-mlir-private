@@ -17,6 +17,7 @@ include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
+include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
 include "furiosa-mlir/Dialect/Host/IR/HostTypes.td"
 
@@ -50,7 +51,7 @@ def FuncAllocOp : HostOp<"func_alloc"> {
 }
 
 def CompareOp : HostOp<"compare"> {
-  let summary = "Host tensor compare";
+  let summary = "Host buffer compare";
   let description = [{}];
   let arguments = (ins
       BufferType:$buffer0,
@@ -60,6 +61,16 @@ def CompareOp : HostOp<"compare"> {
       I1:$result
   );
   let assemblyFormat = "$buffer0 $buffer1 attr-dict";
+}
+
+def PrintOp : HostOp<"print"> {
+  let summary = "Host print";
+  let description = [{}];
+  let arguments = (ins
+      AnyType:$buffer
+  );
+  let results = (outs);
+  let assemblyFormat = "$buffer `:` type($buffer) attr-dict";
 }
 
 //===----------------------------------------------------------------------===//
@@ -84,7 +95,8 @@ def PeProgramLaunchOp : HostOp<"pe_program_launch"> {
   let summary = "PE program launch";
   let description = [{}];
   let arguments = (ins
-      I64Attr:$spm_address
+      I64Attr:$spm_address,
+      I64ArrayAttr:$operands
   );
   let results = (outs
       PeProgramType:$pe_program
@@ -173,8 +185,20 @@ def DeviceExecuteOp : HostOp<"device_execute"> {
       DeviceType:$device,
       HalProgramType:$hal_program
   );
-  let results = (outs);
+  let results = (outs
+      ExecutionType:$execution
+  );
   let assemblyFormat = "$device $hal_program attr-dict";
+}
+
+def DeviceExecutionWaitOp : HostOp<"device_execution_wait"> {
+  let summary = "Device execution wait";
+  let description = [{}];
+  let arguments = (ins
+      ExecutionType:$execution
+  );
+  let results = (outs);
+  let assemblyFormat = "$execution attr-dict";
 }
 
 #endif // HOST_OPS_TD

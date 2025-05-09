@@ -1,5 +1,6 @@
 torch_mlir_enable_werror()
 
+add_subdirectory(Conversion)
 add_subdirectory(Dialect)
 add_subdirectory(ExecutionEngine)
 add_subdirectory(Target)
@@ -25,6 +26,7 @@ set(LinkedLibs
   FuriosaMLIRFuriosaPasses
 
   # Conversion passes.
+  FuriosaMLIRFuncToFuriosaHost
 )
 
 if(TORCH_MLIR_ENABLE_STABLEHLO)

@@ -9,7 +9,14 @@ target_link_libraries(furiosa-mlir-opt PRIVATE
   MLIROptLib
   MLIRTransforms
   FuriosaMLIRInitAll
+
+  # Dialects.
   FuriosaMLIRFuriosaDialect
-  FuriosaMLIRFuriosaPasses
   FuriosaMLIRHostDialect
+
+  # Dialect passes.
+  FuriosaMLIRFuriosaPasses
+
+  # Conversion passes.
+  FuriosaMLIRFuncToFuriosaHost
 )

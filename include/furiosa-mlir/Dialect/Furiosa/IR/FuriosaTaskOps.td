@@ -20,43 +20,47 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 
 //===----------------------------------------------------------------------===//
-// Shared dag type definitions
-//===----------------------------------------------------------------------===//
-
-def DmaDescriptor
-    : NamedDag<"dma_descriptor", (ins
-                                     I64Attr:$opcode,
-                                     I64Attr:$source_base,
-                                     I64Attr:$destination_base,
-                                     I64ArrayAttr:$source_limits,
-                                     I64ArrayAttr:$source_strides,
-                                     I64ArrayAttr:$destination_limits,
-                                     I64ArrayAttr:$destination_strides
-                                 )>;
-
-//===----------------------------------------------------------------------===//
 // Task operations.
 //===----------------------------------------------------------------------===//
 
 def StaticDmaDescriptorOp : TaskOp<"static.dma_descriptor"> {
   let summary = "Static direct memory access descriptor";
   let description = [{}];
-  let arguments = !con((ins
-                           I64Attr:$desc_addr
-                       ),
-                       DmaDescriptor.data);
+  let arguments = (ins
+      I64Attr:$desc_addr,
+      I64Attr:$opcode,
+      I64Attr:$indirect,
+      I64Attr:$source_base,
+      I64Attr:$destination_base,
+      I64ArrayAttr:$source_limits,
+      I64ArrayAttr:$source_strides,
+      I64ArrayAttr:$destination_limits,
+      I64ArrayAttr:$destination_strides
+  );
   let results = (outs);
   let assemblyFormat = "attr-dict";
 }
 
-def DmaDescriptorOp : TaskOp<"dma_descriptor"> {
+def DmaDescriptorOp : TaskOp<"dma_descriptor", [AttrSizedOperandSegments]> {
   let summary = "Direct memory access descriptor";
   let description = [{}];
-  let arguments = DmaDescriptor.data;
+  let arguments = (ins
+      Optional<AnyType>:$source,
+      Optional<AnyType>:$destination,
+      I64Attr:$opcode,
+      I64Attr:$indirect,
+      OptionalAttr<I64Attr>:$source_base,
+      OptionalAttr<I64Attr>:$destination_base,
+      I64ArrayAttr:$source_limits,
+      I64ArrayAttr:$source_strides,
+      I64ArrayAttr:$destination_limits,
+      I64ArrayAttr:$destination_strides
+  );
   let results = (outs
       DmaDescriptorType:$desc
   );
-  let assemblyFormat = "attr-dict";
+  let assemblyFormat = "(`source` $source^ `:` type($source))? (`destination` "
+                       "$destination^ `:` type($destination))? attr-dict";
 }
 
 def MtosfrOp : TaskOp<"mtosfr"> {

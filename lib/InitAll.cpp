@@ -25,6 +25,7 @@
 #include "mlir/IR/Dialect.h"
 #include "mlir/Transforms/Passes.h"
 
+#include "furiosa-mlir/Conversion/Passes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
@@ -36,16 +37,14 @@ void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
   mlir::furiosa::host::registerHostDialect(registry);
 }
 
-void mlir::furiosa::registerAllExtensions(mlir::DialectRegistry &registry) {
-  registerConvertFuncToLLVMInterface(registry);
-}
+void mlir::furiosa::registerAllExtensions(mlir::DialectRegistry &registry) {}
 
 void mlir::furiosa::registerAllPasses() {
   // General passes
   registerTransformsPasses();
 
   // Conversion passes
-  registerConvertFuncToLLVMPass();
+  registerConvertFuncToFuriosaHostPass();
 
   mlir::furiosa::registerFuriosaPasses();
 }

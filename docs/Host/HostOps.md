@@ -29,7 +29,7 @@ Interfaces: `InferTypeOpInterface`
 
 ### `furiosa_host.compare` (furiosa::host::CompareOp)
 
-_Host tensor compare_
+_Host buffer compare_
 
 Syntax:
 
@@ -63,12 +63,37 @@ Syntax:
 operation ::= `furiosa_host.device_execute` $device $hal_program attr-dict
 ```
 
+Interfaces: `InferTypeOpInterface`
+
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
 | `device` | Device type |
 | `hal_program` | HAL program type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `execution` | Execution type |
+
+
+### `furiosa_host.device_execution_wait` (furiosa::host::DeviceExecutionWaitOp)
+
+_Device execution wait_
+
+Syntax:
+
+```
+operation ::= `furiosa_host.device_execution_wait` $execution attr-dict
+```
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `execution` | Execution type |
 
 
 ### `furiosa_host.device_new` (furiosa::host::DeviceNewOp)
@@ -87,7 +112,7 @@ Interfaces: `InferTypeOpInterface`
 
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
-<tr><td><code>target</code></td><td>::mlir::furiosa::host::TargetAttr</td><td>Target attribute</td></tr>
+<tr><td><code>target</code></td><td>::mlir::furiosa::TargetAttr</td><td>Target attribute</td></tr>
 </table>
 
 #### Results:
@@ -254,6 +279,7 @@ Interfaces: `InferTypeOpInterface`
 <table>
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>spm_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+<tr><td><code>operands</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
 
 #### Results:
@@ -319,4 +345,21 @@ Interfaces: `InferTypeOpInterface`
 | Result | Description |
 | :----: | ----------- |
 | `pe_program` | PE program type |
+
+
+### `furiosa_host.print` (furiosa::host::PrintOp)
+
+_Host print_
+
+Syntax:
+
+```
+operation ::= `furiosa_host.print` $buffer `:` type($buffer) attr-dict
+```
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `buffer` | any type |
 

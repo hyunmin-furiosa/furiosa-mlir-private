@@ -29,17 +29,6 @@ class Host_Attr<string name, string attrMnemonic, list<Trait> traits = [],
   let attrName = attrMnemonic;
 }
 
-def TargetAttr : Host_Attr<"Target", "target"> {
-  let summary = "Target attribute";
-  let description = [{}];
-  let parameters = (ins
-      "uint64_t":$npu,
-      "uint64_t":$pe_begin,
-      "uint64_t":$pe_end
-  );
-  let assemblyFormat = "`<` `npu` $npu `pe` $pe_begin `:` $pe_end `>`";
-}
-
 //===----------------------------------------------------------------------===//
 // Host type definitions
 //===----------------------------------------------------------------------===//
@@ -63,6 +52,11 @@ def HalProgramType : Host_Type<"HalProgram", "hal_program"> {
 
 def DeviceType : Host_Type<"Device", "device"> {
   let summary = "Device type";
+  let description = [{}];
+}
+
+def ExecutionType : Host_Type<"Execution", "execution"> {
+  let summary = "Execution type";
   let description = [{}];
 }
 
