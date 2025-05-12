@@ -9,13 +9,25 @@
 
 #pragma once
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Task/IR/TaskDialect.h"
+
+#include "mlir/Bytecode/BytecodeOpInterface.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/OpDefinition.h"
+#include "mlir/IR/OpImplementation.h"
+#include "mlir/Interfaces/InferTypeOpInterface.h"
+#include "mlir/Interfaces/SideEffectInterfaces.h"
+
 #include "llvm/ADT/TypeSwitch.h"
 
 #define GET_ATTRDEF_CLASSES
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttrs.h.inc"
+#include "furiosa-mlir/Dialect/Task/IR/TaskAttributes.h.inc"
 
 #define GET_TYPEDEF_CLASSES
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h.inc"
+#include "furiosa-mlir/Dialect/Task/IR/TaskTypes.h.inc"
+
+#define GET_OP_CLASSES
+#include "furiosa-mlir/Dialect/Task/IR/TaskOps.h.inc"

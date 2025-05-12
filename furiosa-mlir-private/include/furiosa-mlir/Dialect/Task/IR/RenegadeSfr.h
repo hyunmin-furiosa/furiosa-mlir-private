@@ -1,8 +1,8 @@
 #pragma once
 
-#include "furiosa-mlir/Dialect/Furiosa/IR/SfrBase.h"
+#include "furiosa-mlir/Dialect/Task/IR/SfrBase.h"
 
-namespace mlir::furiosa {
+namespace mlir::furiosa::task {
 namespace sfr {
 namespace slice {
 template <class DT> class Common : public sfr::Block<DT> {
@@ -3275,4 +3275,4 @@ public:
 
 } // namespace slice
 } // namespace sfr
-} // namespace mlir::furiosa
+} // namespace mlir::furiosa::task

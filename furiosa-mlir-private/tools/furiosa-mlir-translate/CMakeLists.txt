@@ -9,5 +9,6 @@ target_link_libraries(furiosa-mlir-translate PRIVATE
   MLIRTranslateLib
   FuriosaMLIRFuriosaDialect
   FuriosaMLIRFuriosaPasses
-  FuriosaMLIRTargetFuriosa
+  FuriosaMLIRTaskDialect
+  FuriosaMLIRTargetC
 )

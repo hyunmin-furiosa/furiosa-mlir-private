@@ -7,11 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
-#include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
+#include "furiosa-mlir/Dialect/Task/IR/TaskOps.h"
+#include "furiosa-mlir/Dialect/Task/IR/TaskDialect.h"
 
 using namespace mlir;
-using namespace mlir::furiosa::host;
+using namespace mlir::furiosa::task;
+using namespace mlir::furiosa::task::sfr;
+using namespace mlir::furiosa::task::tuc;
 
 #define GET_OP_CLASSES
-#include "furiosa-mlir/Dialect/Host/IR/HostOps.cpp.inc"
+#include "furiosa-mlir/Dialect/Task/IR/TaskOps.cpp.inc"

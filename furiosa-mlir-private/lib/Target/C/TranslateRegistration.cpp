@@ -9,7 +9,7 @@
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/InitAll.h"
-#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
+#include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 using namespace mlir;
 

@@ -14,7 +14,7 @@
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
+#include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 // for linkObject
 LLD_HAS_DRIVER(elf)
@@ -40,10 +40,9 @@ LogicalResult convertArmCToObject(llvm::Twine filepath_in,
   // Compile the C code
   auto invocation = std::make_shared<clang::CompilerInvocation>();
   const char *args[] = {""}; // -v to make verbose
-  clang::CompilerInstance compiler;
-  compiler.createDiagnostics(*llvm::vfs::getRealFileSystem());
-  clang::CompilerInvocation::CreateFromArgs(*invocation, args,
-                                            compiler.getDiagnostics());
+  auto diags = clang::CompilerInstance::createDiagnostics(
+      *llvm::vfs::getRealFileSystem(), new clang::DiagnosticOptions());
+  clang::CompilerInvocation::CreateFromArgs(*invocation, args, *diags);
   invocation->getTargetOpts().Triple =
       "aarch64-unknown-none-elf"; // -triple aarch64-unknown-none-elf
   invocation->getFrontendOpts().Inputs.clear(); // remove default input '-'
@@ -77,7 +76,8 @@ LogicalResult convertArmCToObject(llvm::Twine filepath_in,
   // llvm::dbgs() << "\n";
 
   // Compile
-  compiler.setInvocation(std::move(invocation));
+  clang::CompilerInstance compiler(std::move(invocation));
+  compiler.setDiagnostics(diags.get());
   std::unique_ptr<clang::FrontendAction> action =
       std::make_unique<clang::EmitObjAction>();
   compiler.ExecuteAction(*action);

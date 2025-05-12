@@ -19,4 +19,11 @@ include "mlir/Interfaces/SideEffectInterfaces.td"
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
 include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 
+//===----------------------------------------------------------------------===//
+// Furiosa operation type definitions
+//===----------------------------------------------------------------------===//
+
+class Furiosa_Op<string mnemonic, list<Trait> traits = []>
+    : Op<Furiosa_Dialect, mnemonic, traits> {}
+
 #endif // FURIOSA_OPS_TD

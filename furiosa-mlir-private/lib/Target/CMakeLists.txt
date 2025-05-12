@@ -1,1 +1,1 @@
-add_subdirectory(Furiosa)
+add_subdirectory(C)

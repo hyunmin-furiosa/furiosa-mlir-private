@@ -6,7 +6,7 @@ add_mlir_library(FuriosaMLIRExecutionEngine
   ${PROJECT_SOURCE_DIR}/include/furiosa-mlir/ExecutionEngine
 
   DEPENDS
-  FuriosaMLIRTargetFuriosa
+  FuriosaMLIRTargetC
 )
 
 target_link_libraries(FuriosaMLIRExecutionEngine PRIVATE

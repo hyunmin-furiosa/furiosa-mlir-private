@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_TUC_OPS_TD
-#define FURIOSA_TUC_OPS_TD
+#ifndef TASK_OPS_TD
+#define TASK_OPS_TD
 
 include "mlir/IR/BuiltinAttributes.td"
 include "mlir/IR/OpAsmInterface.td"
@@ -16,12 +16,27 @@ include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
+include "furiosa-mlir/Dialect/Task/IR/RenegadeSfr.td"
+include "furiosa-mlir/Dialect/Task/IR/TaskBase.td"
+include "furiosa-mlir/Dialect/Task/IR/TaskTypes.td"
+
+//===----------------------------------------------------------------------===//
+// Task operation type definitions
+//===----------------------------------------------------------------------===//
+
+class Task_Op<string mnemonic, list<Trait> traits = []>
+    : Op<Task_Dialect, mnemonic, traits> {}
 
 //===----------------------------------------------------------------------===//
 // Tensor unit commands.
 //===----------------------------------------------------------------------===//
+
+class TensorUnitCommandOp<string mnemonic, list<Trait> traits = []>
+    : Task_Op<"tuc."#mnemonic, traits> {
+  let cppNamespace = Task_Dialect.cppNamespace#"::tuc";
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
 
 def ItosfrOp : TensorUnitCommandOp<"itosfr"> {
   let summary = "Immediate to special register file";
@@ -291,4 +306,109 @@ def PrflushOp : TensorUnitCommandOp<"prflush"> {
   let arguments = (ins);
 }
 
-#endif // FURIOSA_TUC_OPS_TD
+//===----------------------------------------------------------------------===//
+// Task SFR operations.
+//===----------------------------------------------------------------------===//
+
+class StaticSfrOp<string mnemonic, list<Trait> traits = []>
+    : Task_Op<"static.sfr."#mnemonic, traits> {
+  let cppNamespace = Task_Dialect.cppNamespace#"::sfr";
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+class SfrOp<string mnemonic, list<Trait> traits = []>
+    : Task_Op<"sfr."#mnemonic, traits> {
+  let cppNamespace = Task_Dialect.cppNamespace#"::sfr";
+  let results = (outs
+      SfrType:$sfr
+  );
+  let assemblyFormat = "attr-dict";
+}
+
+foreach nd = Sfr in {
+  def StaticSfr#!cast<string>(nd)#Op : StaticSfrOp<nd.mnemonic> {
+    let summary = "Static special function register for "#!cast<string>(nd);
+    let description = [{}];
+    let arguments = !con((ins
+                             I64Attr:$sfr_addr
+                         ),
+                         nd.data);
+  }
+
+  def Sfr#!cast<string>(nd)#Op : SfrOp<nd.mnemonic> {
+    let summary = "Special function register for "#!cast<string>(nd);
+    let description = [{}];
+    let arguments = nd.data;
+  }
+}
+
+//===----------------------------------------------------------------------===//
+// Task operations.
+//===----------------------------------------------------------------------===//
+
+def StaticDmaDescriptorOp : Task_Op<"static.dma_descriptor"> {
+  let summary = "Static direct memory access descriptor";
+  let description = [{}];
+  let arguments = (ins
+      I64Attr:$desc_addr,
+      I64Attr:$opcode,
+      I64Attr:$indirect,
+      I64Attr:$source_base,
+      I64Attr:$destination_base,
+      I64ArrayAttr:$source_limits,
+      I64ArrayAttr:$source_strides,
+      I64ArrayAttr:$destination_limits,
+      I64ArrayAttr:$destination_strides
+  );
+  let results = (outs);
+  let assemblyFormat = "attr-dict";
+}
+
+def DmaDescriptorOp : Task_Op<"dma_descriptor", [AttrSizedOperandSegments]> {
+  let summary = "Direct memory access descriptor";
+  let description = [{}];
+  let arguments = (ins
+      Optional<AnyType>:$source,
+      Optional<AnyType>:$destination,
+      I64Attr:$opcode,
+      I64Attr:$indirect,
+      OptionalAttr<I64Attr>:$source_base,
+      OptionalAttr<I64Attr>:$destination_base,
+      I64ArrayAttr:$source_limits,
+      I64ArrayAttr:$source_strides,
+      I64ArrayAttr:$destination_limits,
+      I64ArrayAttr:$destination_strides
+  );
+  let results = (outs
+      DmaDescriptorType:$desc
+  );
+  let assemblyFormat = "(`source` $source^ `:` type($source))? (`destination` "
+                       "$destination^ `:` type($destination))? attr-dict";
+}
+
+def DynamicMtosfrOp : Task_Op<"mtosfr"> {
+  let summary = "Dynamic memory to special register file";
+  let description = [{}];
+  let arguments = (ins
+      SfrType:$sfr,
+      I64Attr:$sfr_address
+  );
+  let results = (outs);
+  let assemblyFormat = "$sfr attr-dict";
+}
+
+def DynamicDmawOp : Task_Op<"dmaw"> {
+  let summary = "Dynamic direct memory access wide";
+  let description = [{}];
+  let arguments = (ins
+      DmaDescriptorType:$desc,
+      I64Attr:$dma_tag_id,
+      I1Attr:$profile,
+      I64Attr:$profile_id
+  );
+  let results = (outs);
+  let assemblyFormat = "$desc attr-dict";
+}
+
+#endif // TASK_OPS_TD
