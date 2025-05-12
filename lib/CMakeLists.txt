@@ -21,6 +21,7 @@ set(LinkedLibs
   # Dialects.
   FuriosaMLIRHostDialect
   FuriosaMLIRFuriosaDialect
+  FuriosaMLIRTaskDialect
 
   # Dialect passes.
   FuriosaMLIRFuriosaPasses

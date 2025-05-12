@@ -12,7 +12,7 @@ target_link_libraries(furiosa-mlir-opt PRIVATE
 
   # Dialects.
   FuriosaMLIRFuriosaDialect
-  FuriosaMLIRHostDialect
+  FuriosaMLIRTaskDialect
 
   # Dialect passes.
   FuriosaMLIRFuriosaPasses

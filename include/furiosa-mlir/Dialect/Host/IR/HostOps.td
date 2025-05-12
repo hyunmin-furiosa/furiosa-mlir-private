@@ -17,15 +17,22 @@ include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
+include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttributes.td"
 include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
 include "furiosa-mlir/Dialect/Host/IR/HostTypes.td"
+
+//===----------------------------------------------------------------------===//
+// Host operation type definitions
+//===----------------------------------------------------------------------===//
+
+class Host_Op<string mnemonic, list<Trait> traits = []>
+    : Op<Host_Dialect, mnemonic, traits> {}
 
 //===----------------------------------------------------------------------===//
 // Host operations.
 //===----------------------------------------------------------------------===//
 
-def AllocOp : HostOp<"alloc"> {
+def AllocOp : Host_Op<"alloc"> {
   let summary = "Host memory allocation";
   let description = [{}];
   let arguments = (ins
@@ -38,7 +45,7 @@ def AllocOp : HostOp<"alloc"> {
   let assemblyFormat = "attr-dict";
 }
 
-def FuncAllocOp : HostOp<"func_alloc"> {
+def FuncAllocOp : Host_Op<"func_alloc"> {
   let summary = "Host memory allocation for kernel function";
   let description = [{}];
   let arguments = (ins
@@ -50,7 +57,7 @@ def FuncAllocOp : HostOp<"func_alloc"> {
   let assemblyFormat = "attr-dict";
 }
 
-def CompareOp : HostOp<"compare"> {
+def CompareOp : Host_Op<"compare"> {
   let summary = "Host buffer compare";
   let description = [{}];
   let arguments = (ins
@@ -63,7 +70,7 @@ def CompareOp : HostOp<"compare"> {
   let assemblyFormat = "$buffer0 $buffer1 attr-dict";
 }
 
-def PrintOp : HostOp<"print"> {
+def PrintOp : Host_Op<"print"> {
   let summary = "Host print";
   let description = [{}];
   let arguments = (ins
@@ -77,7 +84,7 @@ def PrintOp : HostOp<"print"> {
 // Device runtime compatible operations.
 //===----------------------------------------------------------------------===//
 
-def PeProgramLoadInstOp : HostOp<"pe_program_load_inst"> {
+def PeProgramLoadInstOp : Host_Op<"pe_program_load_inst"> {
   let summary = "PE program load instruction";
   let description = [{}];
   let arguments = (ins
@@ -91,7 +98,7 @@ def PeProgramLoadInstOp : HostOp<"pe_program_load_inst"> {
   let assemblyFormat = "$binary attr-dict";
 }
 
-def PeProgramLaunchOp : HostOp<"pe_program_launch"> {
+def PeProgramLaunchOp : Host_Op<"pe_program_launch"> {
   let summary = "PE program launch";
   let description = [{}];
   let arguments = (ins
@@ -104,7 +111,7 @@ def PeProgramLaunchOp : HostOp<"pe_program_launch"> {
   let assemblyFormat = "attr-dict";
 }
 
-def PeProgramSeqOp : HostOp<"pe_program_seq"> {
+def PeProgramSeqOp : Host_Op<"pe_program_seq"> {
   let summary = "PE program sequence";
   let description = [{}];
   let arguments = (ins
@@ -116,7 +123,7 @@ def PeProgramSeqOp : HostOp<"pe_program_seq"> {
   let assemblyFormat = "$pe_programs attr-dict";
 }
 
-def HalProgramWriteAtOp : HostOp<"hal_program_write_at"> {
+def HalProgramWriteAtOp : Host_Op<"hal_program_write_at"> {
   let summary = "HAL program write at";
   let description = [{}];
   let arguments = (ins
@@ -129,7 +136,7 @@ def HalProgramWriteAtOp : HostOp<"hal_program_write_at"> {
   let assemblyFormat = "$buffer attr-dict";
 }
 
-def HalProgramReadAtOp : HostOp<"hal_program_read_at"> {
+def HalProgramReadAtOp : Host_Op<"hal_program_read_at"> {
   let summary = "HAL program read at";
   let description = [{}];
   let arguments = (ins
@@ -142,7 +149,7 @@ def HalProgramReadAtOp : HostOp<"hal_program_read_at"> {
   let assemblyFormat = "$buffer attr-dict";
 }
 
-def HalProgramExecuteOp : HostOp<"hal_program_execute"> {
+def HalProgramExecuteOp : Host_Op<"hal_program_execute"> {
   let summary = "HAL program execute";
   let description = [{}];
   let arguments = (ins
@@ -154,7 +161,7 @@ def HalProgramExecuteOp : HostOp<"hal_program_execute"> {
   let assemblyFormat = "$pe_program attr-dict";
 }
 
-def HalProgramSeqOp : HostOp<"hal_program_seq"> {
+def HalProgramSeqOp : Host_Op<"hal_program_seq"> {
   let summary = "HAL program sequence";
   let description = [{}];
   let arguments = (ins
@@ -166,7 +173,7 @@ def HalProgramSeqOp : HostOp<"hal_program_seq"> {
   let assemblyFormat = "$hal_programs attr-dict";
 }
 
-def DeviceNewOp : HostOp<"device_new"> {
+def DeviceNewOp : Host_Op<"device_new"> {
   let summary = "Device new";
   let description = [{}];
   let arguments = (ins
@@ -178,7 +185,7 @@ def DeviceNewOp : HostOp<"device_new"> {
   let assemblyFormat = "attr-dict";
 }
 
-def DeviceExecuteOp : HostOp<"device_execute"> {
+def DeviceExecuteOp : Host_Op<"device_execute"> {
   let summary = "Device execute";
   let description = [{}];
   let arguments = (ins
@@ -191,7 +198,7 @@ def DeviceExecuteOp : HostOp<"device_execute"> {
   let assemblyFormat = "$device $hal_program attr-dict";
 }
 
-def DeviceExecutionWaitOp : HostOp<"device_execution_wait"> {
+def DeviceExecutionWaitOp : Host_Op<"device_execution_wait"> {
   let summary = "Device execution wait";
   let description = [{}];
   let arguments = (ins

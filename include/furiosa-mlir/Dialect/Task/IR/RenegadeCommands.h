@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mlir::furiosa {
+namespace mlir::furiosa::task {
 
 struct TensorUnitCommand {
   TensorUnitCommand() : value(0) {}
@@ -294,4 +294,4 @@ struct TensorDmaDescriptor {
   std::array<std::uint32_t, NUM_INDIRECT_INDICES> indirect_indices;
 };
 
-} // namespace mlir::furiosa
+} // namespace mlir::furiosa::task

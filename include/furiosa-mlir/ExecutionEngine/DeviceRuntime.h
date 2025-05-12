@@ -7,7 +7,7 @@
 #include "llvm/ADT/Any.h"
 #include "llvm/ADT/ArrayRef.h"
 
-#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
+#include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 namespace mlir::furiosa {
 

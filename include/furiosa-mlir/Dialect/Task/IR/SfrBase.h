@@ -10,7 +10,7 @@
 
 #include "llvm/ADT/bit.h"
 
-namespace mlir::furiosa {
+namespace mlir::furiosa::task {
 using sfr_data_t = std::uint64_t;
 
 namespace sfr {
@@ -355,4 +355,4 @@ private:
 };
 
 } // namespace sfr
-} // namespace mlir::furiosa
+} // namespace mlir::furiosa::task

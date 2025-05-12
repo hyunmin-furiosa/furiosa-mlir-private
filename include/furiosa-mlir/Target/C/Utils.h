@@ -14,7 +14,7 @@
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
+#include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 // for linkObject
 LLD_HAS_DRIVER(elf)

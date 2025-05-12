@@ -10,7 +10,7 @@
 
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
 #include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
-#include "furiosa-mlir/Target/Furiosa/FuriosaToBinary.h"
+#include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 using namespace mlir;
 

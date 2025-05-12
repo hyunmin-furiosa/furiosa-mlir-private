@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef HOST_BASE_TD
-#define HOST_BASE_TD
+#ifndef TASK_BASE_TD
+#define TASK_BASE_TD
 
 include "mlir/IR/OpBase.td"
 
-def Host_Dialect : Dialect {
-  let name = "furiosa_host";
-  let cppNamespace = "::mlir::furiosa::host";
-  let description = [{Furiosa host dialect}];
+def Task_Dialect : Dialect {
+  let name = "furiosa_task";
+  let cppNamespace = "::mlir::furiosa::task";
+  let description = [{Furiosa task dialect}];
   let useDefaultTypePrinterParser = 1;
 }
 
-#endif // HOST_BASE_TD
+#endif // TASK_BASE_TD

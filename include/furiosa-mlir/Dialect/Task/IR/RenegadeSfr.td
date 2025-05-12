@@ -7,21 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_TASK_SFR_OPS_TD
-#define FURIOSA_TASK_SFR_OPS_TD
-
-include "mlir/IR/BuiltinAttributes.td"
-include "mlir/IR/OpAsmInterface.td"
-include "mlir/IR/SymbolInterfaces.td"
-include "mlir/Interfaces/InferTypeOpInterface.td"
-include "mlir/Interfaces/SideEffectInterfaces.td"
-
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
+#ifndef FURIOSA_TASK_RENEGADE_SFR_TD
+#define FURIOSA_TASK_RENEGADE_SFR_TD
 
 //===----------------------------------------------------------------------===//
 // Shared dag type definitions
 //===----------------------------------------------------------------------===//
+
+class NamedDag<string m, dag d> {
+  string mnemonic = m;
+  dag data = d;
+}
 
 defset list<NamedDag> Sfr = {
   def MainFetchUnit
@@ -1285,40 +1281,4 @@ defset list<NamedDag> Sfr = {
                  )>;
 }
 
-//===----------------------------------------------------------------------===//
-// Task SFR operations.
-//===----------------------------------------------------------------------===//
-
-class TaskStaticSfrOp<string mnemonic, list<Trait> traits = []>
-    : TaskOp<mnemonic, traits> {
-  let results = (outs);
-  let assemblyFormat = "attr-dict";
-}
-
-class TaskSfrOp<string mnemonic, list<Trait> traits = []>
-    : TaskOp<mnemonic, traits> {
-  let results = (outs
-      SfrType:$sfr
-  );
-  let assemblyFormat = "attr-dict";
-}
-
-foreach nd = Sfr in {
-  def StaticSfr#!cast<string>(nd)#Op
-      : TaskStaticSfrOp<"static.sfr."#nd.mnemonic> {
-    let summary = "Static special function register for "#!cast<string>(nd);
-    let description = [{}];
-    let arguments = !con((ins
-                             I64Attr:$sfr_addr
-                         ),
-                         nd.data);
-  }
-
-  def Sfr#!cast<string>(nd)#Op : TaskSfrOp<"sfr."#nd.mnemonic> {
-    let summary = "Special function register for "#!cast<string>(nd);
-    let description = [{}];
-    let arguments = nd.data;
-  }
-}
-
-#endif // FURIOSA_TASK_SFR_OPS_TD
+#endif // FURIOSA_TASK_RENEGADE_SFR_TD
