@@ -1,6 +1,6 @@
 set(LLVM_TARGET_DEFINITIONS HostAttributes.td)
-mlir_tablegen(HostAttrs.h.inc -gen-attrdef-decls)
-mlir_tablegen(HostAttrs.cpp.inc -gen-attrdef-defs)
+mlir_tablegen(HostAttributes.h.inc -gen-attrdef-decls)
+mlir_tablegen(HostAttributes.cpp.inc -gen-attrdef-defs)
 add_public_tablegen_target(FuriosaMLIRHostAttributesIncGen)
 add_dependencies(mlir-headers FuriosaMLIRHostAttributesIncGen)
 
@@ -20,5 +20,5 @@ add_dependencies(mlir-headers FuriosaMLIRHostOpsIncGen)
 
 add_mlir_doc(HostBase HostDialect Host/ -gen-dialect-doc)
 add_mlir_doc(HostOps HostOps Host/ -gen-op-doc)
-add_mlir_doc(HostAttributes HostAttrs Host/ -gen-attrdef-doc)
+add_mlir_doc(HostAttributes HostAttributes Host/ -gen-attrdef-doc)
 add_mlir_doc(HostTypes HostTypes Host/ -gen-typedef-doc)

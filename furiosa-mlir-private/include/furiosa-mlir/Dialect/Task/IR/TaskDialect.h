@@ -9,7 +9,12 @@
 
 #pragma once
 
-#include "mlir/IR/OpDefinition.h"
+#include "mlir/IR/Dialect.h"
 
-#define GET_OP_CLASSES
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTucOps.h.inc"
+#include "furiosa-mlir/Dialect/Task/IR/TaskDialect.h.inc"
+
+namespace mlir::furiosa::task {
+
+void registerTaskDialect(DialectRegistry &registry);
+
+} // namespace mlir::furiosa::task

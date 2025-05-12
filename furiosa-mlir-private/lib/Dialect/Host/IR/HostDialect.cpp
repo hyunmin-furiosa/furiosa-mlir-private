@@ -23,7 +23,7 @@ using namespace mlir::furiosa::host;
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.cpp.inc"
 
 #define GET_ATTRDEF_CLASSES
-#include "furiosa-mlir/Dialect/Host/IR/HostAttrs.cpp.inc"
+#include "furiosa-mlir/Dialect/Host/IR/HostAttributes.cpp.inc"
 
 #define GET_TYPEDEF_CLASSES
 #include "furiosa-mlir/Dialect/Host/IR/HostTypes.cpp.inc"
@@ -35,7 +35,7 @@ void HostDialect::initialize() {
       >();
   addAttributes<
 #define GET_ATTRDEF_LIST
-#include "furiosa-mlir/Dialect/Host/IR/HostAttrs.cpp.inc"
+#include "furiosa-mlir/Dialect/Host/IR/HostAttributes.cpp.inc"
       >();
   addTypes<
 #define GET_TYPEDEF_LIST

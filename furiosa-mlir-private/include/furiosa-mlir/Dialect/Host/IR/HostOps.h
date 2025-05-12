@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 
 #include "mlir/Bytecode/BytecodeOpInterface.h"
@@ -21,8 +21,10 @@
 #include "mlir/Interfaces/InferTypeOpInterface.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
+#include "llvm/ADT/TypeSwitch.h"
+
 #define GET_ATTRDEF_CLASSES
-#include "furiosa-mlir/Dialect/Host/IR/HostAttrs.h.inc"
+#include "furiosa-mlir/Dialect/Host/IR/HostAttributes.h.inc"
 
 #define GET_TYPEDEF_CLASSES
 #include "furiosa-mlir/Dialect/Host/IR/HostTypes.h.inc"
