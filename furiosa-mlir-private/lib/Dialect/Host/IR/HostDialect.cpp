@@ -9,7 +9,6 @@
 
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
-#include "furiosa-mlir/Dialect/Host/IR/HostTypes.h"
 
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/DialectImplementation.h"

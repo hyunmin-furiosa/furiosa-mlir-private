@@ -11,6 +11,7 @@
 #include "mlir/Tools/mlir-translate/Translation.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Error.h"
@@ -27,41 +28,6 @@
 using namespace mlir;
 
 namespace mlir::furiosa {
-
-/// Convenience functions to produce interleaved output with functions returning
-/// a LogicalResult. This is different than those in STLExtras as functions used
-/// on each element doesn't return a string.
-template <typename ForwardIterator, typename UnaryFunctor,
-          typename NullaryFunctor>
-inline LogicalResult
-interleaveWithError(ForwardIterator begin, ForwardIterator end,
-                    UnaryFunctor eachFn, NullaryFunctor betweenFn) {
-  if (begin == end)
-    return success();
-  if (failed(eachFn(*begin)))
-    return failure();
-  ++begin;
-  for (; begin != end; ++begin) {
-    betweenFn();
-    if (failed(eachFn(*begin)))
-      return failure();
-  }
-  return success();
-}
-
-template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
-inline LogicalResult interleaveWithError(const Container &c,
-                                         UnaryFunctor eachFn,
-                                         NullaryFunctor betweenFn) {
-  return interleaveWithError(c.begin(), c.end(), eachFn, betweenFn);
-}
-
-template <typename Container, typename UnaryFunctor>
-inline LogicalResult interleaveCommaWithError(const Container &c,
-                                              raw_ostream &os,
-                                              UnaryFunctor eachFn) {
-  return interleaveWithError(c.begin(), c.end(), eachFn, [&]() { os << ", "; });
-}
 
 /// Emitter for outer code
 struct FuriosaEmitter {
@@ -177,10 +143,9 @@ static LogicalResult printStaticSfr(ArmCEmitter &emitter, Operation *op) {
   os << "{\n";
   os.indent();
   os << "static const uint64_t _sfr[] = { ";
+  llvm::ListSeparator LS;
   for (auto it = sfr_vector.begin(); it != sfr_vector.end(); ++it) {
-    os << llvm::format_hex(*it, 0);
-    if (it != sfr_vector.end() - 1)
-      os << ", ";
+    os << LS << llvm::format_hex(*it, 0);
   }
   os << " };\n";
   os << "memcpy((void *)" << llvm::format_hex(sfr_address, 0)
@@ -200,10 +165,9 @@ static LogicalResult printSfr(ArmCEmitter &emitter, Operation *op) {
   OpResult result = op->getResult(0);
   os << "static const uint64_t " << emitter.getOrCreateName(result)
      << "[] = { ";
+  llvm::ListSeparator LS;
   for (auto it = sfr_vector.begin(); it != sfr_vector.end(); ++it) {
-    os << llvm::format_hex(*it, 0);
-    if (it != sfr_vector.end() - 1)
-      os << ", ";
+    os << LS << llvm::format_hex(*it, 0);
   }
   os << " };\n";
 
@@ -220,35 +184,31 @@ printStaticDmaDescriptor(ArmCEmitter &emitter,
   os.indent();
   os << "static const struct dma_desc_t _desc = { ";
   os << descriptor.opcode << ", ";
-  os << 0 << ", ";
+  os << descriptor.indirect.value << ", ";
   os << llvm::format_hex(descriptor.source_base, 0) << ", ";
   os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
   os << "{ ";
+  llvm::ListSeparator LS;
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.source_limits[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.source_limits[i];
   }
   os << " }, ";
   os << "{ ";
+  LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.source_strides[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.source_strides[i];
   }
   os << " }, ";
   os << "{ ";
+  LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.destination_limits[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.destination_limits[i];
   }
   os << " }, ";
   os << "{ ";
+  LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.destination_strides[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.destination_strides[i];
   }
   os << " } ";
   os << "};\n";
@@ -283,31 +243,27 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
     os << llvm::format_hex(descriptor.destination_base, 0) << ", ";
   }
   os << "{ ";
+  llvm::ListSeparator LS;
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.source_limits[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.source_limits[i];
   }
   os << " }, ";
   os << "{ ";
+  LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.source_strides[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.source_strides[i];
   }
   os << " }, ";
   os << "{ ";
+  LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.destination_limits[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.destination_limits[i];
   }
   os << " }, ";
   os << "{ ";
+  LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << descriptor.destination_strides[i];
-    if (i != DIMS - 1)
-      os << ", ";
+    os << LS << descriptor.destination_strides[i];
   }
   os << " } ";
   os << "};\n";

@@ -11,23 +11,10 @@
 #define HOST_TYPES_TD
 
 include "mlir/IR/AttrTypeBase.td"
-include "mlir/IR/EnumAttr.td"
-include "mlir/IR/BuiltinAttributeInterfaces.td"
 include "mlir/IR/BuiltinTypeInterfaces.td"
 include "mlir/IR/CommonTypeConstraints.td"
 
 include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
-
-//===----------------------------------------------------------------------===//
-// Host attribute definitions
-//===----------------------------------------------------------------------===//
-
-class Host_Attr<string name, string attrMnemonic, list<Trait> traits = [],
-                string baseCppClass = "::mlir::Attribute">
-    : AttrDef<Host_Dialect, name, traits, baseCppClass> {
-  let mnemonic = attrMnemonic;
-  let attrName = attrMnemonic;
-}
 
 //===----------------------------------------------------------------------===//
 // Host type definitions
