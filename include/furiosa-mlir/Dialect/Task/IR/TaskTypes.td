@@ -7,49 +7,34 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef HOST_TYPES_TD
-#define HOST_TYPES_TD
+#ifndef TASK_TYPES_TD
+#define TASK_TYPES_TD
 
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/BuiltinTypeInterfaces.td"
 include "mlir/IR/CommonTypeConstraints.td"
 
-include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
+include "furiosa-mlir/Dialect/Task/IR/TaskBase.td"
 
 //===----------------------------------------------------------------------===//
-// Host type definitions
+// Task type definitions
 //===----------------------------------------------------------------------===//
 
-class Host_Type<string name, string typeMnemonic, list<Trait> traits = [],
+class Task_Type<string name, string typeMnemonic, list<Trait> traits = [],
                 string baseCppClass = "::mlir::Type">
-    : TypeDef<Host_Dialect, name, traits, baseCppClass> {
+    : TypeDef<Task_Dialect, name, traits, baseCppClass> {
   let mnemonic = typeMnemonic;
-  let typeName = typeMnemonic;
+  let typeName = "furiosa."#typeMnemonic;
 }
 
-def PeProgramType : Host_Type<"PeProgram", "pe_program"> {
-  let summary = "PE program type";
+def SfrType : Task_Type<"Sfr", "sfr"> {
+  let summary = "Special function register type";
   let description = [{}];
 }
 
-def HalProgramType : Host_Type<"HalProgram", "hal_program"> {
-  let summary = "HAL program type";
+def DmaDescriptorType : Task_Type<"DmaDescriptor", "dma_descriptor"> {
+  let summary = "Direct memory access descriptor type";
   let description = [{}];
 }
 
-def DeviceType : Host_Type<"Device", "device"> {
-  let summary = "Device type";
-  let description = [{}];
-}
-
-def ExecutionType : Host_Type<"Execution", "execution"> {
-  let summary = "Execution type";
-  let description = [{}];
-}
-
-def BufferType : Host_Type<"Buffer", "buffer"> {
-  let summary = "Host memory buffer type";
-  let description = [{}];
-}
-
-#endif // HOST_TYPES_TD
+#endif // TASK_TYPES_TD

@@ -1,5 +1,5 @@
 #include "furiosa-mlir/Conversion/FuncToFuriosaHost/FuncToFuriosaHost.h"
-#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
 

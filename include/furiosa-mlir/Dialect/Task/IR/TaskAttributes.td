@@ -7,24 +7,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef FURIOSA_TYPES_TD
-#define FURIOSA_TYPES_TD
+#ifndef TASK_ATTRIBUTES_TD
+#define TASK_ATTRIBUTES_TD
 
 include "mlir/IR/AttrTypeBase.td"
-include "mlir/IR/BuiltinTypeInterfaces.td"
-include "mlir/IR/CommonTypeConstraints.td"
+include "mlir/IR/EnumAttr.td"
+include "mlir/IR/BuiltinAttributeInterfaces.td"
 
-include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaBase.td"
+include "furiosa-mlir/Dialect/Task/IR/TaskBase.td"
 
 //===----------------------------------------------------------------------===//
-// Furiosa type definitions
+// Task attribute definitions
 //===----------------------------------------------------------------------===//
 
-class Furiosa_Type<string name, string typeMnemonic, list<Trait> traits = [],
-                   string baseCppClass = "::mlir::Type">
-    : TypeDef<Furiosa_Dialect, name, traits, baseCppClass> {
-  let mnemonic = typeMnemonic;
-  let typeName = "furiosa."#typeMnemonic;
+class Task_Attr<string name, string attrMnemonic, list<Trait> traits = [],
+                string baseCppClass = "::mlir::Attribute">
+    : AttrDef<Task_Dialect, name, traits, baseCppClass> {
+  let mnemonic = attrMnemonic;
+  let attrName = attrMnemonic;
 }
 
-#endif // FURIOSA_TYPES_TD
+#endif // TASK_ATTRIBUTES_TD
