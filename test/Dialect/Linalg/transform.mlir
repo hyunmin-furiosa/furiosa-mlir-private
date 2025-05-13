@@ -1,4 +1,4 @@
-// RUN: mlir-opt -linalg-specialize-generic-ops
+// RUN: furiosa-mlir-opt -linalg-specialize-generic-ops
 
 #map = affine_map<(d0, d1, d2) -> (d0, d2)>
 #map1 = affine_map<(d0, d1, d2) -> (d2, d1)>

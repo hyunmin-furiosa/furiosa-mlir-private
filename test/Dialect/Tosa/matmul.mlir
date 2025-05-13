@@ -1,4 +1,4 @@
-// RUN: mlir-opt --pass-pipeline='builtin.module(func.func(tosa-to-linalg-named))'
+// RUN: furiosa-mlir-opt --pass-pipeline='builtin.module(func.func(tosa-to-linalg-named))'
 
 module {
   func.func @kernel(%arg0: tensor<1x5x3xf32>, %arg1: tensor<1x3x6xf32>) -> (tensor<1x5x6xf32>) {
