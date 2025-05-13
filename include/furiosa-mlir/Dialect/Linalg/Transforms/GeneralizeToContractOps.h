@@ -8,8 +8,8 @@ class Pass;
 
 namespace furiosa {
 
-#define GEN_PASS_DECL_CONVERTFUNCTOFURIOSAHOSTPASS
-#include "mlir/Conversion/Passes.h.inc"
+#define GEN_PASS_DECL_LINALGGENERALIZETOCONTRACTOPSPASS
+#include "furiosa-mlir/Dialect/Linalg/Transforms/Passes.h.inc"
 
 } // namespace furiosa
 } // namespace mlir
