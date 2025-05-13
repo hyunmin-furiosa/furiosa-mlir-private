@@ -1,33 +1,37 @@
-//===------------------------------------------------------------*- C++ -*-===//
+//===- Passes.h - Linalg pass entry points ----------------------*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-// Also available under a BSD-style license. See LICENSE.
+//
+//===----------------------------------------------------------------------===//
+//
+// This header file defines prototypes that expose pass constructors.
 //
 //===----------------------------------------------------------------------===//
 
 #pragma once
 
-#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/Linalg/Transforms/Transforms.h"
+#include "mlir/Dialect/Linalg/Utils/Utils.h"
 #include "mlir/Pass/Pass.h"
 
-#include <memory>
-
 namespace mlir {
-class ModuleOp;
+namespace func {
+class FuncOp;
+} // namespace func
 
 namespace furiosa {
 
 #define GEN_PASS_DECL
-#include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h.inc"
+#include "furiosa-mlir/Dialect/Linalg/Transforms/Passes.h.inc"
 
 //===----------------------------------------------------------------------===//
-// Pass registration
+// Registration
 //===----------------------------------------------------------------------===//
 
 #define GEN_PASS_REGISTRATION
-#include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h.inc"
+#include "furiosa-mlir/Dialect/Linalg/Transforms/Passes.h.inc"
 
 } // namespace furiosa
 } // namespace mlir

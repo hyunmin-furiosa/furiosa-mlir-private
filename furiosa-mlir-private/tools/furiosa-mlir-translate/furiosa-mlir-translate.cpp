@@ -30,5 +30,6 @@ void registerFuriosaToBinary();
 int main(int argc, char **argv) {
   mlir::furiosa::registerFuriosaToBinary();
 
-  return failed(mlirTranslateMain(argc, argv, "MLIR Translation Testing Tool"));
+  return failed(
+      mlirTranslateMain(argc, argv, "Furiosa-MLIR Translation Testing Tool"));
 }

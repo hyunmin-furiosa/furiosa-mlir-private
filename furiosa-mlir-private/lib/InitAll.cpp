@@ -29,11 +29,13 @@
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
+#include "furiosa-mlir/Dialect/Linalg/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Task/IR/TaskDialect.h"
 
 void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<mlir::arith::ArithDialect, mlir::func::FuncDialect,
-                  mlir::tensor::TensorDialect, mlir::tosa::TosaDialect>();
+                  mlir::linalg::LinalgDialect, mlir::tensor::TensorDialect,
+                  mlir::tosa::TosaDialect>();
   mlir::furiosa::registerFuriosaDialect(registry);
   mlir::furiosa::host::registerHostDialect(registry);
   mlir::furiosa::task::registerTaskDialect(registry);
@@ -48,5 +50,5 @@ void mlir::furiosa::registerAllPasses() {
   // Conversion passes
   registerConvertFuncToFuriosaHostPass();
 
-  mlir::furiosa::registerFuriosaPasses();
+  mlir::furiosa::registerLinalgPasses();
 }

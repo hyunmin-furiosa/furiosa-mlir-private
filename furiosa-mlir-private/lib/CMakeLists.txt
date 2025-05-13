@@ -11,6 +11,7 @@ set(LinkedLibs
   MLIRFuncInlinerExtension
   MLIRFuncToLLVM
   MLIRIR
+  MLIRLinalgDialect
   MLIRMLProgramDialect
   MLIRMemRefDialect
   MLIRSCFDialect
@@ -25,6 +26,7 @@ set(LinkedLibs
 
   # Dialect passes.
   FuriosaMLIRFuriosaPasses
+  FuriosaMLIRLinalgPasses
 
   # Conversion passes.
   FuriosaMLIRFuncToFuriosaHost
