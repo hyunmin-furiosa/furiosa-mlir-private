@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
 
   DialectRegistry registry;
   mlir::furiosa::registerAllDialects(registry);
+  mlir::furiosa::registerAllExtensions(registry);
 
   return mlir::asMainReturnCode(mlir::MlirOptMain(
       argc, argv, "MLIR modular optimizer driver\n", registry));

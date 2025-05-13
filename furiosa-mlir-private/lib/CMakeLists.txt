@@ -12,12 +12,15 @@ set(LinkedLibs
   MLIRFuncToLLVM
   MLIRIR
   MLIRLinalgDialect
+  MLIRLinalgTransformOps
   MLIRMLProgramDialect
   MLIRMemRefDialect
   MLIRSCFDialect
+  MLIRSupport
   MLIRTensorDialect
   MLIRTensorInferTypeOpInterfaceImpl
-  MLIRSupport
+  MLIRTosaToLinalg
+  MLIRTransformDialect
 
   # Dialects.
   FuriosaMLIRHostDialect
