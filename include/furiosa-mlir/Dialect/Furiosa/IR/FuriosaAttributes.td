@@ -10,6 +10,7 @@
 #ifndef FURIOSA_ATTRIBUTES_TD
 #define FURIOSA_ATTRIBUTES_TD
 
+include "mlir/Dialect/SCF/IR/DeviceMappingInterface.td"
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/EnumAttr.td"
 include "mlir/IR/BuiltinAttributeInterfaces.td"
@@ -36,6 +37,19 @@ def TargetAttr : Furiosa_Attr<"Target", "target"> {
       "uint64_t":$pe_end
   );
   let assemblyFormat = "`<` `npu` $npu `pe` $pe_begin `:` $pe_end `>`";
+}
+
+def MappingAttr
+    : Furiosa_Attr<"Mapping", "mapping", [DeviceMappingAttrInterface]> {
+  let summary = "Mapping attribute";
+  let description = [{}];
+  let parameters = (ins);
+  let assemblyFormat = "";
+  let extraClassDeclaration = [{
+  int64_t getMappingId();
+  bool isLinearMapping();
+  int64_t getRelativeIndex();
+  }];
 }
 
 #endif // FURIOSA_ATTRIBUTES_TD

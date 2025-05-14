@@ -16,6 +16,7 @@
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/Linalg/Passes.h"
 #include "mlir/Dialect/Linalg/TransformOps/DialectExtension.h"
+#include "mlir/Dialect/Linalg/Transforms/AllInterfaces.h"
 #include "mlir/Dialect/MLProgram/IR/MLProgram.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
@@ -24,6 +25,7 @@
 #include "mlir/Dialect/Tensor/IR/TensorInferTypeOpInterfaceImpl.h"
 #include "mlir/Dialect/Tosa/IR/TosaOps.h"
 #include "mlir/Dialect/Transform/IR/TransformDialect.h"
+#include "mlir/Dialect/Transform/Transforms/Passes.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/Transforms/Passes.h"
 
@@ -41,6 +43,9 @@ void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
   mlir::furiosa::registerFuriosaDialect(registry);
   mlir::furiosa::host::registerHostDialect(registry);
   mlir::furiosa::task::registerTaskDialect(registry);
+
+  // Register all external models.
+  linalg::registerAllDialectInterfaceImplementations(registry);
 }
 
 void mlir::furiosa::registerAllExtensions(mlir::DialectRegistry &registry) {
@@ -58,5 +63,6 @@ void mlir::furiosa::registerAllPasses() {
 
   // Transform passes
   mlir::registerLinalgPasses();
+  mlir::transform::registerTransformPasses();
   mlir::furiosa::registerLinalgPasses();
 }
