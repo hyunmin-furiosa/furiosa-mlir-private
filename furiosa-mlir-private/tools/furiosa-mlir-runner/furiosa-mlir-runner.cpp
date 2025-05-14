@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
   registry.insert<mlir::func::FuncDialect, mlir::tensor::TensorDialect>();
   mlir::furiosa::registerFuriosaDialect(registry);
   mlir::furiosa::host::registerHostDialect(registry);
+  mlir::furiosa::task::registerTaskDialect(registry);
 
   mlir::furiosa::JitRunnerConfig jitRunnerConfig;
   return mlir::furiosa::JitRunnerMain(argc, argv, registry, jitRunnerConfig);
