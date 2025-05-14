@@ -38,8 +38,9 @@
 
 void mlir::furiosa::registerAllDialects(mlir::DialectRegistry &registry) {
   registry.insert<mlir::arith::ArithDialect, mlir::func::FuncDialect,
-                  mlir::linalg::LinalgDialect, mlir::tensor::TensorDialect,
-                  mlir::tosa::TosaDialect, mlir::transform::TransformDialect>();
+                  mlir::linalg::LinalgDialect, mlir::scf::SCFDialect,
+                  mlir::tensor::TensorDialect, mlir::tosa::TosaDialect,
+                  mlir::transform::TransformDialect>();
   mlir::furiosa::registerFuriosaDialect(registry);
   mlir::furiosa::host::registerHostDialect(registry);
   mlir::furiosa::task::registerTaskDialect(registry);
@@ -60,6 +61,7 @@ void mlir::furiosa::registerAllPasses() {
   mlir::registerTosaToLinalg();
   mlir::registerTosaToLinalgNamed();
   mlir::furiosa::registerConvertFuncToFuriosaHostPass();
+  mlir::furiosa::registerConvertLinalgToFuriosaPass();
 
   // Transform passes
   mlir::registerLinalgPasses();

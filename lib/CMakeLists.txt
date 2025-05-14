@@ -34,6 +34,7 @@ set(LinkedLibs
 
   # Conversion passes.
   FuriosaMLIRFuncToFuriosaHost
+  FuriosaMLIRLinalgToFuriosa
 )
 
 if(TORCH_MLIR_ENABLE_STABLEHLO)
