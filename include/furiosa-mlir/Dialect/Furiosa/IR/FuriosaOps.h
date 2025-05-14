@@ -21,6 +21,8 @@
 
 #include "llvm/ADT/TypeSwitch.h"
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaEnums.h.inc"
+
 #define GET_ATTRDEF_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttributes.h.inc"
 

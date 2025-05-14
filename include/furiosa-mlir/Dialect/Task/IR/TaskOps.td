@@ -21,7 +21,7 @@ include "furiosa-mlir/Dialect/Task/IR/TaskBase.td"
 include "furiosa-mlir/Dialect/Task/IR/TaskTypes.td"
 
 //===----------------------------------------------------------------------===//
-// Task operation type definitions
+// Task operation definitions
 //===----------------------------------------------------------------------===//
 
 class Task_Op<string mnemonic, list<Trait> traits = []>

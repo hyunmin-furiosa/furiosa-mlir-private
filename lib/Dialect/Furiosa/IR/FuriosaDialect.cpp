@@ -37,6 +37,11 @@ int64_t MappingAttr::getRelativeIndex() { return 0; }
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.cpp.inc"
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaEnums.cpp.inc"
+
+#define GET_OP_CLASSES
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.cpp.inc"
+
 #define GET_ATTRDEF_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttributes.cpp.inc"
 

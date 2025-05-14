@@ -1,6 +1,8 @@
 set(LLVM_TARGET_DEFINITIONS FuriosaAttributes.td)
 mlir_tablegen(FuriosaAttributes.h.inc -gen-attrdef-decls)
 mlir_tablegen(FuriosaAttributes.cpp.inc -gen-attrdef-defs)
+mlir_tablegen(FuriosaEnums.h.inc -gen-enum-decls)
+mlir_tablegen(FuriosaEnums.cpp.inc -gen-enum-defs)
 add_public_tablegen_target(FuriosaMLIRFuriosaAttributesIncGen)
 add_dependencies(mlir-headers FuriosaMLIRFuriosaAttributesIncGen)
 
