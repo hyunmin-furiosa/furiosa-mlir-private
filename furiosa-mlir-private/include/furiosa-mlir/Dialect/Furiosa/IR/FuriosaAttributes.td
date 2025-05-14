@@ -52,4 +52,11 @@ def MappingAttr
   }];
 }
 
+def MemoryTypeAttr
+    : I64EnumAttr<"MemoryType", "",
+                  [I64EnumAttrCase<"dram", 0>, I64EnumAttrCase<"sram", 1>,
+                   I64EnumAttrCase<"trf", 2>, I64EnumAttrCase<"vrf", 3>]> {
+  let cppNamespace = "::mlir::furiosa";
+}
+
 #endif // FURIOSA_ATTRIBUTES_TD

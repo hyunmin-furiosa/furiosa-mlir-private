@@ -3,6 +3,7 @@
 
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -40,13 +41,51 @@ public:
 LogicalResult
 ForallOpLowering::matchAndRewrite(scf::ForallOp op,
                                   PatternRewriter &rewriter) const {
+  auto mapping = op.getMapping();
+  if (!mapping || (mapping->size() != 1) ||
+      !llvm::isa<furiosa::MappingAttr>((*mapping)[0])) {
+    return rewriter.notifyMatchFailure(op,
+                                       "op does not have a mapping attribute");
+  }
+
+  WalkResult status = op.walk([](Operation *op) {
+    WalkResult status =
+        llvm::TypeSwitch<Operation *, WalkResult>(op)
+            .Case<tensor::ExtractSliceOp>([&](auto op) {
+              op->dump();
+              return WalkResult::advance();
+            })
+            .Case<tensor::ParallelInsertSliceOp>([&](auto op) {
+              op->dump();
+              return WalkResult::advance();
+            })
+            .Case<linalg::ContractOp>([&](auto op) {
+              op->dump();
+              return WalkResult::advance();
+            })
+            .Case<scf::InParallelOp>([&](auto op) {
+              op->dump();
+              return WalkResult::advance();
+            })
+            .Case<scf::ForallOp, arith::MulFOp, arith::AddFOp, linalg::YieldOp>(
+                [&](auto op) { return WalkResult::skip(); })
+            .Default([&](Operation *) {
+              return op->emitOpError("unable to convert this op");
+            });
+
+    return status;
+  });
+
+  if (status.wasInterrupted()) {
+    return failure();
+  }
+
   return success();
 }
 
 void ConvertLinalgToFuriosa::runOnOperation() {
   ConversionTarget target(getContext());
   target.addLegalDialect<furiosa::FuriosaDialect>();
-  target.addIllegalOp<scf::ForallOp>();
 
   RewritePatternSet patterns(&getContext());
   patterns.add<ForallOpLowering>(patterns.getContext());

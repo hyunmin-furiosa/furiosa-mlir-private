@@ -27,4 +27,9 @@ class Furiosa_Type<string name, string typeMnemonic, list<Trait> traits = [],
   let typeName = "furiosa."#typeMnemonic;
 }
 
+def BufferType : Furiosa_Type<"Buffer", "buffer"> {
+  let summary = "Buffer type";
+  let description = [{}];
+}
+
 #endif // FURIOSA_TYPES_TD
