@@ -21,6 +21,7 @@ set(LinkedLibs
   MLIRTensorInferTypeOpInterfaceImpl
   MLIRTosaToLinalg
   MLIRTransformDialect
+  MLIRTransformDialectTransforms
 
   # Dialects.
   FuriosaMLIRHostDialect

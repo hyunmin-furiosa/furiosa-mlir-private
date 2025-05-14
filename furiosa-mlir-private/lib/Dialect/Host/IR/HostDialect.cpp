@@ -20,6 +20,10 @@
 using namespace mlir;
 using namespace mlir::furiosa::host;
 
+//===----------------------------------------------------------------------===//
+// Register Dialect
+//===----------------------------------------------------------------------===//
+
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.cpp.inc"
 
 #define GET_ATTRDEF_CLASSES
