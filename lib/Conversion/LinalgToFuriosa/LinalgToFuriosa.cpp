@@ -24,7 +24,21 @@ public:
   ForallOpLowering(MLIRContext *context)
       : OpRewritePattern<scf::ForallOp>(context) {}
 
+  LogicalResult replaceExtractSliceOp(tensor::ExtractSliceOp op,
+                                      PatternRewriter &rewriter) const;
+  LogicalResult replaceContractOp(linalg::ContractOp op,
+                                  PatternRewriter &rewriter) const;
+
   LogicalResult matchAndRewrite(scf::ForallOp op,
+                                PatternRewriter &rewriter) const final;
+};
+
+struct EmptyOpLowering : public OpRewritePattern<tensor::EmptyOp> {
+public:
+  EmptyOpLowering(MLIRContext *context)
+      : OpRewritePattern<tensor::EmptyOp>(context) {}
+
+  LogicalResult matchAndRewrite(tensor::EmptyOp op,
                                 PatternRewriter &rewriter) const final;
 };
 
@@ -39,6 +53,59 @@ public:
 } // namespace
 
 LogicalResult
+ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
+                                        PatternRewriter &rewriter) const {
+  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
+                                                furiosa::MemoryType::sram);
+  auto type = llvm::cast<RankedTensorType>(op.getType());
+  auto dma_op = rewriter.create<furiosa::DmaOp>(
+      op.getLoc(), type.cloneWithEncoding(sram_attr), op.getSource());
+  rewriter.moveOpBefore(dma_op, op);
+  op.replaceAllUsesWith(dma_op.getResult());
+  rewriter.eraseOp(op);
+
+  return success();
+}
+
+LogicalResult
+ForallOpLowering::replaceContractOp(linalg::ContractOp op,
+                                    PatternRewriter &rewriter) const {
+  assert(op.getInputs().size() == 2);
+  assert(op.getOutputs().size() == 1);
+
+  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
+                                                furiosa::MemoryType::sram);
+  auto trf_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
+                                               furiosa::MemoryType::trf);
+
+  auto in1_type = llvm::cast<RankedTensorType>(op.getInputs()[1].getType());
+  auto in1_op =
+      llvm::dyn_cast_or_null<furiosa::DmaOp>(op.getInputs()[1].getDefiningOp());
+  auto trf_dma_op = rewriter.create<furiosa::DmaOp>(
+      in1_op.getLoc(), in1_type.cloneWithEncoding(trf_attr),
+      in1_op.getResult());
+  rewriter.moveOpAfter(trf_dma_op, in1_op);
+  in1_op.getResult().replaceAllUsesExcept(trf_dma_op.getResult(), trf_dma_op);
+
+  auto type = llvm::cast<RankedTensorType>(op.getOutputs()[0].getType());
+  rewriter.modifyOpInPlace(op, [&]() {
+    op.getResult(0).setType(type.cloneWithEncoding(sram_attr));
+  });
+
+  assert(op->hasOneUse());
+  for (auto user : op->getUsers()) {
+    auto result_op =
+        llvm::dyn_cast_or_null<tensor::ParallelInsertSliceOp>(user);
+    auto dma_op = rewriter.create<furiosa::DmaOp>(
+        result_op.getLoc(), mlir::Type(), op.getResult(0), result_op.getDest());
+    rewriter.moveOpAfter(dma_op, op);
+    rewriter.eraseOp(result_op);
+  }
+
+  return success();
+}
+
+LogicalResult
 ForallOpLowering::matchAndRewrite(scf::ForallOp op,
                                   PatternRewriter &rewriter) const {
   auto mapping = op.getMapping();
@@ -48,34 +115,22 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
                                        "op does not have a mapping attribute");
   }
 
-  WalkResult status = op.walk([](Operation *op) {
-    WalkResult status =
-        llvm::TypeSwitch<Operation *, WalkResult>(op)
-            .Case<tensor::ExtractSliceOp>([&](auto op) {
-              op->dump();
-              return WalkResult::advance();
-            })
-            .Case<tensor::ParallelInsertSliceOp>([&](auto op) {
-              op->dump();
-              return WalkResult::advance();
-            })
-            .Case<linalg::ContractOp>([&](auto op) {
-              op->dump();
-              return WalkResult::advance();
-            })
-            .Case<scf::InParallelOp>([&](auto op) {
-              op->dump();
-              return WalkResult::advance();
-            })
-            .Case<scf::ForallOp, arith::MulFOp, arith::AddFOp, linalg::YieldOp>(
-                [&](auto op) { return WalkResult::skip(); })
-            .Default([&](Operation *) {
-              return op->emitOpError("unable to convert this op");
-            });
-
-    return status;
+  WalkResult status = op.walk([&](tensor::ExtractSliceOp op) {
+    if (failed(replaceExtractSliceOp(op, rewriter))) {
+      return WalkResult::interrupt();
+    }
+    return WalkResult::advance();
   });
+  if (status.wasInterrupted()) {
+    return failure();
+  }
 
+  status = op.walk([&](linalg::ContractOp op) {
+    if (failed(replaceContractOp(op, rewriter))) {
+      return WalkResult::interrupt();
+    }
+    return WalkResult::advance();
+  });
   if (status.wasInterrupted()) {
     return failure();
   }
@@ -83,9 +138,27 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
   return success();
 }
 
+LogicalResult
+EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
+                                 PatternRewriter &rewriter) const {
+  auto type = llvm::cast<RankedTensorType>(op.getType());
+  auto size = type.getNumElements();
+  if (!type.getEncoding()) {
+    auto dram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
+                                                  furiosa::MemoryType::dram);
+    auto allocOp = rewriter.create<furiosa::AllocOp>(
+        op.getLoc(), type.cloneWithEncoding(dram_attr),
+        furiosa::MemoryType::dram, size);
+    op.replaceAllUsesWith(allocOp.getOperation());
+  }
+
+  return success();
+}
+
 void ConvertLinalgToFuriosa::runOnOperation() {
   ConversionTarget target(getContext());
-  target.addLegalDialect<furiosa::FuriosaDialect>();
+  target.addLegalDialect<arith::ArithDialect, linalg::LinalgDialect,
+                         furiosa::FuriosaDialect>();
 
   RewritePatternSet patterns(&getContext());
   patterns.add<ForallOpLowering>(patterns.getContext());

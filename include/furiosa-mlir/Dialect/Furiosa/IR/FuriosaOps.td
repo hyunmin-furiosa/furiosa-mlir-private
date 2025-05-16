@@ -35,9 +35,25 @@ def AllocOp : Furiosa_Op<"alloc"> {
       I64Attr:$size
   );
   let results = (outs
-      BufferType:$buffer
+      AnyRankedTensor:$buffer
   );
-  let assemblyFormat = "attr-dict";
+  let assemblyFormat = "attr-dict `:` type($buffer)";
+}
+
+def DmaOp : Furiosa_Op<
+                "dma", [OptionalTypesMatchWith<"", "result", "destination",
+                                               "::llvm::cast<Type>($_self)">]> {
+  let summary = "Device direct memory access";
+  let description = [{}];
+  let arguments = (ins
+      AnyRankedTensor:$source,
+      Optional<AnyRankedTensor>:$destination
+  );
+  let results = (outs
+      Optional<AnyRankedTensor>:$result
+  );
+  let assemblyFormat = "$source `:` type($source) `->` ($destination^ `:` "
+                       "type($destination))? type($result) attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD

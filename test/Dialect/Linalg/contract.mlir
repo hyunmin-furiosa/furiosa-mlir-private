@@ -24,7 +24,7 @@ module {
 module attributes {transform.with_named_sequence} {
   transform.named_sequence @__transform_main(%arg1: !transform.any_op {transform.readonly}) {
     %0 = transform.structured.match ops{["linalg.contract"]} in %arg1 : (!transform.any_op) -> !transform.any_op
-    %1, %loops:1 = transform.structured.tile_using_forall %0 num_threads [64, 0, 0] { mapping = [ #furiosa.mapping ] } : (!transform.any_op) -> (!transform.any_op, !transform.any_op)
+    %1, %loops:1 = transform.structured.tile_using_forall %0 num_threads [32, 0, 0, 2] { mapping = [ #furiosa.mapping, #furiosa.mapping ] } : (!transform.any_op) -> (!transform.any_op, !transform.any_op)
     transform.yield
   }
 }
