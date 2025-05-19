@@ -47,7 +47,11 @@ def DmaOp : Furiosa_Op<
   let description = [{}];
   let arguments = (ins
       AnyRankedTensor:$source,
-      Optional<AnyRankedTensor>:$destination
+      Optional<AnyRankedTensor>:$destination,
+      I64ArrayAttr:$source_limits,
+      I64ArrayAttr:$source_strides,
+      I64ArrayAttr:$destination_limits,
+      I64ArrayAttr:$destination_strides
   );
   let results = (outs
       Optional<AnyRankedTensor>:$result
