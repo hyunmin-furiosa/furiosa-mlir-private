@@ -68,5 +68,6 @@ void mlir::furiosa::registerAllPasses() {
   mlir::registerLinalgPasses();
   mlir::registerSCFPasses();
   mlir::transform::registerTransformPasses();
+  mlir::furiosa::registerFuriosaPasses();
   mlir::furiosa::registerLinalgPasses();
 }
