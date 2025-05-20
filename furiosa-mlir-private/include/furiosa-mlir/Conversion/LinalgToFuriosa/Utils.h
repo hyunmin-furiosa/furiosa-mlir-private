@@ -13,8 +13,7 @@ static constexpr auto SLICE_SRAM_SIZE = 0x400000; // 4MB
 using indexer_t =
     std::pair<SmallVector<std::int64_t>, SmallVector<std::int64_t>>;
 using indexers_t = std::pair<indexer_t, indexer_t>;
-using lower_upper_step_t = std::tuple<std::int64_t, std::int64_t, std::int64_t>;
-using ValueMapper = llvm::DenseMap<Value, lower_upper_step_t>;
+using ValueMapper = llvm::DenseMap<Value, std::int64_t>;
 
 std::uint64_t getSimpleMultiplier(AffineMap map) {
   auto exprs = map.getResults();
@@ -34,12 +33,10 @@ indexer_t getPartitioningIndexer(llvm::SmallVector<OpFoldResult> offsets,
             llvm::dyn_cast_or_null<affine::AffineApplyOp>(defining_op);
         assert(apply_op.getMapOperands().size() == 1);
         auto operand = apply_op.getMapOperands()[0];
-        auto [lower_bound, upper_bound, step] = value_mapper[operand];
-        partitioning_limits.push_back((upper_bound - lower_bound) / step);
+        partitioning_limits.push_back(value_mapper[operand]);
         partitioning_strides.push_back(getSimpleMultiplier(apply_op.getMap()));
       } else {
-        auto [lower_bound, upper_bound, step] = value_mapper[value];
-        partitioning_limits.push_back((upper_bound - lower_bound) / step);
+        partitioning_limits.push_back(value_mapper[value]);
         partitioning_strides.push_back(1);
       }
     } else {
@@ -90,7 +87,6 @@ indexers_t getIndexers(RankedTensorType dram_type, RankedTensorType sram_type,
   sram_stride = 1;
   for (auto i = rank - 1; i >= 0; i--) {
     auto dram_limit = dram_shape[i];
-    auto sram_limit = sram_shape[i];
     auto partitioning_limit = partitioning_limits[i];
     auto partitioning_stride = partitioning_strides[i];
 
