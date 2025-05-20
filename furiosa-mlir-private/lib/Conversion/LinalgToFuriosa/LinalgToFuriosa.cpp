@@ -34,15 +34,12 @@ public:
                                PatternRewriter &rewriter) const;
 
   // Convert operators to furiosa dialect
-  FailureOr<Operation *> replaceExtractSliceOp(tensor::ExtractSliceOp op,
-                                               ValueMapper value_mapper,
-                                               PatternRewriter &rewriter) const;
-  FailureOr<Operation *>
-  replaceParallelInsertSliceOp(tensor::ParallelInsertSliceOp op,
-                               ValueMapper value_mapper,
-                               PatternRewriter &rewriter) const;
-  FailureOr<Operation *> replaceContractOp(linalg::ContractOp op,
-                                           PatternRewriter &rewriter) const;
+  LogicalResult replaceExtractSliceOp(tensor::ExtractSliceOp op,
+                                      ValueMapper value_mapper,
+                                      PatternRewriter &rewriter) const;
+  LogicalResult replaceParallelInsertSliceOp(tensor::ParallelInsertSliceOp op,
+                                             ValueMapper value_mapper,
+                                             PatternRewriter &rewriter) const;
 
   LogicalResult matchAndRewrite(scf::ForallOp op,
                                 PatternRewriter &rewriter) const final;
@@ -105,7 +102,7 @@ ForallOpLowering::markContractOp(linalg::ContractOp op,
   return success();
 }
 
-FailureOr<Operation *>
+LogicalResult
 ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
                                         ValueMapper value_mapper,
                                         PatternRewriter &rewriter) const {
@@ -139,11 +136,11 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
-      auto dma_op = rewriter.create<furiosa::DmaOp>(
-          op.getLoc(), result_type.cloneWithEncoding(sram_attr), op.getSource(),
-          Value(), source_limits, source_strides, destination_limits,
+      rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
+          op, result_type.cloneWithEncoding(sram_attr), op.getSource(), Value(),
+          source_limits, source_strides, destination_limits,
           destination_strides);
-      return dma_op.getOperation();
+      return success();
     } else if (result_memory_type == furiosa::MemoryType::trf) {
       assert(op.hasUnitStride());
       auto [source_indexer, result_indexer] = getIndexers(
@@ -153,11 +150,11 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
-      auto dma_op = rewriter.create<furiosa::DmaOp>(
-          op.getLoc(), result_type.cloneWithEncoding(trf_attr), op.getSource(),
-          Value(), source_limits, source_strides, destination_limits,
+      rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
+          op, result_type.cloneWithEncoding(trf_attr), op.getSource(), Value(),
+          source_limits, source_strides, destination_limits,
           destination_strides);
-      return dma_op.getOperation();
+      return success();
     } else if (result_memory_type == furiosa::MemoryType::vrf) {
       return failure();
     }
@@ -172,7 +169,7 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
   return failure();
 }
 
-FailureOr<Operation *> ForallOpLowering::replaceParallelInsertSliceOp(
+LogicalResult ForallOpLowering::replaceParallelInsertSliceOp(
     tensor::ParallelInsertSliceOp op, ValueMapper value_mapper,
     PatternRewriter &rewriter) const {
   auto source_type = op.getSourceType();
@@ -193,16 +190,18 @@ FailureOr<Operation *> ForallOpLowering::replaceParallelInsertSliceOp(
   } else if (source_memory_type == furiosa::MemoryType::sram) {
     if (dest_memory_type == furiosa::MemoryType::dram) {
       assert(op.hasUnitStride());
-      auto [dest_indexer, source_indexer] = getIndexers(
+      auto [destination_indexer, source_indexer] = getIndexers(
           dest_type, source_type, op.getMixedOffsets(), value_mapper);
       auto source_limits = rewriter.getI64ArrayAttr(source_indexer.first);
       auto source_strides = rewriter.getI64ArrayAttr(source_indexer.second);
-      auto destination_limits = rewriter.getI64ArrayAttr(dest_indexer.first);
-      auto destination_strides = rewriter.getI64ArrayAttr(dest_indexer.second);
-      auto dma_op = rewriter.create<furiosa::DmaOp>(
-          op.getLoc(), Type(), op.getSource(), op.getDest(), source_limits,
+      auto destination_limits =
+          rewriter.getI64ArrayAttr(destination_indexer.first);
+      auto destination_strides =
+          rewriter.getI64ArrayAttr(destination_indexer.second);
+      rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
+          op, Type(), op.getSource(), op.getDest(), source_limits,
           source_strides, destination_limits, destination_strides);
-      return dma_op.getOperation();
+      return success();
     } else if (dest_memory_type == furiosa::MemoryType::sram) {
       return failure();
     } else if (dest_memory_type == furiosa::MemoryType::trf) {
@@ -217,13 +216,6 @@ FailureOr<Operation *> ForallOpLowering::replaceParallelInsertSliceOp(
   }
 
   return failure();
-}
-
-FailureOr<Operation *>
-ForallOpLowering::replaceContractOp(linalg::ContractOp op,
-                                    PatternRewriter &rewriter) const {
-  auto new_contract_op = rewriter.clone(*op.getOperation());
-  return new_contract_op;
 }
 
 LogicalResult
@@ -273,32 +265,9 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
 
   // Convert operators to furiosa dialect
   status = op.walk([&](tensor::ExtractSliceOp extract_op) {
-    auto new_op = replaceExtractSliceOp(extract_op, value_mapper, rewriter);
-    if (failed(new_op)) {
+    rewriter.setInsertionPoint(extract_op);
+    if (failed(replaceExtractSliceOp(extract_op, value_mapper, rewriter))) {
       return WalkResult::interrupt();
-    } else {
-      auto new_dma_op = llvm::dyn_cast_or_null<furiosa::DmaOp>(*new_op);
-      rewriter.replaceAllUsesWith(extract_op, new_dma_op.getResult());
-      rewriter.moveOpBefore(new_dma_op, extract_op);
-      rewriter.eraseOp(extract_op);
-    }
-    return WalkResult::advance();
-  });
-  if (status.wasInterrupted()) {
-    return failure();
-  }
-
-  status = op.walk([&](linalg::ContractOp contract_op) {
-    auto new_op = replaceContractOp(contract_op, rewriter);
-    if (failed(new_op)) {
-      return WalkResult::interrupt();
-    } else {
-      auto new_contract_op =
-          llvm::dyn_cast_or_null<linalg::ContractOp>(*new_op);
-      rewriter.replaceAllUsesWith(contract_op.getResults(),
-                                  new_contract_op.getResults());
-      rewriter.moveOpBefore(new_contract_op, contract_op);
-      rewriter.eraseOp(contract_op);
     }
     return WalkResult::advance();
   });
@@ -308,22 +277,11 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
 
   auto terminator = op.getTerminator();
   status = terminator.walk([&](tensor::ParallelInsertSliceOp insert_op) {
-    auto new_op =
-        replaceParallelInsertSliceOp(insert_op, value_mapper, rewriter);
-    if (failed(new_op)) {
+    rewriter.setInsertionPoint(terminator);
+    if (failed(
+            replaceParallelInsertSliceOp(insert_op, value_mapper, rewriter))) {
       return WalkResult::interrupt();
-    } else {
-      rewriter.moveOpBefore(*new_op, terminator);
-      rewriter.eraseOp(insert_op);
     }
-    return WalkResult::advance();
-  });
-  if (status.wasInterrupted()) {
-    return failure();
-  }
-
-  status = op.walk([&](affine::AffineApplyOp apply_op) {
-    rewriter.eraseOp(apply_op);
     return WalkResult::advance();
   });
   if (status.wasInterrupted()) {
@@ -336,15 +294,14 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
 LogicalResult
 EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
                                  PatternRewriter &rewriter) const {
+  rewriter.setInsertionPoint(op);
   auto type = llvm::cast<RankedTensorType>(op.getType());
   auto size = type.getNumElements();
   if (!type.getEncoding()) {
     auto dram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
                                                   furiosa::MemoryType::dram);
-    auto allocOp = rewriter.create<furiosa::AllocOp>(
-        op.getLoc(), type.cloneWithEncoding(dram_attr),
-        furiosa::MemoryType::dram, size);
-    op.replaceAllUsesWith(allocOp.getOperation());
+    auto allocOp = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
+        op, type, furiosa::MemoryType::dram, size);
   }
 
   return success();
@@ -355,8 +312,10 @@ void ConvertLinalgToFuriosa::runOnOperation() {
   target.addLegalDialect<affine::AffineDialect, arith::ArithDialect,
                          func::FuncDialect, linalg::LinalgDialect,
                          tensor::TensorDialect, furiosa::FuriosaDialect>();
+  target.addIllegalOp<tensor::EmptyOp>();
 
   RewritePatternSet patterns(&getContext());
+  patterns.add<EmptyOpLowering>(patterns.getContext());
   patterns.add<ForallOpLowering>(patterns.getContext());
 
   if (failed(

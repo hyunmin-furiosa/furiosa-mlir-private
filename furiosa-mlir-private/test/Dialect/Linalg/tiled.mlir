@@ -1,4 +1,4 @@
-// RUN: furiosa-mlir-opt -convert-linalg-to-furiosa
+// RUN: furiosa-mlir-opt -convert-linalg-to-furiosa -canonicalize
 
 #map = affine_map<(d0) -> (d0 * 2)>
 #map1 = affine_map<(d0) -> (d0 * 32)>
