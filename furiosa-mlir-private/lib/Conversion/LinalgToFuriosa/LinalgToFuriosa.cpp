@@ -3,6 +3,7 @@
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
@@ -174,13 +175,6 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
 FailureOr<Operation *> ForallOpLowering::replaceParallelInsertSliceOp(
     tensor::ParallelInsertSliceOp op, ValueMapper value_mapper,
     PatternRewriter &rewriter) const {
-  auto dram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                furiosa::MemoryType::dram);
-  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                furiosa::MemoryType::sram);
-  auto trf_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                               furiosa::MemoryType::trf);
-
   auto source_type = op.getSourceType();
   auto source_memory_type = furiosa::MemoryType::dram;
   if (auto encoding = source_type.getEncoding()) {
@@ -284,7 +278,7 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
       return WalkResult::interrupt();
     } else {
       auto new_dma_op = llvm::dyn_cast_or_null<furiosa::DmaOp>(*new_op);
-      extract_op.replaceAllUsesWith(new_dma_op.getResult());
+      rewriter.replaceAllUsesWith(extract_op, new_dma_op.getResult());
       rewriter.moveOpBefore(new_dma_op, extract_op);
       rewriter.eraseOp(extract_op);
     }
@@ -301,7 +295,8 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
     } else {
       auto new_contract_op =
           llvm::dyn_cast_or_null<linalg::ContractOp>(*new_op);
-      contract_op.replaceAllUsesWith(new_contract_op.getResults());
+      rewriter.replaceAllUsesWith(contract_op.getResults(),
+                                  new_contract_op.getResults());
       rewriter.moveOpBefore(new_contract_op, contract_op);
       rewriter.eraseOp(contract_op);
     }
@@ -327,29 +322,30 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
     return failure();
   }
 
-  rewriter.setInsertionPointAfter(op);
-  auto arguments = op.getRegionOutArgs();
-  for (auto &operation : op.getBody()->without_terminator()) {
-    // if (llvm::isa<tensor::ExtractSliceOp>(operation) ||
-    //     llvm::isa<tensor::ParallelInsertSliceOp>(operation) ||
-    //     llvm::isa<scf::InParallelOp>(operation) ||
-    //     llvm::isa<affine::AffineApplyOp>(operation)) {
-    //   continue;
-    // }
-    if (!llvm::isa<furiosa::DmaOp>(operation)) {
-      continue;
-    }
-    for (auto index = 0u; index < operation.getNumOperands(); index++) {
-      auto operand = operation.getOperand(index);
-      if (llvm::is_contained(arguments, operand)) {
-        auto argument = llvm::cast<BlockArgument>(operand);
-        operation.setOperand(index, op.getTiedOpOperand(argument)->get());
-      }
-    }
-    // rewriter.clone(operation);
+  status = op.walk([&](affine::AffineApplyOp apply_op) {
+    rewriter.eraseOp(apply_op);
+    return WalkResult::advance();
+  });
+  if (status.wasInterrupted()) {
+    return failure();
   }
 
-  op->getParentOp()->dump();
+  // rewriter.setInsertionPointAfter(op);
+  // auto arguments = op.getRegionOutArgs();
+  // for (auto &operation : op.getBody()->without_terminator()) {
+  //   if (llvm::isa<furiosa::DmaOp>(operation) ||
+  //       llvm::isa<linalg::ContractOp>(operation)) {
+  //     for (auto index = 0u; index < operation.getNumOperands(); index++) {
+  //       auto operand = operation.getOperand(index);
+  //       if (llvm::is_contained(arguments, operand)) {
+  //         auto argument = llvm::cast<BlockArgument>(operand);
+  //         operation.setOperand(index, op.getTiedOpOperand(argument)->get());
+  //       }
+  //     }
+  //     // rewriter.clone(operation);
+  //   }
+  // }
+  // op->getParentOp()->dump();
 
   // auto operands = op.getOperands();
   // auto arguments = op.getRegionOutArgs();
@@ -362,14 +358,9 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
   //   llvm::outs() << "-------\n";
   // }
 
+  // mlir::scf::promote(rewriter, op);
+  // rewriter.replaceAllUsesWith(op.getResults(), op.getOperands());
   // rewriter.eraseOp(op);
-  Value val;
-  for (auto operand : op.getOperands()) {
-    val = operand;
-  }
-  for (auto result : op.getResults()) {
-    result.replaceAllUsesWith(val);
-  }
 
   // op->getParentOp()->dump();
 
@@ -395,7 +386,8 @@ EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
 
 void ConvertLinalgToFuriosa::runOnOperation() {
   ConversionTarget target(getContext());
-  target.addLegalDialect<arith::ArithDialect, linalg::LinalgDialect,
+  target.addLegalDialect<affine::AffineDialect, arith::ArithDialect,
+                         func::FuncDialect, linalg::LinalgDialect,
                          tensor::TensorDialect, furiosa::FuriosaDialect>();
 
   RewritePatternSet patterns(&getContext());
