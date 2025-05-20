@@ -1,5 +1,5 @@
 add_mlir_library(FuriosaMLIRFuriosaPasses
-  Passes.cpp
+  PromoteSlicePartitionLoop.cpp
 
   DEPENDS
   FuriosaMLIRFuriosaPassesIncGen

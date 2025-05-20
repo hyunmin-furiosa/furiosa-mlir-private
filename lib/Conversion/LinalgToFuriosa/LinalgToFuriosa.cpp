@@ -330,40 +330,6 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
     return failure();
   }
 
-  // rewriter.setInsertionPointAfter(op);
-  // auto arguments = op.getRegionOutArgs();
-  // for (auto &operation : op.getBody()->without_terminator()) {
-  //   if (llvm::isa<furiosa::DmaOp>(operation) ||
-  //       llvm::isa<linalg::ContractOp>(operation)) {
-  //     for (auto index = 0u; index < operation.getNumOperands(); index++) {
-  //       auto operand = operation.getOperand(index);
-  //       if (llvm::is_contained(arguments, operand)) {
-  //         auto argument = llvm::cast<BlockArgument>(operand);
-  //         operation.setOperand(index, op.getTiedOpOperand(argument)->get());
-  //       }
-  //     }
-  //     // rewriter.clone(operation);
-  //   }
-  // }
-  // op->getParentOp()->dump();
-
-  // auto operands = op.getOperands();
-  // auto arguments = op.getRegionOutArgs();
-  // auto results = op.getResults();
-  // assert(operands.size() == arguments.size());
-  // assert(operands.size() == results.size());
-
-  // for (auto operand : operands) {
-  //   operand.dump();
-  //   llvm::outs() << "-------\n";
-  // }
-
-  // mlir::scf::promote(rewriter, op);
-  // rewriter.replaceAllUsesWith(op.getResults(), op.getOperands());
-  // rewriter.eraseOp(op);
-
-  // op->getParentOp()->dump();
-
   return success();
 }
 
