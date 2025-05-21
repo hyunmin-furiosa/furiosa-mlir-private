@@ -92,7 +92,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
     auto size = tensor_type.getNumElements() *
                 tensor_type.getElementTypeBitWidth() / CHAR_BIT;
     auto size_attr = rewriter.getI64IntegerAttr(size);
-    auto data_attr = rewriter.getI64ArrayAttr({0});
+    auto data_attr = defining_op->getAttrOfType<ArrayAttr>("data");
     auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
         op.getLoc(), size_attr, data_attr);
     rewriter.moveOpBefore(alloc_op, op);

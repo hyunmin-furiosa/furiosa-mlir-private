@@ -37,17 +37,18 @@ LogicalResult executeOperation(ExecutionContext &context, func::ReturnOp op) {
 
 LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::AllocOp op) {
-  auto size = op.getSize();
-  auto data = op.getData();
   byte_array_t data_buffer;
-  for (auto d : *data) {
-    data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
-  }
-  auto input_data_size = data_buffer.size();
-  data_buffer.reserve(CEIL(size, input_data_size));
-  for (auto i = 0u; i < CEIL(size, input_data_size); i += input_data_size) {
-    std::copy_n(data_buffer.begin(), input_data_size,
-                std::back_inserter(data_buffer));
+  auto size = op.getSize();
+  if (auto data = op->getAttrOfType<ArrayAttr>("data")) {
+    for (auto d : data) {
+      data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
+    }
+    auto input_data_size = data_buffer.size();
+    data_buffer.reserve(CEIL(size, input_data_size));
+    for (auto i = 0u; i < CEIL(size, input_data_size); i += input_data_size) {
+      std::copy_n(data_buffer.begin(), input_data_size,
+                  std::back_inserter(data_buffer));
+    }
   }
   data_buffer.resize(size);
   data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
