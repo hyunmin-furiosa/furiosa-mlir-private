@@ -3,6 +3,7 @@
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
+#include "mlir/Dialect/Bufferization/IR/Bufferization.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
@@ -136,10 +137,11 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
-      rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
-          op, result_type.cloneWithEncoding(sram_attr), op.getSource(), Value(),
-          source_limits, source_strides, destination_limits,
-          destination_strides);
+      auto alloc_op = rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(
+          op, result_type.cloneWithEncoding(sram_attr), ValueRange());
+      rewriter.create<furiosa::DmaOp>(
+          op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
+          source_strides, destination_limits, destination_strides);
       return success();
     } else if (result_memory_type == furiosa::MemoryType::trf) {
       assert(op.hasUnitStride());
@@ -150,10 +152,11 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
-      rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
-          op, result_type.cloneWithEncoding(trf_attr), op.getSource(), Value(),
-          source_limits, source_strides, destination_limits,
-          destination_strides);
+      auto alloc_op = rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(
+          op, result_type.cloneWithEncoding(trf_attr), ValueRange());
+      rewriter.create<furiosa::DmaOp>(
+          op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
+          source_strides, destination_limits, destination_strides);
       return success();
     } else if (result_memory_type == furiosa::MemoryType::vrf) {
       return failure();
@@ -199,8 +202,8 @@ LogicalResult ForallOpLowering::replaceParallelInsertSliceOp(
       auto destination_strides =
           rewriter.getI64ArrayAttr(destination_indexer.second);
       rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
-          op, Type(), op.getSource(), op.getDest(), source_limits,
-          source_strides, destination_limits, destination_strides);
+          op, op.getSource(), op.getDest(), source_limits, source_strides,
+          destination_limits, destination_strides);
       return success();
     } else if (dest_memory_type == furiosa::MemoryType::sram) {
       return failure();
@@ -298,10 +301,8 @@ EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
   auto type = llvm::cast<RankedTensorType>(op.getType());
   auto size = type.getNumElements();
   if (!type.getEncoding()) {
-    auto dram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                  furiosa::MemoryType::dram);
-    auto allocOp = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
-        op, type, furiosa::MemoryType::dram, size);
+    auto alloc_op = rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(
+        op, type, ValueRange());
   }
 
   return success();
@@ -310,8 +311,9 @@ EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
 void ConvertLinalgToFuriosa::runOnOperation() {
   ConversionTarget target(getContext());
   target.addLegalDialect<affine::AffineDialect, arith::ArithDialect,
-                         func::FuncDialect, linalg::LinalgDialect,
-                         tensor::TensorDialect, furiosa::FuriosaDialect>();
+                         bufferization::BufferizationDialect, func::FuncDialect,
+                         linalg::LinalgDialect, tensor::TensorDialect,
+                         furiosa::FuriosaDialect>();
   target.addIllegalOp<tensor::EmptyOp>();
 
   RewritePatternSet patterns(&getContext());
