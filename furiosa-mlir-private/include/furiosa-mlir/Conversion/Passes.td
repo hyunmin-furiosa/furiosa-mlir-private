@@ -27,7 +27,8 @@ def ConvertFuncToFuriosaHostPass
 
 def ConvertLinalgToFuriosaPass : Pass<"convert-linalg-to-furiosa", "ModuleOp"> {
   let summary = "Convert linalg dialect to furiosa dialect";
-  let dependentDialects = ["scf::SCFDialect", "linalg::LinalgDialect",
+  let dependentDialects = ["bufferization::BufferizationDialect",
+                           "scf::SCFDialect", "linalg::LinalgDialect",
                            "furiosa::FuriosaDialect"];
 }
 

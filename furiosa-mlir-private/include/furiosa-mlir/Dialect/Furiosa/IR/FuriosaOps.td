@@ -27,37 +27,20 @@ include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaTypes.td"
 class Furiosa_Op<string mnemonic, list<Trait> traits = []>
     : Op<Furiosa_Dialect, mnemonic, traits> {}
 
-def AllocOp : Furiosa_Op<"alloc"> {
-  let summary = "Device memory allocation";
-  let description = [{}];
-  let arguments = (ins
-      MemoryTypeAttr:$type,
-      I64Attr:$size
-  );
-  let results = (outs
-      AnyRankedTensor:$buffer
-  );
-  let assemblyFormat = "attr-dict `:` type($buffer)";
-}
-
-def DmaOp : Furiosa_Op<
-                "dma", [OptionalTypesMatchWith<"", "result", "destination",
-                                               "::llvm::cast<Type>($_self)">]> {
+def DmaOp : Furiosa_Op<"dma"> {
   let summary = "Device direct memory access";
   let description = [{}];
   let arguments = (ins
       AnyRankedTensor:$source,
-      Optional<AnyRankedTensor>:$destination,
+      AnyRankedTensor:$destination,
       I64ArrayAttr:$source_limits,
       I64ArrayAttr:$source_strides,
       I64ArrayAttr:$destination_limits,
       I64ArrayAttr:$destination_strides
   );
-  let results = (outs
-      Optional<AnyRankedTensor>:$result
-  );
-  let assemblyFormat = "$source `:` type($source) `->` ($destination^ `:` "
-                       "type($destination))? type($result) attr-dict";
+  let results = (outs);
+  let assemblyFormat = "$source `->` $destination `:` type($source) `->` "
+                       "type($destination) attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD
