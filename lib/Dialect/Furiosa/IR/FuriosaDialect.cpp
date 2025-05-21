@@ -21,7 +21,26 @@
 using namespace mlir;
 using namespace mlir::furiosa;
 
+//===----------------------------------------------------------------------===//
+// Mapping Attributes
+//===----------------------------------------------------------------------===//
+
+int64_t MappingAttr::getMappingId() { return 0; }
+
+bool MappingAttr::isLinearMapping() { return false; }
+
+int64_t MappingAttr::getRelativeIndex() { return 0; }
+
+//===----------------------------------------------------------------------===//
+// Register Dialect
+//===----------------------------------------------------------------------===//
+
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.cpp.inc"
+
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaEnums.cpp.inc"
+
+#define GET_OP_CLASSES
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.cpp.inc"
 
 #define GET_ATTRDEF_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttributes.cpp.inc"

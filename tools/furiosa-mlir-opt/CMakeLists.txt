@@ -16,6 +16,7 @@ target_link_libraries(furiosa-mlir-opt PRIVATE
 
   # Dialect passes.
   FuriosaMLIRFuriosaPasses
+  FuriosaMLIRLinalgPasses
 
   # Conversion passes.
   FuriosaMLIRFuncToFuriosaHost

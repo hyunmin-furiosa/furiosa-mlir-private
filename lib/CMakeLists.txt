@@ -11,12 +11,17 @@ set(LinkedLibs
   MLIRFuncInlinerExtension
   MLIRFuncToLLVM
   MLIRIR
+  MLIRLinalgDialect
+  MLIRLinalgTransformOps
   MLIRMLProgramDialect
   MLIRMemRefDialect
   MLIRSCFDialect
+  MLIRSupport
   MLIRTensorDialect
   MLIRTensorInferTypeOpInterfaceImpl
-  MLIRSupport
+  MLIRTosaToLinalg
+  MLIRTransformDialect
+  MLIRTransformDialectTransforms
 
   # Dialects.
   FuriosaMLIRHostDialect
@@ -25,9 +30,11 @@ set(LinkedLibs
 
   # Dialect passes.
   FuriosaMLIRFuriosaPasses
+  FuriosaMLIRLinalgPasses
 
   # Conversion passes.
   FuriosaMLIRFuncToFuriosaHost
+  FuriosaMLIRLinalgToFuriosa
 )
 
 if(TORCH_MLIR_ENABLE_STABLEHLO)

@@ -10,6 +10,7 @@
 #ifndef FURIOSA_ATTRIBUTES_TD
 #define FURIOSA_ATTRIBUTES_TD
 
+include "mlir/Dialect/SCF/IR/DeviceMappingInterface.td"
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/EnumAttr.td"
 include "mlir/IR/BuiltinAttributeInterfaces.td"
@@ -36,6 +37,33 @@ def TargetAttr : Furiosa_Attr<"Target", "target"> {
       "uint64_t":$pe_end
   );
   let assemblyFormat = "`<` `npu` $npu `pe` $pe_begin `:` $pe_end `>`";
+}
+
+def MappingAttr
+    : Furiosa_Attr<"Mapping", "mapping", [DeviceMappingAttrInterface]> {
+  let summary = "Mapping attribute";
+  let description = [{}];
+  let parameters = (ins);
+  let assemblyFormat = "";
+  let extraClassDeclaration = [{
+  int64_t getMappingId();
+  bool isLinearMapping();
+  int64_t getRelativeIndex();
+  }];
+}
+
+def MemoryType
+    : I64EnumAttr<"MemoryType", "",
+                  [I64EnumAttrCase<"dram", 0>, I64EnumAttrCase<"sram", 1>,
+                   I64EnumAttrCase<"trf", 2>, I64EnumAttrCase<"vrf", 3>]> {
+  let genSpecializedAttr = 0;
+  let cppNamespace = "::mlir::furiosa";
+}
+
+def MemoryTypeAttr : EnumAttr<Furiosa_Dialect, MemoryType, "memory_type"> {
+  let summary = "Memory type attribute";
+  let description = [{}];
+  let assemblyFormat = "`<` $value `>`";
 }
 
 #endif // FURIOSA_ATTRIBUTES_TD

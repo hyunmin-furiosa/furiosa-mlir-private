@@ -19,10 +19,8 @@ class ModuleOp;
 
 namespace furiosa {
 
+#define GEN_PASS_DECL
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h.inc"
-
-/// Registers all Furiosa transformation passes.
-void registerFuriosaPasses();
 
 //===----------------------------------------------------------------------===//
 // Pass registration

@@ -12,6 +12,7 @@
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 
 #include "mlir/Bytecode/BytecodeOpInterface.h"
+#include "mlir/Dialect/SCF/IR/DeviceMappingInterface.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/IR/OpImplementation.h"
@@ -19,6 +20,8 @@
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
 #include "llvm/ADT/TypeSwitch.h"
+
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaEnums.h.inc"
 
 #define GET_ATTRDEF_CLASSES
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaAttributes.h.inc"

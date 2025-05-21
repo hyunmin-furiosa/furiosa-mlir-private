@@ -9,6 +9,7 @@
 #pragma once
 
 #include "furiosa-mlir/Conversion/FuncToFuriosaHost/FuncToFuriosaHost.h"
+#include "furiosa-mlir/Conversion/LinalgToFuriosa/LinalgToFuriosa.h"
 
 namespace mlir::furiosa {
 

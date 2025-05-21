@@ -22,15 +22,11 @@ include "furiosa-mlir/Dialect/Host/IR/HostBase.td"
 include "furiosa-mlir/Dialect/Host/IR/HostTypes.td"
 
 //===----------------------------------------------------------------------===//
-// Host operation type definitions
+// Host operation definitions
 //===----------------------------------------------------------------------===//
 
 class Host_Op<string mnemonic, list<Trait> traits = []>
     : Op<Host_Dialect, mnemonic, traits> {}
-
-//===----------------------------------------------------------------------===//
-// Host operations.
-//===----------------------------------------------------------------------===//
 
 def AllocOp : Host_Op<"alloc"> {
   let summary = "Host memory allocation";
