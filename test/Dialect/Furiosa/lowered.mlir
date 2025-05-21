@@ -1,8 +1,8 @@
 // RUN: furiosa-mlir-opt -convert-func-to-furiosa-host
 
 module {
-  func.func @kernel(%arg0: tensor<256xf32>, %arg1: tensor<256xf32>) -> () attributes { target = #furiosa.target<npu 0 pe 0:0> } {
-    %0 = furiosa_task.dma_descriptor source %arg0 : tensor<256xf32> {opcode = 0, indirect = 0, destination_base = 0x0010000000, source_limits = [4,1,1,1,1,1,1,1], source_strides = [256,0,0,0,0,0,0,0], destination_limits = [4,1,1,1,1,1,1,1], destination_strides = [256,0,0,0,0,0,0,0]}
+  func.func @kernel(%arg0: tensor<64x256xf32>, %arg1: tensor<64x256xf32>) -> () attributes { target = #furiosa.target<npu 0 pe 0:0> } {
+    %0 = furiosa_task.dma_descriptor source %arg0 : tensor<64x256xf32> {opcode = 0, indirect = 0, destination_base = 0x0010000000, source_limits = [0x4,0x40,1,1,1,1,1,1], source_strides = [0x100,0x400,0,0,0,0,0,0], destination_limits = [0x4,0x40,1,1,1,1,1,1], destination_strides = [0x100,0x400000,0,0,0,0,0,0]}
     furiosa_task.dmaw %0 {dma_tag_id = 0, profile = false, profile_id = 0}
     furiosa_task.tuc.wait {dma_tag_id = 0 : i32, type = true, target_context = false}
     %1 = furiosa_task.sfr.sub_fetch_unit {base = 0x0, type_conversion = 0, num_zero_points = 0, zero_point0 = 0, zero_point1 = 0, limits = [128,1,1,1,1,1,1,1], strides = [8,0,0,0,0,0,0,0], flit_count = 128, words_per_packet = 1, topology = 0 }
@@ -13,16 +13,16 @@ module {
     furiosa_task.mtosfr %3 {sfr_address = 0xff0170}
     furiosa_task.tuc.exec {subunit_bitmap = 0x0c1 : i32, context_id = false, target_context = true}
     furiosa_task.tuc.wait {dma_tag_id = 0 : i32, type = false, target_context = true}
-    %4 = furiosa_task.dma_descriptor destination %arg1 : tensor<256xf32> {opcode = 0, indirect = 0, source_base = 0x0010010000, source_limits = [4,1,1,1,1,1,1,1], source_strides = [256,0,0,0,0,0,0,0], destination_limits = [4,1,1,1,1,1,1,1], destination_strides = [256,0,0,0,0,0,0,0]}
+    %4 = furiosa_task.dma_descriptor destination %arg1 : tensor<64x256xf32> {opcode = 0, indirect = 0, source_base = 0x0010010000, source_limits = [0x4,0x40,1,1,1,1,1,1], source_strides = [0x100,0x400000,0,0,0,0,0,0], destination_limits = [0x4,0x40,1,1,1,1,1,1], destination_strides = [0x100,0x400,0,0,0,0,0,0]}
     furiosa_task.dmaw %4 {dma_tag_id = 1, profile = false, profile_id = 0}
     furiosa_task.tuc.wait {dma_tag_id = 1 : i32, type = true, target_context = false}
     return
   }
   func.func @main() {
-    %arg0 = tensor.empty() { dram_address = 0x10000, argument, data = [1] } : tensor<256xf32>
-    %res0 = tensor.empty() { dram_address = 0x20000, result } : tensor<256xf32>
-    func.call @kernel(%arg0, %res0) { dram_address = 0x0, spm_address = 0x0, target = #furiosa.target<npu 0 pe 0:0> } : (tensor<256xf32>, tensor<256xf32>) -> ()
-    furiosa_host.print %res0 : tensor<256xf32>
+    %arg0 = tensor.empty() { dram_address = 0x10000, argument, data = [1] } : tensor<64x256xf32>
+    %res0 = tensor.empty() { dram_address = 0x20000, result } : tensor<64x256xf32>
+    func.call @kernel(%arg0, %res0) { dram_address = 0x0, spm_address = 0x0, target = #furiosa.target<npu 0 pe 0:0> } : (tensor<64x256xf32>, tensor<64x256xf32>) -> ()
+    furiosa_host.print %res0 : tensor<64x256xf32>
     return
   }
 }
