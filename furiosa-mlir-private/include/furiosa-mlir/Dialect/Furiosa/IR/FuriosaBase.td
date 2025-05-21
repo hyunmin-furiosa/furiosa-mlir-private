@@ -17,6 +17,7 @@ def Furiosa_Dialect : Dialect {
   let cppNamespace = "::mlir::furiosa";
   let description = [{Furiosa dialect}];
   let useDefaultAttributePrinterParser = 1;
+  let useDefaultTypePrinterParser = 1;
 }
 
 #endif // FURIOSA_BASE_TD

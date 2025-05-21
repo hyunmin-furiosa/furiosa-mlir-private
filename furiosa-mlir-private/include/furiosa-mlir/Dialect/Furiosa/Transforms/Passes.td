@@ -12,4 +12,10 @@
 
 include "mlir/Pass/PassBase.td"
 
+def FuriosaPromoteSlicePartitionLoopPass
+    : Pass<"furiosa-promote-slice-partition-loop"> {
+  let summary = "Promote slice partition loop to outer block";
+  let dependentDialects = ["scf::SCFDialect, furiosa::FuriosaDialect"];
+}
+
 #endif // FURIOSA_PASSES_TD

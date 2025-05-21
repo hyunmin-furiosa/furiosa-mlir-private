@@ -48,8 +48,8 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
     return failure();
   }
   if (!function_op->hasAttr("target")) {
-    llvm::report_fatal_error(
-        llvm::Twine("this function does not have target attribute"));
+    return rewriter.notifyMatchFailure(op,
+                                       "op does not have a target attribute");
   }
 
   auto func_alloc_op =
@@ -92,7 +92,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
     auto size = tensor_type.getNumElements() *
                 tensor_type.getElementTypeBitWidth() / CHAR_BIT;
     auto size_attr = rewriter.getI64IntegerAttr(size);
-    auto data_attr = rewriter.getI64ArrayAttr({0});
+    auto data_attr = defining_op->getAttrOfType<ArrayAttr>("data");
     auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
         op.getLoc(), size_attr, data_attr);
     rewriter.moveOpBefore(alloc_op, op);
@@ -156,8 +156,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
 
 void ConvertFuncToFuriosaHost::runOnOperation() {
   ConversionTarget target(getContext());
-  target.addLegalDialect<func::FuncDialect, furiosa::host::HostDialect>();
-  target.addIllegalOp<func::CallOp>();
+  target.addLegalDialect<furiosa::host::HostDialect>();
 
   RewritePatternSet patterns(&getContext());
   patterns.add<CallOpLowering>(patterns.getContext());

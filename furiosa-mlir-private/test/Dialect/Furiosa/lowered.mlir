@@ -1,7 +1,7 @@
+// RUN: furiosa-mlir-opt -convert-func-to-furiosa-host
+
 module {
   func.func @kernel(%arg0: tensor<256xf32>, %arg1: tensor<256xf32>) -> () attributes { target = #furiosa.target<npu 0 pe 0:0> } {
-    furiosa_task.tuc.rtosfr {sfr_address = 0 : i64, size = 1 : i64, value = 12424 : i64}
-    furiosa_task.tuc.wait {dma_tag_id = 0 : i32, target_context = false, type = false}
     %0 = furiosa_task.dma_descriptor source %arg0 : tensor<256xf32> {opcode = 0, indirect = 0, destination_base = 0x0010000000, source_limits = [4,1,1,1,1,1,1,1], source_strides = [256,0,0,0,0,0,0,0], destination_limits = [4,1,1,1,1,1,1,1], destination_strides = [256,0,0,0,0,0,0,0]}
     furiosa_task.dmaw %0 {dma_tag_id = 0, profile = false, profile_id = 0}
     furiosa_task.tuc.wait {dma_tag_id = 0 : i32, type = true, target_context = false}
@@ -19,7 +19,7 @@ module {
     return
   }
   func.func @main() {
-    %arg0 = tensor.empty() { dram_address = 0x10000, argument } : tensor<256xf32>
+    %arg0 = tensor.empty() { dram_address = 0x10000, argument, data = [1] } : tensor<256xf32>
     %res0 = tensor.empty() { dram_address = 0x20000, result } : tensor<256xf32>
     func.call @kernel(%arg0, %res0) { dram_address = 0x0, spm_address = 0x0, target = #furiosa.target<npu 0 pe 0:0> } : (tensor<256xf32>, tensor<256xf32>) -> ()
     furiosa_host.print %res0 : tensor<256xf32>

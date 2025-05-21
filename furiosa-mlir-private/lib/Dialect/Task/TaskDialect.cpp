@@ -22,6 +22,10 @@ using namespace mlir::furiosa::task;
 using namespace mlir::furiosa::task::sfr;
 using namespace mlir::furiosa::task::tuc;
 
+//===----------------------------------------------------------------------===//
+// Register Dialect
+//===----------------------------------------------------------------------===//
+
 #include "furiosa-mlir/Dialect/Task/IR/TaskDialect.cpp.inc"
 
 #define GET_ATTRDEF_CLASSES

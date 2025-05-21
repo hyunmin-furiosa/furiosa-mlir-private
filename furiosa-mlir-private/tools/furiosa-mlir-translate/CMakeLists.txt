@@ -8,7 +8,6 @@ COMPONENT furiosa-mlir-translate)
 target_link_libraries(furiosa-mlir-translate PRIVATE
   MLIRTranslateLib
   FuriosaMLIRFuriosaDialect
-  FuriosaMLIRFuriosaPasses
   FuriosaMLIRTaskDialect
   FuriosaMLIRTargetC
 )
