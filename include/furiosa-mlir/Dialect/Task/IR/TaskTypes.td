@@ -37,4 +37,9 @@ def DmaDescriptorType : Task_Type<"DmaDescriptor", "dma_descriptor"> {
   let description = [{}];
 }
 
+def CommandType : Task_Type<"Command", "command"> {
+  let summary = "Tensor unit command type";
+  let description = [{}];
+}
+
 #endif // TASK_TYPES_TD
