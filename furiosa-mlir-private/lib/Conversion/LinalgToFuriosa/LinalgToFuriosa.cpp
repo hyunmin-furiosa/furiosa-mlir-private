@@ -299,10 +299,10 @@ EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
                                  PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(op);
   auto type = llvm::cast<RankedTensorType>(op.getType());
-  auto size = type.getNumElements();
+  // auto size = type.getNumElements();
   if (!type.getEncoding()) {
-    auto alloc_op = rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(
-        op, type, ValueRange());
+    rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(op, type,
+                                                              ValueRange());
   }
 
   return success();
