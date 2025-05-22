@@ -128,9 +128,7 @@ static LogicalResult printTensorUnitCommand(ArmCEmitter &emitter,
   }
   os << "TUC_COMMAND_QUEUE_ENTRY[tail] = " << llvm::format_hex(command.value, 0)
      << ";\n";
-  os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
-  os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
-  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
+  os << "INCREMENT_TAIL_AND_WAIT();\n";
   return success();
 }
 
@@ -187,25 +185,25 @@ static LogicalResult printStaticDmaDescriptor(ArmCEmitter &emitter,
   os << "{ ";
   llvm::ListSeparator LS;
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.source_limits[i];
+    os << LS << llvm::format_hex(descriptor.source_limits[i], 0);
   }
   os << " }, ";
   os << "{ ";
   LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.source_strides[i];
+    os << LS << llvm::format_hex(descriptor.source_strides[i], 0);
   }
   os << " }, ";
   os << "{ ";
   LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.destination_limits[i];
+    os << LS << llvm::format_hex(descriptor.destination_limits[i], 0);
   }
   os << " }, ";
   os << "{ ";
   LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.destination_strides[i];
+    os << LS << llvm::format_hex(descriptor.destination_strides[i], 0);
   }
   os << " } ";
   os << "};\n";
@@ -242,25 +240,25 @@ static LogicalResult printDmaDescriptor(ArmCEmitter &emitter,
   os << "{ ";
   llvm::ListSeparator LS;
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.source_limits[i];
+    os << LS << llvm::format_hex(descriptor.source_limits[i], 0);
   }
   os << " }, ";
   os << "{ ";
   LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.source_strides[i];
+    os << LS << llvm::format_hex(descriptor.source_strides[i], 0);
   }
   os << " }, ";
   os << "{ ";
   LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.destination_limits[i];
+    os << LS << llvm::format_hex(descriptor.destination_limits[i], 0);
   }
   os << " }, ";
   os << "{ ";
   LS = llvm::ListSeparator();
   for (auto i = 0u; i < DIMS; i++) {
-    os << LS << descriptor.destination_strides[i];
+    os << LS << llvm::format_hex(descriptor.destination_strides[i], 0);
   }
   os << " } ";
   os << "};\n";
@@ -285,10 +283,7 @@ static LogicalResult printDynamicMtosfr(ArmCEmitter &emitter,
   command.setReg(0, 0);
   os << "TUC_COMMAND_QUEUE_ENTRY[tail] = " << llvm::format_hex(command.value, 0)
      << ";\n";
-  os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
-  os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
-  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
-  os << "\n";
+  os << "INCREMENT_TAIL_AND_WAIT();\n";
   return success();
 }
 
@@ -324,10 +319,7 @@ static LogicalResult printDynamicDmaw(ArmCEmitter &emitter, DynamicDmawOp op) {
   command.setReg(3, 3);
   os << "TUC_COMMAND_QUEUE_ENTRY[tail] = " << llvm::format_hex(command.value, 0)
      << ";\n";
-  os << "tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE;\n";
-  os << "*TUC_COMMAND_QUEUE_TAIL = tail;\n";
-  os << "while (*TUC_COMMAND_QUEUE_HEAD != tail) {};\n";
-  os << "\n";
+  os << "INCREMENT_TAIL_AND_WAIT();\n";
   return success();
 }
 
@@ -431,6 +423,11 @@ static LogicalResult printKernelFunction(ArmCEmitter &emitter,
 #define TDMA_DESC_QUEUE_SIZE 32
 
 #define TDMA_WORD_SIZE 32
+
+#define INCREMENT_TAIL_AND_WAIT() \
+  tail = (tail + 1) % TUC_COMMAND_QUEUE_SIZE; \
+  *TUC_COMMAND_QUEUE_TAIL = tail; \
+  while (*TUC_COMMAND_QUEUE_HEAD != tail) {};
 
 /**
  * Flushes data cache to scratchpad memory.
@@ -612,7 +609,6 @@ static volatile struct shared_field_t *const shared = (struct shared_field_t *)S
   os << ") {\n";
   if (failed(printFunctionBody(emitter, operation, functionOp.getBlocks())))
     return failure();
-  os << "\n";
   os << "}\n";
 
   return success();
@@ -687,6 +683,8 @@ ArmCEmitter::ArmCEmitter(raw_ostream &os) : os(os) {
 }
 
 LogicalResult ArmCEmitter::emitOperation(Operation &op) {
+  raw_indented_ostream &os = this->ostream();
+  os << "// " << op << "\n";
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
           // Func ops.
@@ -731,6 +729,7 @@ LogicalResult ArmCEmitter::emitOperation(Operation &op) {
           .Default([&](Operation *) {
             return op.emitOpError("unable to find printer for op");
           });
+  os << "\n";
 
   if (failed(status))
     return failure();
