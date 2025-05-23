@@ -7,8 +7,10 @@ _Direct memory access 1_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.dma1` attr-dict
+operation ::= `furiosa_task.tuc.dma1` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -20,6 +22,18 @@ operation ::= `furiosa_task.tuc.dma1` attr-dict
 <tr><td><code>profile</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 <tr><td><code>profile_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.dma_descriptor` (furiosa::task::DmaDescriptorOp)
@@ -71,8 +85,10 @@ _Direct memory access_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.dma` attr-dict
+operation ::= `furiosa_task.tuc.dma` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -86,6 +102,18 @@ operation ::= `furiosa_task.tuc.dma` attr-dict
 <tr><td><code>profile</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 <tr><td><code>profile_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.dmaw` (furiosa::task::tuc::DmawOp)
@@ -95,8 +123,10 @@ _Direct memory access wide_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.dmaw` attr-dict
+operation ::= `furiosa_task.tuc.dmaw` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -111,6 +141,18 @@ operation ::= `furiosa_task.tuc.dmaw` attr-dict
 <tr><td><code>profile_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.dmaw` (furiosa::task::DynamicDmawOp)
 
@@ -119,8 +161,10 @@ _Dynamic direct memory access wide_
 Syntax:
 
 ```
-operation ::= `furiosa_task.dmaw` $desc attr-dict
+operation ::= `furiosa_task.dmaw` $desc $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -136,6 +180,13 @@ operation ::= `furiosa_task.dmaw` $desc attr-dict
 | Operand | Description |
 | :-----: | ----------- |
 | `desc` | Direct memory access descriptor type |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.mtosfr` (furiosa::task::DynamicMtosfrOp)
@@ -145,8 +196,10 @@ _Dynamic memory to special register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.mtosfr` $sfr attr-dict
+operation ::= `furiosa_task.mtosfr` $sfr $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -160,6 +213,13 @@ operation ::= `furiosa_task.mtosfr` $sfr attr-dict
 | Operand | Description |
 | :-----: | ----------- |
 | `sfr` | Special function register type |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.exec` (furiosa::task::tuc::ExecutionOp)
@@ -169,8 +229,10 @@ _Tensor unit execution_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.exec` attr-dict
+operation ::= `furiosa_task.tuc.exec` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -181,6 +243,18 @@ operation ::= `furiosa_task.tuc.exec` attr-dict
 <tr><td><code>target_context</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.interrupt` (furiosa::task::tuc::InterruptOp)
 
@@ -189,8 +263,22 @@ _SRAM to tensor register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.interrupt` attr-dict
+operation ::= `furiosa_task.tuc.interrupt` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.itos` (furiosa::task::tuc::ItosOp)
@@ -200,8 +288,10 @@ _Immediate to SRAM_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.itos` attr-dict
+operation ::= `furiosa_task.tuc.itos` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -215,6 +305,18 @@ operation ::= `furiosa_task.tuc.itos` attr-dict
 <tr><td><code>stride1</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.itosfr` (furiosa::task::tuc::ItosfrOp)
 
@@ -223,8 +325,10 @@ _Immediate to special register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.itosfr` attr-dict
+operation ::= `furiosa_task.tuc.itosfr` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -235,6 +339,18 @@ operation ::= `furiosa_task.tuc.itosfr` attr-dict
 <tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.itosi` (furiosa::task::tuc::ItosiOp)
 
@@ -243,8 +359,10 @@ _Immediate to SRAM immediate_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.itosi` attr-dict
+operation ::= `furiosa_task.tuc.itosi` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -255,6 +373,18 @@ operation ::= `furiosa_task.tuc.itosi` attr-dict
 <tr><td><code>value</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.mtosfr` (furiosa::task::tuc::MtosfrOp)
 
@@ -263,8 +393,10 @@ _Memory to special register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.mtosfr` attr-dict
+operation ::= `furiosa_task.tuc.mtosfr` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -275,6 +407,18 @@ operation ::= `furiosa_task.tuc.mtosfr` attr-dict
 <tr><td><code>sfr_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.prflush` (furiosa::task::tuc::PrflushOp)
 
@@ -283,8 +427,22 @@ _Profile flush_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.prflush` attr-dict
+operation ::= `furiosa_task.tuc.prflush` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.profile` (furiosa::task::tuc::ProfileOp)
@@ -294,8 +452,10 @@ _Profile_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.profile` attr-dict
+operation ::= `furiosa_task.tuc.profile` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -303,6 +463,18 @@ operation ::= `furiosa_task.tuc.profile` attr-dict
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>profile_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.profilei` (furiosa::task::tuc::ProfileiOp)
@@ -312,8 +484,10 @@ _Profile immediate_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.profilei` attr-dict
+operation ::= `furiosa_task.tuc.profilei` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -321,6 +495,18 @@ operation ::= `furiosa_task.tuc.profilei` attr-dict
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>profile_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.rtosfr` (furiosa::task::tuc::RtosfrOp)
@@ -330,8 +516,10 @@ _Register to special register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.rtosfr` attr-dict
+operation ::= `furiosa_task.tuc.rtosfr` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -342,6 +530,18 @@ operation ::= `furiosa_task.tuc.rtosfr` attr-dict
 <tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.rtosfri` (furiosa::task::tuc::RtosfriOp)
 
@@ -350,8 +550,10 @@ _Register to special register file immediate_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.rtosfri` attr-dict
+operation ::= `furiosa_task.tuc.rtosfri` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -361,6 +563,18 @@ operation ::= `furiosa_task.tuc.rtosfri` attr-dict
 <tr><td><code>log_size</code></td><td>::mlir::IntegerAttr</td><td>32-bit signless integer attribute</td></tr>
 <tr><td><code>value</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.sfr.dot_product_engine` (furiosa::task::sfr::SfrDotProductEngineOp)
@@ -1349,8 +1563,10 @@ _Special register file to SRAM_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.sfrtos` attr-dict
+operation ::= `furiosa_task.tuc.sfrtos` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -1361,6 +1577,18 @@ operation ::= `furiosa_task.tuc.sfrtos` attr-dict
 <tr><td><code>sfr_address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.stall` (furiosa::task::tuc::StallOp)
 
@@ -1369,8 +1597,10 @@ _Stall_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.stall` attr-dict
+operation ::= `furiosa_task.tuc.stall` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -1378,6 +1608,18 @@ operation ::= `furiosa_task.tuc.stall` attr-dict
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>cycle</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.static.dma_descriptor` (furiosa::task::StaticDmaDescriptorOp)
@@ -2294,8 +2536,10 @@ _SRAM to SRAM_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.stos` attr-dict
+operation ::= `furiosa_task.tuc.stos` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2309,6 +2553,18 @@ operation ::= `furiosa_task.tuc.stos` attr-dict
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.stosfr` (furiosa::task::tuc::StosfrOp)
 
@@ -2317,8 +2573,10 @@ _SRAM to special register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.stosfr` attr-dict
+operation ::= `furiosa_task.tuc.stosfr` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2336,6 +2594,18 @@ operation ::= `furiosa_task.tuc.stosfr` attr-dict
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.stotab` (furiosa::task::tuc::StotabOp)
 
@@ -2344,8 +2614,10 @@ _SRAM to table_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.stotab` attr-dict
+operation ::= `furiosa_task.tuc.stotab` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2362,6 +2634,18 @@ operation ::= `furiosa_task.tuc.stotab` attr-dict
 <tr><td><code>words_per_packet</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.stotrf` (furiosa::task::tuc::StotrfOp)
 
@@ -2370,8 +2654,10 @@ _SRAM to tensor register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.stotrf` attr-dict
+operation ::= `furiosa_task.tuc.stotrf` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2396,6 +2682,18 @@ operation ::= `furiosa_task.tuc.stotrf` attr-dict
 <tr><td><code>valid_flits_per_period</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.stovrf` (furiosa::task::tuc::StovrfOp)
 
@@ -2404,8 +2702,10 @@ _SRAM to vector register file_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.stovrf` attr-dict
+operation ::= `furiosa_task.tuc.stovrf` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2425,6 +2725,18 @@ operation ::= `furiosa_task.tuc.stovrf` attr-dict
 <tr><td><code>write_row_stride</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
+
 
 ### `furiosa_task.tuc.wait` (furiosa::task::tuc::WaitOp)
 
@@ -2433,8 +2745,10 @@ _Wait_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.wait` attr-dict
+operation ::= `furiosa_task.tuc.wait` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2444,6 +2758,18 @@ operation ::= `furiosa_task.tuc.wait` attr-dict
 <tr><td><code>type</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 <tr><td><code>target_context</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
 
 ### `furiosa_task.tuc.waiti` (furiosa::task::tuc::WaitiOp)
@@ -2453,8 +2779,10 @@ _Wait interrupt_
 Syntax:
 
 ```
-operation ::= `furiosa_task.tuc.waiti` attr-dict
+operation ::= `furiosa_task.tuc.waiti` $dependencies attr-dict
 ```
+
+Interfaces: `InferTypeOpInterface`
 
 #### Attributes:
 
@@ -2464,4 +2792,16 @@ operation ::= `furiosa_task.tuc.waiti` attr-dict
 <tr><td><code>type</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 <tr><td><code>target_context</code></td><td>::mlir::IntegerAttr</td><td>1-bit signless integer attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `dependencies` | variadic of Tensor unit command type |
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `command` | Tensor unit command type |
 
