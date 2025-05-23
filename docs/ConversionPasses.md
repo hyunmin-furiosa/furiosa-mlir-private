@@ -3,3 +3,7 @@
 ### `-convert-func-to-furiosa-host`
 
 _Convert func dialect to furiosa host dialect_
+
+### `-convert-linalg-to-furiosa`
+
+_Convert linalg dialect to furiosa dialect_
