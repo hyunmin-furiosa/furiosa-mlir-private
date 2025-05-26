@@ -16,6 +16,13 @@ namespace furiosa {
 using namespace mlir;
 namespace {
 
+struct FuncOpTransformation : public OpRewritePattern<func::FuncOp> {
+  using OpRewritePattern<func::FuncOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(func::FuncOp funcOp,
+                                PatternRewriter &rewriter) const final;
+};
+
 struct ResultsToParams
     : public impl::FuncResultsToParamsPassBase<ResultsToParams> {
   using Base::Base;
@@ -26,8 +33,17 @@ public:
 
 } // namespace
 
+LogicalResult
+FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
+                                      PatternRewriter &rewriter) const {
+  // TODO
+
+  return success();
+}
+
 void ResultsToParams::runOnOperation() {
   RewritePatternSet patterns(&getContext());
+  patterns.add<FuncOpTransformation>(patterns.getContext());
 
   if (failed(applyPatternsGreedily(getOperation(), std::move(patterns))))
     signalPassFailure();
