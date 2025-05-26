@@ -1,6 +1,8 @@
 #include "furiosa-mlir/Dialect/Func/Transforms/ResultsToParams.h"
 #include "furiosa-mlir/Dialect/Func/Transforms/Passes.h"
 
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -36,7 +38,71 @@ public:
 LogicalResult
 FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
                                       PatternRewriter &rewriter) const {
-  // TODO
+  // If the function has no results, nothing to do.
+  auto num_results = func_op.getNumResults();
+  if (num_results == 0)
+    return rewriter.notifyMatchFailure(func_op, "no results to convert");
+
+  // Change function signature
+  auto new_argument_types = SmallVector<Type>(
+      func_op.getArgumentTypes().begin(), func_op.getArgumentTypes().end());
+  new_argument_types.append(func_op.getResultTypes().begin(),
+                            func_op.getResultTypes().end());
+  rewriter.modifyOpInPlace(func_op, [&] {
+    for (auto result_type : func_op.getResultTypes()) {
+      auto result =
+          func_op.insertArgument(func_op.getNumArguments(), result_type,
+                                 DictionaryAttr(), func_op.getLoc());
+      if (failed(result)) {
+        llvm::report_fatal_error("failed to insert argument");
+      }
+      result = func_op.eraseResult(0);
+      if (failed(result)) {
+        llvm::report_fatal_error("failed to erase result");
+      }
+    }
+  });
+
+  // Change internal returns
+  auto new_arguments = func_op.getArguments().take_back(num_results);
+  func_op.walk([&](func::ReturnOp return_op) {
+    assert(return_op.getNumOperands() == num_results);
+    SmallVector<Operation *> ops_to_erase;
+    for (auto operand : return_op.getOperands()) {
+      ops_to_erase.push_back(operand.getDefiningOp());
+    }
+    rewriter.replaceAllUsesWith(return_op.getOperands(), new_arguments);
+    for (auto op : ops_to_erase) {
+      rewriter.eraseOp(op);
+    }
+    rewriter.modifyOpInPlace(return_op, [&] {
+      return_op.getOperation()->eraseOperands(0, num_results);
+    });
+  });
+
+  // Change function calls
+  auto uses = *SymbolTable::getSymbolUses(func_op,
+                                          func_op->getParentOfType<ModuleOp>());
+  for (auto use : uses) {
+    if (auto call_op = llvm::dyn_cast_or_null<func::CallOp>(use.getUser())) {
+      rewriter.setInsertionPoint(call_op);
+      SmallVector<Value> new_values;
+      for (auto operand : call_op.getOperands()) {
+        auto tensor_type =
+            llvm::dyn_cast_or_null<RankedTensorType>(operand.getType());
+        auto empty_op = rewriter.create<tensor::EmptyOp>(
+            call_op.getLoc(), tensor_type.getShape(),
+            tensor_type.getElementType());
+        new_values.push_back(empty_op);
+      }
+      auto new_operands = SmallVector<Value>(call_op.getOperands());
+      new_operands.append(new_values.begin(), new_values.end());
+      rewriter.create<func::CallOp>(call_op.getLoc(), call_op.getCallee(),
+                                    TypeRange(), new_operands);
+      rewriter.replaceAllUsesWith(call_op.getResults(), new_values);
+      rewriter.eraseOp(call_op);
+    }
+  }
 
   return success();
 }
