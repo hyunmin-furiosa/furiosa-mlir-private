@@ -137,8 +137,8 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
-      auto alloc_op = rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(
-          op, result_type.cloneWithEncoding(sram_attr), ValueRange());
+      auto alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
+          op, result_type.cloneWithEncoding(sram_attr));
       rewriter.create<furiosa::DmaOp>(
           op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
           source_strides, destination_limits, destination_strides);
@@ -152,11 +152,15 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
-      auto alloc_op = rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(
-          op, result_type.cloneWithEncoding(trf_attr), ValueRange());
+      auto sram_alloc_op = rewriter.create<furiosa::AllocOp>(
+          op.getLoc(), result_type.cloneWithEncoding(sram_attr));
       rewriter.create<furiosa::DmaOp>(
-          op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
+          op.getLoc(), op.getSource(), sram_alloc_op.getResult(), source_limits,
           source_strides, destination_limits, destination_strides);
+      auto trf_alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
+          op, result_type.cloneWithEncoding(trf_attr));
+      rewriter.create<furiosa::LoadTrfOp>(
+          op.getLoc(), sram_alloc_op.getResult(), trf_alloc_op.getResult());
       return success();
     } else if (result_memory_type == furiosa::MemoryType::vrf) {
       return failure();
@@ -291,6 +295,11 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
     return failure();
   }
 
+  status = op.walk([&](affine::AffineApplyOp apply_op) {
+    rewriter.eraseOp(apply_op);
+    return WalkResult::advance();
+  });
+
   return success();
 }
 
@@ -298,12 +307,10 @@ LogicalResult
 EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
                                  PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(op);
-  auto type = llvm::cast<RankedTensorType>(op.getType());
-  // auto size = type.getNumElements();
-  if (!type.getEncoding()) {
-    rewriter.replaceOpWithNewOp<bufferization::AllocTensorOp>(op, type,
-                                                              ValueRange());
-  }
+  auto alloc_op =
+      rewriter.replaceOpWithNewOp<furiosa::AllocOp>(op, op.getType());
+  rewriter.setInsertionPoint(op->getBlock()->getTerminator());
+  rewriter.create<furiosa::DeallocOp>(op.getLoc(), alloc_op.getResult());
 
   return success();
 }
@@ -311,9 +318,8 @@ EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
 void ConvertLinalgToFuriosa::runOnOperation() {
   ConversionTarget target(getContext());
   target.addLegalDialect<affine::AffineDialect, arith::ArithDialect,
-                         bufferization::BufferizationDialect, func::FuncDialect,
-                         linalg::LinalgDialect, tensor::TensorDialect,
-                         furiosa::FuriosaDialect>();
+                         func::FuncDialect, linalg::LinalgDialect,
+                         tensor::TensorDialect, furiosa::FuriosaDialect>();
   target.addIllegalOp<tensor::EmptyOp>();
 
   RewritePatternSet patterns(&getContext());
