@@ -35,6 +35,7 @@ set(LinkedLibs
 
   # Conversion passes.
   FuriosaMLIRFuncToFuriosaHost
+  FuriosaMLIRFuriosaToFuriosaTask
   FuriosaMLIRLinalgToFuriosa
 )
 
