@@ -23,7 +23,7 @@ namespace {
 struct AllocOpDeallocation : public OpRewritePattern<furiosa::AllocOp> {
   using OpRewritePattern<furiosa::AllocOp>::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(furiosa::AllocOp op,
+  LogicalResult matchAndRewrite(furiosa::AllocOp alloc_op,
                                 PatternRewriter &rewriter) const final;
 };
 

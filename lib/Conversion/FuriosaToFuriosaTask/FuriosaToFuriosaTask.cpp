@@ -19,6 +19,15 @@ namespace furiosa {
 using namespace mlir;
 namespace {
 
+struct DmaOpLowering : public OpRewritePattern<furiosa::DmaOp> {
+public:
+  DmaOpLowering(MLIRContext *context)
+      : OpRewritePattern<furiosa::DmaOp>(context) {}
+
+  LogicalResult matchAndRewrite(furiosa::DmaOp op,
+                                PatternRewriter &rewriter) const final;
+};
+
 struct ConvertFuriosaToFuriosaTask
     : public impl::ConvertFuriosaToFuriosaTaskPassBase<
           ConvertFuriosaToFuriosaTask> {
@@ -30,11 +39,18 @@ public:
 
 } // namespace
 
+LogicalResult DmaOpLowering::matchAndRewrite(furiosa::DmaOp alloc_op,
+                                             PatternRewriter &rewriter) const {
+  alloc_op.dump();
+  return success();
+}
+
 void ConvertFuriosaToFuriosaTask::runOnOperation() {
   ConversionTarget target(getContext());
   target.addLegalDialect<furiosa::task::TaskDialect>();
 
   RewritePatternSet patterns(&getContext());
+  patterns.add<DmaOpLowering>(patterns.getContext());
 
   if (failed(
           applyPartialConversion(getOperation(), target, std::move(patterns))))

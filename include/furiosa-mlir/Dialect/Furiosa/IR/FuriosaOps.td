@@ -30,7 +30,9 @@ class Furiosa_Op<string mnemonic, list<Trait> traits = []>
 def AllocOp : Furiosa_Op<"alloc"> {
   let summary = "Device memory allocation";
   let description = [{}];
-  let arguments = (ins);
+  let arguments = (ins
+      OptionalAttr<I64Attr>:$address
+  );
   let results = (outs
       Res<AnyRankedTensor, "", [MemAlloc]>:$buffer
   );
