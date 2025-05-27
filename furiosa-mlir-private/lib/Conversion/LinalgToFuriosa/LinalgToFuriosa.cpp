@@ -307,10 +307,7 @@ LogicalResult
 EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
                                  PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(op);
-  auto alloc_op =
-      rewriter.replaceOpWithNewOp<furiosa::AllocOp>(op, op.getType());
-  rewriter.setInsertionPoint(op->getBlock()->getTerminator());
-  rewriter.create<furiosa::DeallocOp>(op.getLoc(), alloc_op.getResult());
+  rewriter.replaceOpWithNewOp<furiosa::AllocOp>(op, op.getType());
 
   return success();
 }

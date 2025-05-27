@@ -64,21 +64,23 @@ FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
   });
 
   // Change internal returns
+  SmallVector<Operation *> ops_to_erase;
   auto new_arguments = func_op.getArguments().take_back(num_results);
   func_op.walk([&](func::ReturnOp return_op) {
     assert(return_op.getNumOperands() == num_results);
-    SmallVector<Operation *> ops_to_erase;
     for (auto operand : return_op.getOperands()) {
       ops_to_erase.push_back(operand.getDefiningOp());
     }
     rewriter.replaceAllUsesWith(return_op.getOperands(), new_arguments);
-    for (auto op : ops_to_erase) {
-      rewriter.eraseOp(op);
-    }
+    // for (auto op : ops_to_erase) {
+    //   rewriter.eraseOp(op);
+    // }
     rewriter.modifyOpInPlace(return_op, [&] {
       return_op.getOperation()->eraseOperands(0, num_results);
     });
   });
+  assert(ops_to_erase.size() == num_results &&
+         "number of ops to erase should match number of results");
 
   // Change function calls
   auto uses = *SymbolTable::getSymbolUses(func_op,
@@ -87,13 +89,9 @@ FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
     if (auto call_op = llvm::dyn_cast_or_null<func::CallOp>(use.getUser())) {
       rewriter.setInsertionPoint(call_op);
       SmallVector<Value> new_values;
-      for (auto operand : call_op.getOperands()) {
-        auto tensor_type =
-            llvm::dyn_cast_or_null<RankedTensorType>(operand.getType());
-        auto empty_op = rewriter.create<tensor::EmptyOp>(
-            call_op.getLoc(), tensor_type.getShape(),
-            tensor_type.getElementType());
-        new_values.push_back(empty_op);
+      for (auto op : ops_to_erase) {
+        auto alloc_op = rewriter.clone(*op);
+        new_values.push_back(alloc_op->getResult(0));
       }
       auto new_operands = SmallVector<Value>(call_op.getOperands());
       new_operands.append(new_values.begin(), new_values.end());
@@ -102,6 +100,10 @@ FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
       rewriter.replaceAllUsesWith(call_op.getResults(), new_values);
       rewriter.eraseOp(call_op);
     }
+  }
+
+  for (auto op : ops_to_erase) {
+    rewriter.eraseOp(op);
   }
 
   return success();
