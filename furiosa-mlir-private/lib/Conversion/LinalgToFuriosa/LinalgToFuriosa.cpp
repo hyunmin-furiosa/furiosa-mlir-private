@@ -138,7 +138,7 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
       auto alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
-          op, result_type.cloneWithEncoding(sram_attr));
+          op, result_type.cloneWithEncoding(sram_attr), IntegerAttr());
       rewriter.create<furiosa::DmaOp>(
           op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
           source_strides, destination_limits, destination_strides);
@@ -153,12 +153,12 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
       auto destination_strides =
           rewriter.getI64ArrayAttr(result_indexer.second);
       auto sram_alloc_op = rewriter.create<furiosa::AllocOp>(
-          op.getLoc(), result_type.cloneWithEncoding(sram_attr));
+          op.getLoc(), result_type.cloneWithEncoding(sram_attr), IntegerAttr());
       rewriter.create<furiosa::DmaOp>(
           op.getLoc(), op.getSource(), sram_alloc_op.getResult(), source_limits,
           source_strides, destination_limits, destination_strides);
       auto trf_alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
-          op, result_type.cloneWithEncoding(trf_attr));
+          op, result_type.cloneWithEncoding(trf_attr), IntegerAttr());
       rewriter.create<furiosa::LoadTrfOp>(
           op.getLoc(), sram_alloc_op.getResult(), trf_alloc_op.getResult());
       return success();
@@ -307,7 +307,8 @@ LogicalResult
 EmptyOpLowering::matchAndRewrite(tensor::EmptyOp op,
                                  PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(op);
-  rewriter.replaceOpWithNewOp<furiosa::AllocOp>(op, op.getType());
+  rewriter.replaceOpWithNewOp<furiosa::AllocOp>(op, op.getType(),
+                                                IntegerAttr());
 
   return success();
 }

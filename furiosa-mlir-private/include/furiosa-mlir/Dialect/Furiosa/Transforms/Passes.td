@@ -23,4 +23,9 @@ def FuriosaDeallocationPass : Pass<"furiosa-deallocation"> {
   let dependentDialects = ["furiosa::FuriosaDialect"];
 }
 
+def FuriosaAllocateAddressPass : Pass<"furiosa-allocate-address"> {
+  let summary = "Allocate addresses for SRAM memory operations";
+  let dependentDialects = ["furiosa::FuriosaDialect"];
+}
+
 #endif // FURIOSA_PASSES_TD
