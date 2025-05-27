@@ -81,6 +81,7 @@ void mlir::furiosa::registerAllPasses() {
   mlir::registerTosaToLinalg();
   mlir::registerTosaToLinalgNamed();
   mlir::furiosa::registerConvertFuncToFuriosaHostPass();
+  mlir::furiosa::registerConvertFuriosaToFuriosaTaskPass();
   mlir::furiosa::registerConvertLinalgToFuriosaPass();
 
   // Transform passes
