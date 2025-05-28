@@ -3,6 +3,7 @@
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Utils.h"
 
+#include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -85,6 +86,14 @@ AddressAllocation::matchAndRewrite(func::FuncOp func_op,
                         .getValue();
               }
               allocator.deallocate(address, memory_type);
+
+              return success();
+            })
+            .Case<linalg::ContractOp>([&](auto op) {
+              auto context_id = 0;
+              auto context_id_attr = rewriter.getBoolAttr(context_id);
+              rewriter.modifyOpInPlace(
+                  op, [&]() { op->setAttr("context_id", context_id_attr); });
 
               return success();
             })
