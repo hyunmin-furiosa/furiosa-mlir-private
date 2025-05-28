@@ -145,14 +145,6 @@ LoadTrfOpLowering::matchAndRewrite(furiosa::LoadTrfOp load_trf_op,
                                    PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(load_trf_op);
 
-  bool target_context = 1; // 0 for main, 1 for sub
-  bool context_id = 0;     // always 0 for sub context
-  std::uint64_t context_id_offset = context_id ? CONTEXT_ID_OFFSET : 0x0;
-  std::uint32_t subunit_bitmap = SubUnit::DataMemorySlice |
-                                 SubUnit::SubFetchUnit |
-                                 SubUnit::TensorRegisterFile;
-  std::uint64_t route_bitmap = DataPathUnitRoute::TensorRegisterFile;
-
   auto input_base = getAddress(load_trf_op.getSource());
   if (failed(input_base)) {
     return rewriter.notifyMatchFailure(
@@ -168,6 +160,14 @@ LoadTrfOpLowering::matchAndRewrite(furiosa::LoadTrfOp load_trf_op,
     return rewriter.notifyMatchFailure(
         load_trf_op, "cannot find address for output operand");
   }
+
+  bool target_context = 1; // 0 for main, 1 for sub
+  bool context_id = 0;     // always 0 for sub context
+  std::uint64_t context_id_offset = context_id ? CONTEXT_ID_OFFSET : 0x0;
+  std::uint32_t subunit_bitmap = SubUnit::DataMemorySlice |
+                                 SubUnit::SubFetchUnit |
+                                 SubUnit::TensorRegisterFile;
+  std::uint64_t route_bitmap = DataPathUnitRoute::TensorRegisterFile;
 
   SmallVector<Value> mtosfr_ops;
 
@@ -263,15 +263,6 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
                                     PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(contract_op);
 
-  bool target_context = 0; // 0 for main, 1 for sub
-  bool context_id = 0;     // common sfr
-  std::uint64_t context_id_offset = context_id ? CONTEXT_ID_OFFSET : 0x0;
-  std::uint32_t subunit_bitmap = SubUnit::DataMemorySlice | SubUnit::FetchUnit |
-                                 SubUnit::DotProductEngine |
-                                 SubUnit::CommitUnit;
-  std::uint64_t route_bitmap =
-      DataPathUnitRoute::DotProductEngine | DataPathUnitRoute::Commit;
-
   assert(contract_op.getInputs().size() == 2 &&
          "contract op should have exactly two inputs");
   auto input0_base = getAddress(contract_op.getInputs()[0]);
@@ -291,6 +282,16 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     return rewriter.notifyMatchFailure(
         contract_op, "cannot find address for output operand");
   }
+  bool context_id =
+      contract_op->getAttrOfType<BoolAttr>("context_id").getValue();
+
+  bool target_context = 0; // 0 for main, 1 for sub
+  std::uint64_t context_id_offset = context_id ? CONTEXT_ID_OFFSET : 0x0;
+  std::uint32_t subunit_bitmap = SubUnit::DataMemorySlice | SubUnit::FetchUnit |
+                                 SubUnit::DotProductEngine |
+                                 SubUnit::CommitUnit;
+  std::uint64_t route_bitmap =
+      DataPathUnitRoute::DotProductEngine | DataPathUnitRoute::Commit;
 
   SmallVector<Value> mtosfr_ops;
 
