@@ -88,11 +88,11 @@ ForallOpLowering::markContractOp(linalg::ContractOp op,
   auto trf_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
                                                furiosa::MemoryType::trf);
 
-  auto in1_type = llvm::cast<RankedTensorType>(op.getInputs()[1].getType());
-  auto in1_op = llvm::dyn_cast_or_null<tensor::ExtractSliceOp>(
-      op.getInputs()[1].getDefiningOp());
-  rewriter.modifyOpInPlace(in1_op, [&]() {
-    in1_op.getResult().setType(in1_type.cloneWithEncoding(trf_attr));
+  auto in0_type = llvm::cast<RankedTensorType>(op.getInputs()[0].getType());
+  auto in0_op = llvm::dyn_cast_or_null<tensor::ExtractSliceOp>(
+      op.getInputs()[0].getDefiningOp());
+  rewriter.modifyOpInPlace(in0_op, [&]() {
+    in0_op.getResult().setType(in0_type.cloneWithEncoding(trf_attr));
   });
 
   auto type = llvm::cast<RankedTensorType>(op.getOutputs()[0].getType());
