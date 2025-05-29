@@ -90,23 +90,33 @@ LogicalResult DmaOpLowering::matchAndRewrite(furiosa::DmaOp dma_op,
   if (llvm::isa<BlockArgument>(dma_op.getSource())) {
     source = dma_op.getSource();
   } else {
-    auto source_base = getAddress(dma_op.getSource());
-    if (failed(source_base)) {
+    auto source_base = *getAddress(dma_op.getSource());
+    auto memory_type = *getMemoryType(dma_op.getSource());
+    if (memory_type == furiosa::MemoryType::dram) {
+      source_base_attr = rewriter.getI64IntegerAttr(DRAM_BASE + source_base);
+    } else if (memory_type == furiosa::MemoryType::sram) {
+      source_base_attr = rewriter.getI64IntegerAttr(SRAM_BASE + source_base);
+    } else {
       return rewriter.notifyMatchFailure(
-          dma_op, "cannot find address for source operand");
+          dma_op, "unsupported memory type for DMA operand");
     }
-    source_base_attr = rewriter.getI64IntegerAttr(*source_base);
   }
 
   if (llvm::isa<BlockArgument>(dma_op.getDestination())) {
     destination = dma_op.getDestination();
   } else {
-    auto destination_base = getAddress(dma_op.getDestination());
-    if (failed(destination_base)) {
+    auto destination_base = *getAddress(dma_op.getDestination());
+    auto memory_type = *getMemoryType(dma_op.getDestination());
+    if (memory_type == furiosa::MemoryType::dram) {
+      destination_base_attr =
+          rewriter.getI64IntegerAttr(DRAM_BASE + destination_base);
+    } else if (memory_type == furiosa::MemoryType::sram) {
+      destination_base_attr =
+          rewriter.getI64IntegerAttr(SRAM_BASE + destination_base);
+    } else {
       return rewriter.notifyMatchFailure(
-          dma_op, "cannot find address for destination operand");
+          dma_op, "unsupported memory type for DMA operand");
     }
-    destination_base_attr = rewriter.getI64IntegerAttr(*destination_base);
   }
 
   rewriter.setInsertionPoint(dma_op);
@@ -145,21 +155,13 @@ LoadTrfOpLowering::matchAndRewrite(furiosa::LoadTrfOp load_trf_op,
                                    PatternRewriter &rewriter) const {
   rewriter.setInsertionPoint(load_trf_op);
 
-  auto input_base = getAddress(load_trf_op.getSource());
-  if (failed(input_base)) {
-    return rewriter.notifyMatchFailure(
-        load_trf_op, "cannot find address for first input operand");
-  }
+  auto input_base = *getAddress(load_trf_op.getSource());
   auto tensor_type = llvm::dyn_cast_or_null<RankedTensorType>(
       load_trf_op.getSource().getType());
   auto size = tensor_type.getNumElements() *
               tensor_type.getElementTypeBitWidth() / CHAR_BIT;
 
-  auto output_base = getAddress(load_trf_op.getDestination());
-  if (failed(output_base)) {
-    return rewriter.notifyMatchFailure(
-        load_trf_op, "cannot find address for output operand");
-  }
+  auto output_base = *getAddress(load_trf_op.getDestination());
 
   bool target_context = 1; // 0 for main, 1 for sub
   bool context_id = 0;     // always 0 for sub context
@@ -173,15 +175,15 @@ LoadTrfOpLowering::matchAndRewrite(furiosa::LoadTrfOp load_trf_op,
 
   { // set sub fetch unit sfr
     auto sfr = task::sfr::slice::SubFetchUnit<task::sfr_data_t>();
-    std::uint64_t base = *input_base;
+    std::uint64_t base = input_base;
     std::uint64_t type_conversion = 0;
     std::uint64_t num_zero_points = 0;
     std::uint64_t zero_point0 = 0;
     std::uint64_t zero_point1 = 0;
-    ArrayAttr limits = nullptr;
-    ArrayAttr strides = nullptr;
-    std::uint64_t flit_count = 0;
-    std::uint64_t words_per_packet = 0;
+    ArrayAttr limits = rewriter.getI64ArrayAttr({4, 8, 1, 1, 1, 1, 1, 1});
+    ArrayAttr strides = rewriter.getI64ArrayAttr({8, 32, 0, 0, 0, 0, 0, 0});
+    std::uint64_t flit_count = 1;
+    std::uint64_t words_per_packet = SUB_FETCH_WORDS_PER_PACKET;
     std::uint64_t topology = 0;
     std::uint64_t outer_slice_log_size = 0;
     std::uint64_t outer_dim0_log_size = 0;
@@ -210,11 +212,11 @@ LoadTrfOpLowering::matchAndRewrite(furiosa::LoadTrfOp load_trf_op,
     std::uint64_t write_mode = 0;
     std::uint64_t write_mac_rows = 8;
     std::uint64_t write_skip_flit_count = 0;
-    std::uint64_t write_row_base = *output_base / TENSOR_REGISTER_FILE_ROW_SIZE;
+    std::uint64_t write_row_base = output_base / TENSOR_REGISTER_FILE_ROW_SIZE;
     std::uint64_t write_mac_row_interleaving = 0;
-    std::uint64_t write_row_count = size / TENSOR_REGISTER_FILE_ROW_SIZE;
-    std::uint64_t write_flits_per_period = 0;
-    std::uint64_t write_valid_flits_per_period = 0;
+    std::uint64_t write_row_count = 1;
+    std::uint64_t write_flits_per_period = 1;
+    std::uint64_t write_valid_flits_per_period = 1;
     auto sfr_op = rewriter.create<task::sfr::SfrTensorRegisterFileOp>(
         load_trf_op.getLoc(), write_interleaving_flit_count, write_mode,
         write_mac_rows, write_skip_flit_count, write_row_base,
@@ -265,23 +267,11 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
 
   assert(contract_op.getInputs().size() == 2 &&
          "contract op should have exactly two inputs");
-  auto input0_base = getAddress(contract_op.getInputs()[0]);
-  if (failed(input0_base)) {
-    return rewriter.notifyMatchFailure(
-        contract_op, "cannot find address for first input operand");
-  }
-  auto input1_base = getAddress(contract_op.getInputs()[1]);
-  if (failed(input1_base)) {
-    return rewriter.notifyMatchFailure(
-        contract_op, "cannot find address for second input operand");
-  }
+  auto input0_base = *getAddress(contract_op.getInputs()[0]);
+  auto input1_base = *getAddress(contract_op.getInputs()[1]);
   assert(contract_op.getOutputs().size() == 1 &&
          "contract op should have exactly one output");
-  auto output_base = getAddress(contract_op.getOutputs()[0]);
-  if (failed(output_base)) {
-    return rewriter.notifyMatchFailure(
-        contract_op, "cannot find address for output operand");
-  }
+  auto output_base = *getAddress(contract_op.getOutputs()[0]);
   bool context_id =
       contract_op->getAttrOfType<BoolAttr>("context_id").getValue();
 
@@ -317,10 +307,10 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     std::uint64_t last_dim_left_pad_mode = 0;
     std::uint64_t zeropoint_dims = 0;
     ArrayAttr last_dim_rightmost_valid_count = nullptr;
-    std::uint64_t base = *input0_base;
+    std::uint64_t base = input0_base;
     std::uint64_t fetch_size = 0;
-    ArrayAttr limits = nullptr;
-    ArrayAttr strides = nullptr;
+    ArrayAttr limits = rewriter.getI64ArrayAttr({1});
+    ArrayAttr strides = rewriter.getI64ArrayAttr({0});
     std::uint64_t flit_count = 0;
     std::uint64_t words_per_packet = 0;
     std::uint64_t zeropoint_fetch_limit = 0;
@@ -368,8 +358,8 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     std::uint64_t feed_data_type = 0;
     ArrayAttr initial_shift = nullptr;
     ArrayAttr iter_seq_limits = nullptr;
-    ArrayAttr reg_indexer_strides = nullptr;
-    ArrayAttr acc_indexer_strides = nullptr;
+    ArrayAttr reg_indexer_strides = rewriter.getI64ArrayAttr({0});
+    ArrayAttr acc_indexer_strides = rewriter.getI64ArrayAttr({0});
     std::uint64_t acc_limit = 0;
     std::uint64_t acc_cols = 0;
     std::uint64_t acc_reset = 0;
@@ -406,11 +396,11 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
   { // set main commit unit sfr
     auto sfr = task::sfr::slice::CommitUnitMainContext<task::sfr_data_t>();
     std::uint64_t type_conversion = 0;
-    std::uint64_t base = *output_base;
+    std::uint64_t base = output_base;
     std::uint64_t commit_in_size = 0;
     std::uint64_t commit_size = 0;
-    ArrayAttr limits = nullptr;
-    ArrayAttr strides = nullptr;
+    ArrayAttr limits = rewriter.getI64ArrayAttr({1});
+    ArrayAttr strides = rewriter.getI64ArrayAttr({1});
     ArrayAttr slice_enable_bitmap_mask = nullptr;
 
     auto sfr_op = rewriter.create<task::sfr::SfrMainCommitUnitOp>(
