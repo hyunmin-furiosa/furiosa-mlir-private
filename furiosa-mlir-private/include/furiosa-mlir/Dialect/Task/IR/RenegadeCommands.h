@@ -287,9 +287,9 @@ struct TensorDmaDescriptor {
   } indirect;
   std::uint64_t source_base;
   std::uint64_t destination_base;
-  std::uint16_t source_limits[DIMS];
+  std::uint16_t source_limits[DIMS] = {1, 1, 1, 1, 1, 1, 1, 1};
   std::int32_t source_strides[DIMS];
-  std::uint16_t destination_limits[DIMS];
+  std::uint16_t destination_limits[DIMS] = {1, 1, 1, 1, 1, 1, 1, 1};
   std::int32_t destination_strides[DIMS];
   std::array<std::uint32_t, NUM_INDIRECT_INDICES> indirect_indices;
 };

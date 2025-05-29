@@ -1803,19 +1803,19 @@ std::vector<sfr_data_t> getSfrVectorRouteUnit(T &op) {
   sfr.indexer_limit0_index_limit_element0 =
       dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
   sfr.indexer_limit0_index_limit_element1 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[1]).getInt();
   sfr.indexer_limit0_index_limit_element2 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[2]).getInt();
   sfr.indexer_limit0_index_limit_element3 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[3]).getInt();
   sfr.indexer_limit1_index_limit_element4 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[4]).getInt();
   sfr.indexer_limit1_index_limit_element5 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[5]).getInt();
   sfr.indexer_limit1_index_limit_element6 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[6]).getInt();
   sfr.indexer_limit1_index_limit_element7 =
-      dyn_cast_or_null<IntegerAttr>(indexer_limits[0]).getInt();
+      dyn_cast_or_null<IntegerAttr>(indexer_limits[7]).getInt();
   auto indexer_strides = op.getIndexerStrides();
   sfr.indexer_stride0_index_stride_element0 =
       dyn_cast_or_null<IntegerAttr>(indexer_strides[0]).getInt();
@@ -2095,13 +2095,19 @@ FailureOr<TensorDmaDescriptor> getDmaDescriptor(T &op) {
   auto source_strides = op.getSourceStrides();
   auto destination_limits = op.getDestinationLimits();
   auto destination_strides = op.getDestinationStrides();
-  for (auto i = 0; i < DIMS; ++i) {
+  for (auto i = 0u; i < source_limits.size(); ++i) {
     descriptor.source_limits[i] =
         dyn_cast_or_null<IntegerAttr>(source_limits[i]).getInt();
+  }
+  for (auto i = 0u; i < source_strides.size(); ++i) {
     descriptor.source_strides[i] =
         dyn_cast_or_null<IntegerAttr>(source_strides[i]).getInt();
+  }
+  for (auto i = 0u; i < destination_limits.size(); ++i) {
     descriptor.destination_limits[i] =
         dyn_cast_or_null<IntegerAttr>(destination_limits[i]).getInt();
+  }
+  for (auto i = 0u; i < destination_strides.size(); ++i) {
     descriptor.destination_strides[i] =
         dyn_cast_or_null<IntegerAttr>(destination_strides[i]).getInt();
   }
