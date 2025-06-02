@@ -432,7 +432,7 @@ std::vector<sfr_data_t> getSfrDotProductEngine(T &op) {
   sfr.iter_seq_limits_element7 =
       dyn_cast_or_null<IntegerAttr>(iter_seq_limits[7]).getInt();
   auto reg_indexer_strides = op.getRegIndexerStrides();
-  sfr.reg_indexer_strides_element1 =
+  sfr.reg_indexer_strides_element0 =
       dyn_cast_or_null<IntegerAttr>(reg_indexer_strides[0]).getInt();
   sfr.reg_indexer_strides_element1 =
       dyn_cast_or_null<IntegerAttr>(reg_indexer_strides[1]).getInt();
@@ -449,7 +449,7 @@ std::vector<sfr_data_t> getSfrDotProductEngine(T &op) {
   sfr.reg_indexer_strides_element7 =
       dyn_cast_or_null<IntegerAttr>(reg_indexer_strides[7]).getInt();
   auto acc_indexer_strides = op.getAccIndexerStrides();
-  sfr.acc_indexer_strides_element1 =
+  sfr.acc_indexer_strides_element0 =
       dyn_cast_or_null<IntegerAttr>(acc_indexer_strides[0]).getInt();
   sfr.acc_indexer_strides_element1 =
       dyn_cast_or_null<IntegerAttr>(acc_indexer_strides[1]).getInt();
