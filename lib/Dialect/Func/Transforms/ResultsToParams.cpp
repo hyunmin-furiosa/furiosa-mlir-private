@@ -98,8 +98,10 @@ FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
       }
       auto new_operands = SmallVector<Value>(call_op.getOperands());
       new_operands.append(new_values.begin(), new_values.end());
-      rewriter.create<func::CallOp>(call_op.getLoc(), call_op.getCallee(),
-                                    TypeRange(), new_operands);
+      auto new_call_op = rewriter.create<func::CallOp>(
+          call_op.getLoc(), call_op.getCallee(), TypeRange(), new_operands);
+      rewriter.modifyOpInPlace(
+          new_call_op, [&] { new_call_op->setAttrs(call_op->getAttrs()); });
       rewriter.replaceAllUsesWith(call_op.getResults(), new_values);
       rewriter.eraseOp(call_op);
     }
