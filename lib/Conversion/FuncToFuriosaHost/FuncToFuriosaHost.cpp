@@ -28,6 +28,15 @@ public:
                                 PatternRewriter &rewriter) const final;
 };
 
+struct DeallocOpLowering : public OpRewritePattern<furiosa::DeallocOp> {
+public:
+  DeallocOpLowering(MLIRContext *context)
+      : OpRewritePattern<furiosa::DeallocOp>(context) {}
+
+  LogicalResult matchAndRewrite(furiosa::DeallocOp op,
+                                PatternRewriter &rewriter) const final;
+};
+
 struct ConvertFuncToFuriosaHost
     : public impl::ConvertFuncToFuriosaHostPassBase<ConvertFuncToFuriosaHost> {
   using Base::Base;
@@ -56,10 +65,15 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
       rewriter.create<furiosa::host::FuncAllocOp>(op.getLoc(), callee);
   rewriter.moveOpBefore(func_alloc_op, op);
 
-  auto pe_binary_dram_address_attr =
-      op->getAttrOfType<IntegerAttr>("dram_address");
-  auto pe_binary_spm_address_attr =
-      op->getAttrOfType<IntegerAttr>("spm_address");
+  auto pe_binary_dram_address_attr = rewriter.getI64IntegerAttr(0);
+  if (op->hasAttr("dram_address")) {
+    pe_binary_dram_address_attr =
+        op->getAttrOfType<IntegerAttr>("dram_address");
+  }
+  auto pe_binary_spm_address_attr = rewriter.getI64IntegerAttr(0);
+  if (op->hasAttr("spm_address")) {
+    pe_binary_spm_address_attr = op->getAttrOfType<IntegerAttr>("spm_address");
+  }
   auto pe_program_load_inst_op =
       rewriter.create<furiosa::host::PeProgramLoadInstOp>(
           op.getLoc(), pe_binary_dram_address_attr, pe_binary_spm_address_attr,
@@ -69,9 +83,8 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
   SmallVector<std::int64_t> operands;
   for (auto operand : op.getOperands()) {
     auto defining_op = operand.getDefiningOp();
-    auto dram_address_attr =
-        defining_op->getAttrOfType<IntegerAttr>("dram_address");
-    operands.push_back(dram_address_attr.getInt());
+    auto address_attr = defining_op->getAttrOfType<IntegerAttr>("address");
+    operands.push_back(address_attr.getInt());
   }
   auto pe_binary_operands_attr = rewriter.getI64ArrayAttr(operands);
   auto pe_program_launch_op = rewriter.create<furiosa::host::PeProgramLaunchOp>(
@@ -87,8 +100,7 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
   for (auto operand : op.getOperands()) {
     auto defining_op = operand.getDefiningOp();
     auto tensor_type = llvm::cast<RankedTensorType>(operand.getType());
-    auto dram_address_attr =
-        defining_op->getAttrOfType<IntegerAttr>("dram_address");
+    auto address_attr = defining_op->getAttrOfType<IntegerAttr>("address");
     auto size = tensor_type.getNumElements() *
                 tensor_type.getElementTypeBitWidth() / CHAR_BIT;
     auto size_attr = rewriter.getI64IntegerAttr(size);
@@ -99,12 +111,12 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
     operand.replaceAllUsesWith(alloc_op);
     if (defining_op->hasAttr("argument") && !defining_op->hasAttr("result")) {
       auto write_op = rewriter.create<furiosa::host::HalProgramWriteAtOp>(
-          op.getLoc(), dram_address_attr, alloc_op);
+          op.getLoc(), address_attr, alloc_op);
       operand_write_ops.push_back(write_op);
       rewriter.moveOpBefore(write_op, op);
     } else if (defining_op->hasAttr("result")) {
       auto read_op = rewriter.create<furiosa::host::HalProgramReadAtOp>(
-          op.getLoc(), dram_address_attr, alloc_op);
+          op.getLoc(), address_attr, alloc_op);
       result_read_ops.push_back(read_op);
       rewriter.moveOpBefore(read_op, op);
     } else {
@@ -154,12 +166,23 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
   return success();
 }
 
+LogicalResult
+DeallocOpLowering::matchAndRewrite(furiosa::DeallocOp op,
+                                   PatternRewriter &rewriter) const {
+  if (!op->getParentOfType<func::FuncOp>()->hasAttr("target")) {
+    rewriter.eraseOp(op);
+  }
+
+  return success();
+}
+
 void ConvertFuncToFuriosaHost::runOnOperation() {
   ConversionTarget target(getContext());
   target.addLegalDialect<furiosa::host::HostDialect>();
 
   RewritePatternSet patterns(&getContext());
   patterns.add<CallOpLowering>(patterns.getContext());
+  patterns.add<DeallocOpLowering>(patterns.getContext());
 
   if (failed(
           applyPartialConversion(getOperation(), target, std::move(patterns))))
