@@ -1,5 +1,3 @@
-torch_mlir_enable_werror()
-
 add_subdirectory(Conversion)
 add_subdirectory(Dialect)
 add_subdirectory(ExecutionEngine)
@@ -38,19 +36,6 @@ set(LinkedLibs
   FuriosaMLIRFuriosaToFuriosaTask
   FuriosaMLIRLinalgToFuriosa
 )
-
-if(TORCH_MLIR_ENABLE_STABLEHLO)
-  list(APPEND LinkedLibs StablehloLinalgTransforms StablehloPasses)
-endif()
-
-if(TORCH_MLIR_ENABLE_TOSA)
-  list(APPEND LinkedLibs MLIRTosaDialect)
-endif()
-
-if(TORCH_MLIR_ENABLE_REFBACKEND)
-  add_subdirectory(RefBackend)
-  list(APPEND LinkedLibs TorchMLIRRefBackend)
-endif()
 
 add_mlir_library(FuriosaMLIRInitAll
   InitAll.cpp
