@@ -1,4 +1,4 @@
-// RUN: furiosa-mlir-opt -convert-func-to-furiosa-host
+// RUN: furiosa-mlir-runner
 
 module {
   func.func @kernel(%arg0: tensor<64x64x64xi8>, %arg1: tensor<64x64x64xi8>, %arg2: tensor<64x64x64xi8>) attributes {address_allocated, target = #furiosa.target<npu 0 pe 0 : 0>} {
@@ -37,13 +37,22 @@ module {
     return
   }
   func.func @main() attributes {address_allocated} {
-    %0 = furiosa.alloc {address = 4194304 : i64, argument} : tensor<64x64x64xi8>
-    %1 = furiosa.alloc {address = 4456448 : i64, argument} : tensor<64x64x64xi8>
-    %2 = furiosa.alloc {address = 4718592 : i64, result} : tensor<64x64x64xi8>
-    call @kernel(%0, %1, %2) {target = #furiosa.target<npu 0 pe 0 : 0>} : (tensor<64x64x64xi8>, tensor<64x64x64xi8>, tensor<64x64x64xi8>) -> ()
-    furiosa.dealloc %2 : tensor<64x64x64xi8>
-    furiosa.dealloc %1 : tensor<64x64x64xi8>
-    furiosa.dealloc %0 : tensor<64x64x64xi8>
+    %0 = furiosa_host.func_alloc {function = @kernel}
+    %1 = furiosa_host.pe_program_load_inst %0 {dram_address = 0 : i64, spm_address = 0 : i64}
+    %2 = furiosa_host.pe_program_launch {operands = [4194304, 4456448, 4718592], spm_address = 0 : i64}
+    %3 = furiosa_host.hal_program_write_at %0 {dram_address = 0 : i64}
+    %4 = furiosa_host.alloc {size = 262144 : i64}
+    %5 = furiosa_host.hal_program_write_at %4 {dram_address = 4194304 : i64}
+    %6 = furiosa_host.alloc {size = 262144 : i64}
+    %7 = furiosa_host.hal_program_write_at %6 {dram_address = 4456448 : i64}
+    %8 = furiosa_host.alloc {size = 262144 : i64}
+    %9 = furiosa_host.hal_program_read_at %8 {dram_address = 4718592 : i64}
+    %10 = furiosa_host.pe_program_seq %1, %2
+    %11 = furiosa_host.hal_program_execute %10
+    %12 = furiosa_host.hal_program_seq %3, %5, %7, %11, %9
+    %13 = furiosa_host.device_new {target = #furiosa.target<npu 0 pe 0 : 0>}
+    %14 = furiosa_host.device_execute %13 %12
+    furiosa_host.device_execution_wait %14
     return
   }
 }
