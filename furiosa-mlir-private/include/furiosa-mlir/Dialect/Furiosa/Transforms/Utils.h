@@ -4,6 +4,9 @@
 
 namespace mlir::furiosa {
 
+static constexpr std::uint64_t DRAM_RESERVED_SIZE =
+    0x400000; // 4MB reserved for program binary
+
 class Allocator {
 public:
   Allocator() = default;
@@ -29,6 +32,7 @@ public:
     for (auto i = 0u; i < num_allocators; ++i) {
       allocators[static_cast<MemoryType>(i)] = Allocator();
     }
+    allocators[MemoryType::dram].allocate(DRAM_RESERVED_SIZE);
   };
 
   std::uint64_t allocate(size_t size, MemoryType memory_type) {
