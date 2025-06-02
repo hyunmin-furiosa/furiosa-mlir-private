@@ -72,9 +72,6 @@ FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
       ops_to_erase.push_back(operand.getDefiningOp());
     }
     rewriter.replaceAllUsesWith(return_op.getOperands(), new_arguments);
-    // for (auto op : ops_to_erase) {
-    //   rewriter.eraseOp(op);
-    // }
     rewriter.modifyOpInPlace(return_op, [&] {
       return_op.getOperation()->eraseOperands(0, num_results);
     });
@@ -91,7 +88,13 @@ FuncOpTransformation::matchAndRewrite(func::FuncOp func_op,
       SmallVector<Value> new_values;
       for (auto op : ops_to_erase) {
         auto alloc_op = rewriter.clone(*op);
+        alloc_op->setAttr("result", rewriter.getUnitAttr());
         new_values.push_back(alloc_op->getResult(0));
+      }
+      for (auto operand : call_op.getOperands()) {
+        if (auto defining_op = operand.getDefiningOp()) {
+          defining_op->setAttr("argument", rewriter.getUnitAttr());
+        }
       }
       auto new_operands = SmallVector<Value>(call_op.getOperands());
       new_operands.append(new_values.begin(), new_values.end());
