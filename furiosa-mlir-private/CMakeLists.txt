@@ -252,23 +252,6 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
   endif()
 endif()
 
-# Important: If loading StableHLO in this fashion, it must come last,
-# after all of our libraries and test targets have been defined.
-# It seems that they both abuse upstream CMake macros that accumulate
-# properties.
-# Getting this wrong results in building large parts of the stablehlo
-# project that we don't actually depend on. Further some of those parts
-# do not even compile on all platforms.
-# Only configure StableHLO if it isn't provided from a top-level project
-if (TORCH_MLIR_ENABLE_STABLEHLO AND NOT TORCH_MLIR_USE_EXTERNAL_STABLEHLO)
-  set(STABLEHLO_BUILD_EMBEDDED ON)
-  set(STABLEHLO_ENABLE_BINDINGS_PYTHON ON)
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/externals/stablehlo
-    ${CMAKE_CURRENT_BINARY_DIR}/stablehlo
-    EXCLUDE_FROM_ALL)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/externals/stablehlo)
-endif()
-
 #-------------------------------------------------------------------------------
 # Sub-projects
 #-------------------------------------------------------------------------------
