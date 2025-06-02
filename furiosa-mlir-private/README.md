@@ -25,7 +25,7 @@ cmake -G Ninja -B build llvm \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_ENABLE_PROJECTS="clang;lld;llvm;mlir" \
-  -DMLIR_ENABLE_BINDINGS_PYTHON=OFF \
+  -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
   -DLLVM_TARGETS_TO_BUILD="host;AArch64" \
   `# use clang`\
   -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
