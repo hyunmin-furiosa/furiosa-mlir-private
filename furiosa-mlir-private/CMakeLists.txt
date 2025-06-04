@@ -21,6 +21,10 @@ if(POLICY CMP0116)
   cmake_policy(SET CMP0116 OLD)
 endif()
 
+if(POLICY CMP0174)
+  cmake_policy(SET CMP0174 NEW)
+endif()
+
 project(furiosa-mlir LANGUAGES CXX C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -192,7 +196,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_tools/cmake)
 include(TableGen)
 include(AddLLVM)
 include(AddMLIR)
-include(AddMLIRPython)
 
 ################################################################################
 # Setup python.
@@ -205,6 +208,8 @@ endif()
 
 add_subdirectory(include)
 add_subdirectory(lib)
+# C API needs all dialects for registration, but should be built before tests.
+add_subdirectory(lib/CAPI)
 add_subdirectory(tools)
 
 # add_custom_target(check-torch-mlir-all)
@@ -255,12 +260,6 @@ endif()
 #-------------------------------------------------------------------------------
 # Sub-projects
 #-------------------------------------------------------------------------------
-
-# Sub-projects can bundle additional PyTorch extensions by adding them to this
-# source target. It is typically empty unless if features are enabled.
-if(MLIR_ENABLE_BINDINGS_PYTHON)
-  declare_mlir_python_sources(TorchMLIRPythonTorchExtensionsSources)
-endif()
 
 # Build projects first as it may populate additional Python deps.
 add_subdirectory(projects)
