@@ -4,8 +4,6 @@ from furiosa_mlir.ir import *
 from furiosa_mlir.passmanager import *
 
 import furiosa_mlir.dialects.furiosa as furiosa
-import furiosa_mlir.dialects.func as func
-import furiosa_mlir.dialects.tensor as tensor
 
 with Context() as ctx, Location.unknown():
     module = Module.parse(
