@@ -1,4 +1,6 @@
 add_mlir_library(FuriosaMLIRFuriosaPasses
+  AllocateAddress.cpp
+  Deallocation.cpp
   PromoteSlicePartitionLoop.cpp
 
   DEPENDS

@@ -17,10 +17,6 @@
 #include <furiosa-mlir/InitAll.h>
 #include <mlir/IR/DialectRegistry.h>
 
-#ifdef TORCH_MLIR_ENABLE_STABLEHLO
-#include "stablehlo/dialect/Register.h"
-#endif
-
 using namespace mlir;
 
 namespace mlir::furiosa {

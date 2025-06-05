@@ -30,9 +30,11 @@ class Furiosa_Op<string mnemonic, list<Trait> traits = []>
 def AllocOp : Furiosa_Op<"alloc"> {
   let summary = "Device memory allocation";
   let description = [{}];
-  let arguments = (ins);
+  let arguments = (ins
+      OptionalAttr<I64Attr>:$address
+  );
   let results = (outs
-      AnyRankedTensor:$buffer
+      Res<AnyRankedTensor, "", [MemAlloc]>:$buffer
   );
   let assemblyFormat = "attr-dict `:` type($buffer)";
 }
@@ -41,7 +43,7 @@ def DeallocOp : Furiosa_Op<"dealloc"> {
   let summary = "Device memory deallocation";
   let description = [{}];
   let arguments = (ins
-      AnyRankedTensor:$buffer
+      Arg<AnyRankedTensor, "", [MemFree]>:$buffer
   );
   let results = (outs);
   let assemblyFormat = "$buffer `:` type($buffer) attr-dict";
@@ -51,8 +53,8 @@ def DmaOp : Furiosa_Op<"dma"> {
   let summary = "Device direct memory access";
   let description = [{}];
   let arguments = (ins
-      AnyRankedTensor:$source,
-      AnyRankedTensor:$destination,
+      Arg<AnyRankedTensor, "", [MemRead]>:$source,
+      Arg<AnyRankedTensor, "", [MemWrite]>:$destination,
       I64ArrayAttr:$source_limits,
       I64ArrayAttr:$source_strides,
       I64ArrayAttr:$destination_limits,
@@ -61,6 +63,19 @@ def DmaOp : Furiosa_Op<"dma"> {
   let results = (outs);
   let assemblyFormat = "$source `->` $destination `:` type($source) `->` "
                        "type($destination) attr-dict";
+}
+
+def LoadTrfOp : Furiosa_Op<"load_trf"> {
+  let summary = "Load tensor register file operation";
+  let description = [{}];
+  let arguments = (ins
+      Arg<AnyRankedTensor, "", [MemRead]>:$source,
+      Arg<AnyRankedTensor, "", [MemWrite]>:$destination
+  );
+  let results = (outs);
+  let assemblyFormat =
+      "$source `->` $destination `:` type($source) `->` type($destination) "
+      "attr-dict";
 }
 
 #endif // FURIOSA_OPS_TD

@@ -21,6 +21,10 @@ if(POLICY CMP0116)
   cmake_policy(SET CMP0116 OLD)
 endif()
 
+if(POLICY CMP0174)
+  cmake_policy(SET CMP0174 NEW)
+endif()
+
 project(furiosa-mlir LANGUAGES CXX C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -192,7 +196,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_tools/cmake)
 include(TableGen)
 include(AddLLVM)
 include(AddMLIR)
-include(AddMLIRPython)
 
 ################################################################################
 # Setup python.
@@ -205,6 +208,8 @@ endif()
 
 add_subdirectory(include)
 add_subdirectory(lib)
+# C API needs all dialects for registration, but should be built before tests.
+add_subdirectory(lib/CAPI)
 add_subdirectory(tools)
 
 # add_custom_target(check-torch-mlir-all)
@@ -252,32 +257,9 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
   endif()
 endif()
 
-# Important: If loading StableHLO in this fashion, it must come last,
-# after all of our libraries and test targets have been defined.
-# It seems that they both abuse upstream CMake macros that accumulate
-# properties.
-# Getting this wrong results in building large parts of the stablehlo
-# project that we don't actually depend on. Further some of those parts
-# do not even compile on all platforms.
-# Only configure StableHLO if it isn't provided from a top-level project
-if (TORCH_MLIR_ENABLE_STABLEHLO AND NOT TORCH_MLIR_USE_EXTERNAL_STABLEHLO)
-  set(STABLEHLO_BUILD_EMBEDDED ON)
-  set(STABLEHLO_ENABLE_BINDINGS_PYTHON ON)
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/externals/stablehlo
-    ${CMAKE_CURRENT_BINARY_DIR}/stablehlo
-    EXCLUDE_FROM_ALL)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/externals/stablehlo)
-endif()
-
 #-------------------------------------------------------------------------------
 # Sub-projects
 #-------------------------------------------------------------------------------
-
-# Sub-projects can bundle additional PyTorch extensions by adding them to this
-# source target. It is typically empty unless if features are enabled.
-if(MLIR_ENABLE_BINDINGS_PYTHON)
-  declare_mlir_python_sources(TorchMLIRPythonTorchExtensionsSources)
-endif()
 
 # Build projects first as it may populate additional Python deps.
 add_subdirectory(projects)

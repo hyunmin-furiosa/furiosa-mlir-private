@@ -32,4 +32,15 @@ def ConvertLinalgToFuriosaPass : Pass<"convert-linalg-to-furiosa", "ModuleOp"> {
                            "furiosa::FuriosaDialect"];
 }
 
+//===----------------------------------------------------------------------===//
+// FuriosaToFuriosaTask
+//===----------------------------------------------------------------------===//
+
+def ConvertFuriosaToFuriosaTaskPass
+    : Pass<"convert-furiosa-to-furiosa-task", "ModuleOp"> {
+  let summary = "Convert linalg dialect to furiosa dialect";
+  let dependentDialects = ["furiosa::FuriosaDialect",
+                           "furiosa::task::TaskDialect"];
+}
+
 #endif // FURIOSA_MLIR_CONVERSION_PASSES_TD
