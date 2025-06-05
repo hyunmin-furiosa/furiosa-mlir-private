@@ -36,7 +36,7 @@ declare_mlir_dialect_python_bindings(
 set(PYTHON_SOURCE_DIR "${FURIOSA_MLIR_SOURCE_DIR}/lib/Bindings/Python")
 
 declare_mlir_python_extension(FuriosaMLIRPythonExtension.RegisterEverything
-  MODULE_NAME _furiosaMlirRegisterEverything
+  MODULE_NAME _mlirRegisterEverything
   ROOT_DIR "${PYTHON_SOURCE_DIR}"
   PYTHON_BINDINGS_LIBRARY nanobind
   SOURCES
