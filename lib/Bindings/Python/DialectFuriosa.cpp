@@ -15,4 +15,4 @@ using namespace mlir::python::nanobind_adaptors;
 // Module initialization.
 // -----------------------------------------------------------------------------
 
-NB_MODULE(_mlirDialectsGPU, m) { m.doc() = "MLIR Furiosa Dialect"; }
+NB_MODULE(_furiosaMlirDialectsFuriosa, m) { m.doc() = "MLIR Furiosa Dialect"; }

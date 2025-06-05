@@ -7,8 +7,6 @@ include(AddMLIRPython)
 declare_mlir_python_sources(FuriosaMLIRPythonSources)
 declare_mlir_python_sources(FuriosaMLIRPythonSources.Dialects
   ADD_TO_PARENT FuriosaMLIRPythonSources)
-declare_mlir_python_sources(FuriosaMLIRPythonSources.Core
-  ADD_TO_PARENT FuriosaMLIRPythonSources)
 
 ################################################################################
 # Pure python sources and generated code
@@ -36,8 +34,23 @@ declare_mlir_dialect_python_bindings(
 ################################################################################
 
 set(PYTHON_SOURCE_DIR "${FURIOSA_MLIR_SOURCE_DIR}/lib/Bindings/Python")
+
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.RegisterEverything
+  MODULE_NAME _furiosaMlirRegisterEverything
+  ROOT_DIR "${PYTHON_SOURCE_DIR}"
+  PYTHON_BINDINGS_LIBRARY nanobind
+  SOURCES
+    RegisterEverything.cpp
+  PRIVATE_LINK_LIBS
+    LLVMSupport
+  EMBED_CAPI_LINK_LIBS
+    MLIRCAPIConversion
+    MLIRCAPITransforms
+    FuriosaMLIRCAPIRegisterEverything
+)
+
 declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Furiosa.Pybind
-  MODULE_NAME _mlirDialectsFuriosa
+  MODULE_NAME _furiosaMlirDialectsFuriosa
   ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects.furiosa
   ROOT_DIR "${PYTHON_SOURCE_DIR}"
   PYTHON_BINDINGS_LIBRARY nanobind
@@ -50,8 +63,8 @@ declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Furiosa.Pybind
     FuriosaMLIRCAPIFuriosa
 )
 
-declare_mlir_python_extension(FuriosaMLIRPythonExtension.GPUDialectPasses
-  MODULE_NAME _mlirFuriosaPasses
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.FuriosaDialectPasses
+  MODULE_NAME _furiosaMlirFuriosaPasses
   ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects.furiosa
   ROOT_DIR "${PYTHON_SOURCE_DIR}"
   PYTHON_BINDINGS_LIBRARY nanobind
@@ -77,7 +90,7 @@ declare_mlir_python_extension(FuriosaMLIRPythonExtension.GPUDialectPasses
 ################################################################################
 
 add_mlir_python_common_capi_library(FuriosaMLIRPythonCAPI
-  INSTALL_COMPONENT MLIRPythonModules
+  INSTALL_COMPONENT FuriosaMLIRPythonModules
   INSTALL_DESTINATION python_packages/furiosa-mlir/_mlir_libs
   OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/python_packages/furiosa-mlir/_mlir_libs"
   RELATIVE_INSTALL_ROOT ".."
@@ -86,8 +99,8 @@ add_mlir_python_common_capi_library(FuriosaMLIRPythonCAPI
   DECLARED_SOURCES
     MLIRPythonSources
     MLIRPythonExtension.Core
-    MLIRPythonExtension.RegisterEverything
     FuriosaMLIRPythonSources
+    FuriosaMLIRPythonExtension.RegisterEverything
 )
 
 ################################################################################
@@ -101,8 +114,8 @@ add_mlir_python_modules(FuriosaMLIRPythonModules
   DECLARED_SOURCES
     MLIRPythonSources
     MLIRPythonExtension.Core
-    MLIRPythonExtension.RegisterEverything
     FuriosaMLIRPythonSources
+    FuriosaMLIRPythonExtension.RegisterEverything
   COMMON_CAPI_LINK_LIBS
     FuriosaMLIRPythonCAPI
 )

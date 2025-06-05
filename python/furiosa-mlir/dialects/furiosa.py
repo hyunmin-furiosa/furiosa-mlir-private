@@ -3,4 +3,5 @@
 #  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from ._furiosa_ops_gen import *
-from .._mlir_libs import _mlirFuriosaPasses as _cextFuriosaPasses
+from .._mlir_libs._furiosaMlirDialectsFuriosa import *
+from .._mlir_libs import _furiosaMlirFuriosaPasses as _cextFuriosaPasses
