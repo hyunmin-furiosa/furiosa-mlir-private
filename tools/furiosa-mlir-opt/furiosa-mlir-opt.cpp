@@ -17,10 +17,6 @@
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 #include "mlir/Transforms/Passes.h"
 
-#ifdef TORCH_MLIR_ENABLE_STABLEHLO
-#include "stablehlo/dialect/Register.h"
-#endif
-
 using namespace mlir;
 
 int main(int argc, char **argv) {

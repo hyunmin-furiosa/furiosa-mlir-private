@@ -40,14 +40,23 @@ LogicalResult executeOperation(ExecutionContext &context,
   byte_array_t data_buffer;
   auto size = op.getSize();
   if (auto data = op->getAttrOfType<ArrayAttr>("data")) {
-    for (auto d : data) {
-      data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
-    }
-    auto input_data_size = data_buffer.size();
-    data_buffer.reserve(CEIL(size, input_data_size));
-    for (auto i = 0u; i < CEIL(size, input_data_size); i += input_data_size) {
-      std::copy_n(data_buffer.begin(), input_data_size,
-                  std::back_inserter(data_buffer));
+    if (data.empty()) {
+      // randomize input when data is empty
+      // seed is fixed for testing
+      data_buffer.resize(size);
+      std::generate(data_buffer.begin(), data_buffer.end(), [&]() {
+        return static_cast<std::uint8_t>(context.getRandomNumber() % 256);
+      });
+    } else {
+      for (auto d : data) {
+        data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
+      }
+      auto input_data_size = data_buffer.size();
+      data_buffer.reserve(CEIL(size, input_data_size));
+      for (auto i = 0u; i < CEIL(size, input_data_size); i += input_data_size) {
+        std::copy_n(data_buffer.begin(), input_data_size,
+                    std::back_inserter(data_buffer));
+      }
     }
   }
   data_buffer.resize(size);
@@ -61,7 +70,7 @@ LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::FuncAllocOp op) {
   auto name = op.getFunction();
   auto function = dyn_cast_or_null<func::FuncOp>(
-      SymbolTable::lookupSymbolIn(context.module, name));
+      SymbolTable::lookupSymbolIn(context.getModule(), name));
   if (!function || function.empty()) {
     llvm::report_fatal_error(llvm::Twine("entry point not found"));
     return failure();
@@ -277,8 +286,7 @@ LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
 
 LogicalResult executeFunction(Operation *module, StringRef entry_point,
                               StringRef entry_point_type) {
-  ExecutionContext context;
-  context.module = module;
+  ExecutionContext context = ExecutionContext(module);
 
   auto main_function = dyn_cast_or_null<func::FuncOp>(
       SymbolTable::lookupSymbolIn(module, entry_point));

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "furiosa_torch.h"
 
 #include "mlir/IR/BuiltinOps.h"
@@ -21,8 +23,12 @@ using hal_program_t = SmallVector<furiosa_torch::Program *>;
 using device_t = furiosa_torch::Device *;
 using execution_t = furiosa_torch::Execution *;
 
-struct ExecutionContext {
-  Operation *module;
+class ExecutionContext {
+public:
+  ExecutionContext(Operation *module)
+      : module(module), randomNumberGenerator(), distribution() {}
+
+  Operation *getModule() const { return module; }
 
   void createValue(Value val, llvm::Any data) {
     if (!valueMapper.count(val)) {
@@ -38,11 +44,21 @@ struct ExecutionContext {
     return valueMapper[val];
   }
 
+  std::uint64_t getRandomNumber() {
+    return distribution(randomNumberGenerator);
+  }
+
 private:
   using ValueMapper = llvm::DenseMap<Value, llvm::Any>;
 
+  Operation *module;
+
   /// Map from value to its data
   ValueMapper valueMapper;
+
+  /// random number generator
+  std::mt19937 randomNumberGenerator;
+  std::uniform_int_distribution<std::uint64_t> distribution;
 };
 
 LogicalResult executeFunction(Operation *module, StringRef entry_point,

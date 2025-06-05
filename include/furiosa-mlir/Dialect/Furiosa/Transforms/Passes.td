@@ -18,4 +18,14 @@ def FuriosaPromoteSlicePartitionLoopPass
   let dependentDialects = ["scf::SCFDialect, furiosa::FuriosaDialect"];
 }
 
+def FuriosaDeallocationPass : Pass<"furiosa-deallocation"> {
+  let summary = "Insert deallocation operations for allocations";
+  let dependentDialects = ["furiosa::FuriosaDialect"];
+}
+
+def FuriosaAllocateAddressPass : Pass<"furiosa-allocate-address"> {
+  let summary = "Allocate addresses for SRAM memory operations";
+  let dependentDialects = ["furiosa::FuriosaDialect"];
+}
+
 #endif // FURIOSA_PASSES_TD

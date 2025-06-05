@@ -41,6 +41,7 @@
 #include "mlir/Transforms/Passes.h"
 
 #include "furiosa-mlir/Conversion/Passes.h"
+#include "furiosa-mlir/Dialect/Func/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaDialect.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostDialect.h"
@@ -80,6 +81,7 @@ void mlir::furiosa::registerAllPasses() {
   mlir::registerTosaToLinalg();
   mlir::registerTosaToLinalgNamed();
   mlir::furiosa::registerConvertFuncToFuriosaHostPass();
+  mlir::furiosa::registerConvertFuriosaToFuriosaTaskPass();
   mlir::furiosa::registerConvertLinalgToFuriosaPass();
 
   // Transform passes
@@ -87,6 +89,7 @@ void mlir::furiosa::registerAllPasses() {
   mlir::registerLinalgPasses();
   mlir::registerSCFPasses();
   mlir::transform::registerTransformPasses();
+  mlir::furiosa::registerFuncPasses();
   mlir::furiosa::registerFuriosaPasses();
   mlir::furiosa::registerLinalgPasses();
 }

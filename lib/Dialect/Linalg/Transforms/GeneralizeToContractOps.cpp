@@ -26,6 +26,15 @@ struct GeneralizationToContractOps
                                 PatternRewriter &rewriter) const final;
 };
 
+struct FillOpLowering : public OpRewritePattern<linalg::FillOp> {
+public:
+  FillOpLowering(MLIRContext *context)
+      : OpRewritePattern<linalg::FillOp>(context) {}
+
+  LogicalResult matchAndRewrite(linalg::FillOp op,
+                                PatternRewriter &rewriter) const final;
+};
+
 struct GeneralizeToContractOps
     : public impl::LinalgGeneralizeToContractOpsPassBase<
           GeneralizeToContractOps> {
@@ -43,7 +52,7 @@ GeneralizationToContractOps::matchAndRewrite(linalg::ContractionOpInterface op,
   if (llvm::isa<linalg::ContractOp>(op))
     return rewriter.notifyMatchFailure(op, "already a contract op");
 
-  auto linalgOp = llvm::cast<linalg::LinalgOp>(op.getOperation());
+  auto linalgOp = llvm::dyn_cast_or_null<linalg::LinalgOp>(op.getOperation());
   rewriter.replaceOpWithNewOp<linalg::ContractOp>(
       linalgOp,
       ValueRange{linalgOp.getDpsInputs()[0], linalgOp.getDpsInputs()[1]},
@@ -52,9 +61,24 @@ GeneralizationToContractOps::matchAndRewrite(linalg::ContractionOpInterface op,
   return success();
 }
 
+LogicalResult FillOpLowering::matchAndRewrite(linalg::FillOp fill_op,
+                                              PatternRewriter &rewriter) const {
+  rewriter.replaceAllUsesWith(fill_op.getResults(), fill_op.getOutputs());
+  rewriter.eraseOp(fill_op);
+
+  for (auto input : fill_op.getInputs()) {
+    if (input.use_empty()) {
+      rewriter.eraseOp(input.getDefiningOp());
+    }
+  }
+
+  return success();
+}
+
 void GeneralizeToContractOps::runOnOperation() {
   RewritePatternSet patterns(&getContext());
   patterns.add<GeneralizationToContractOps>(patterns.getContext());
+  patterns.add<FillOpLowering>(patterns.getContext());
 
   if (failed(applyPatternsGreedily(getOperation(), std::move(patterns))))
     signalPassFailure();

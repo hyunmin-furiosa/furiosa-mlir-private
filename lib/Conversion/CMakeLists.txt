@@ -1,2 +1,3 @@
 add_subdirectory(FuncToFuriosaHost)
+add_subdirectory(FuriosaToFuriosaTask)
 add_subdirectory(LinalgToFuriosa)
