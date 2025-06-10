@@ -63,3 +63,16 @@ def testType():
         buffer_type = furiosa.BufferType.get()
     
     print(buffer_type)
+
+def testAttribute():
+    with Context() as ctx, Location.unknown():
+        module = Module.create()
+        target_attr = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
+        mapping_attr = furiosa.MappingAttr.get()
+        memory_type_attr = furiosa.MemoryTypeAttr.get(value=furiosa.MemoryType.dram)
+    
+    print(target_attr)
+    print(mapping_attr)
+    print(memory_type_attr)
+
+testAttribute()
