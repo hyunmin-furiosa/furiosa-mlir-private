@@ -1,14 +1,4 @@
-//===-- mlir-c/Dialect/GPU.h - C API for GPU dialect -------------*- C -*-===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM
-// Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===---------------------------------------------------------------------===//
-
-#ifndef FURIOSA_MLIR_C_DIALECT_FURIOSA_H
-#define FURIOSA_MLIR_C_DIALECT_FURIOSA_H
+#pragma once
 
 #include <cstdint>
 
@@ -72,5 +62,3 @@ mlirFuriosaMemoryTypeAttrGet(MlirContext ctx, mlir::furiosa::MemoryType value);
 #endif
 
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.capi.h.inc"
-
-#endif // FURIOSA_MLIR_C_DIALECT_FURIOSA_H

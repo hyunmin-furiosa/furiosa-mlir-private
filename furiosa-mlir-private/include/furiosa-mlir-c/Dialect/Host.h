@@ -1,14 +1,4 @@
-//===-- mlir-c/Dialect/GPU.h - C API for GPU dialect -------------*- C -*-===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM
-// Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===---------------------------------------------------------------------===//
-
-#ifndef FURIOSA_MLIR_C_DIALECT_HOST_H
-#define FURIOSA_MLIR_C_DIALECT_HOST_H
+#pragma once
 
 #include <cstdint>
 
@@ -76,5 +66,3 @@ MLIR_CAPI_EXPORTED MlirType mlirHostBufferTypeGet(MlirContext ctx);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // FURIOSA_MLIR_C_DIALECT_HOST_H
