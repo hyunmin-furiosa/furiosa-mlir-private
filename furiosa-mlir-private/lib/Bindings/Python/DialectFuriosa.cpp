@@ -17,7 +17,7 @@ using namespace mlir::python::nanobind_adaptors;
 // -----------------------------------------------------------------------------
 
 NB_MODULE(_furiosaMlirDialectsFuriosa, m) {
-  m.doc() = "MLIR Furiosa Dialect";
+  m.doc() = "Furiosa-MLIR Furiosa Dialect";
 
   mlir_type_subclass(m, "BufferType", mlirTypeIsAFuriosaBufferType,
                      mlirFuriosaBufferTypeGetTypeID)

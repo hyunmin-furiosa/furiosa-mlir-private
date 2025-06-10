@@ -75,4 +75,7 @@ def testAttribute():
     print(mapping_attr)
     print(memory_type_attr)
 
+testPass()
+testOp()
+testType()
 testAttribute()

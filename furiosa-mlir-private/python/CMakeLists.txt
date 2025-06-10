@@ -32,6 +32,15 @@ declare_mlir_dialect_python_bindings(
   DIALECT_NAME furiosa
   GEN_ENUM_BINDINGS)
 
+declare_mlir_dialect_python_bindings(
+  ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/furiosa-mlir"
+  TD_FILE dialects/HostOps.td
+  SOURCES
+    dialects/host.py
+  DIALECT_NAME furiosa_host
+  GEN_ENUM_BINDINGS)
+
 ################################################################################
 # Python extensions.
 # The sources for these are all in lib/Bindings/Python, but since they have to
@@ -63,6 +72,20 @@ declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Furiosa.Pybind
   PYTHON_BINDINGS_LIBRARY nanobind
   SOURCES
     DialectFuriosa.cpp
+  PRIVATE_LINK_LIBS
+    LLVMSupport
+  EMBED_CAPI_LINK_LIBS
+    MLIRCAPIIR
+    FuriosaMLIRCAPIFuriosa
+)
+
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Host.Pybind
+  MODULE_NAME _furiosaMlirDialectsHost
+  ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects.furiosa_host
+  ROOT_DIR "${PYTHON_SOURCE_DIR}"
+  PYTHON_BINDINGS_LIBRARY nanobind
+  SOURCES
+    DialectHost.cpp
   PRIVATE_LINK_LIBS
     LLVMSupport
   EMBED_CAPI_LINK_LIBS
