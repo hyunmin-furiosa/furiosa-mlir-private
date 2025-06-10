@@ -4,6 +4,10 @@
 
 _Convert func dialect to furiosa host dialect_
 
+### `-convert-furiosa-to-furiosa-task`
+
+_Convert linalg dialect to furiosa dialect_
+
 ### `-convert-linalg-to-furiosa`
 
 _Convert linalg dialect to furiosa dialect_

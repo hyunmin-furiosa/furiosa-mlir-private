@@ -10,6 +10,13 @@ Syntax:
 operation ::= `furiosa.alloc` attr-dict `:` type($buffer)
 ```
 
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>address</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
+</table>
+
 #### Results:
 
 | Result | Description |
@@ -53,6 +60,24 @@ operation ::= `furiosa.dma` $source `->` $destination `:` type($source) `->` typ
 <tr><td><code>destination_limits</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 <tr><td><code>destination_strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
 </table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `source` | ranked tensor of any type values |
+| `destination` | ranked tensor of any type values |
+
+
+### `furiosa.load_trf` (furiosa::LoadTrfOp)
+
+_Load tensor register file operation_
+
+Syntax:
+
+```
+operation ::= `furiosa.load_trf` $source `->` $destination `:` type($source) `->` type($destination) attr-dict
+```
 
 #### Operands:
 
