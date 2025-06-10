@@ -45,6 +45,7 @@ NB_MODULE(_furiosaMlirDialectsHost, m) {
             return cls(mlirHostDeviceTypeGet(context));
           },
           nb::arg("cls"), nb::arg("context").none() = nb::none());
+
   mlir_type_subclass(m, "ExecutionType", mlirTypeIsAHostExecutionType,
                      mlirHostExecutionTypeGetTypeID)
       .def_classmethod(
@@ -53,6 +54,7 @@ NB_MODULE(_furiosaMlirDialectsHost, m) {
             return cls(mlirHostExecutionTypeGet(context));
           },
           nb::arg("cls"), nb::arg("context").none() = nb::none());
+
   mlir_type_subclass(m, "BufferType", mlirTypeIsAHostBufferType,
                      mlirHostBufferTypeGetTypeID)
       .def_classmethod(
