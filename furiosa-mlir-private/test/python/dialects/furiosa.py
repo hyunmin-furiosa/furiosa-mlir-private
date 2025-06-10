@@ -5,9 +5,10 @@ from furiosa_mlir.passmanager import *
 
 import furiosa_mlir.dialects.furiosa as furiosa
 
-with Context() as ctx, Location.unknown():
-    module = Module.parse(
-        r"""
+def testPass():
+    with Context() as ctx, Location.unknown():
+        module = Module.parse(
+            r"""
 #map = affine_map<(d0, d1, d2, d3) -> (d0, d1, d3)>
 #map1 = affine_map<(d0, d1, d2, d3) -> (d0, d3, d2)>
 #map2 = affine_map<(d0, d1, d2, d3) -> (d0, d1, d2)>
@@ -41,9 +42,24 @@ module {
   }
 }
 """    
-    )
+        )
 
-    pm = PassManager.parse("any(furiosa-allocate-address)")
-    pm.run(module.operation)
+        pm = PassManager.parse("any(furiosa-allocate-address)")
+        pm.run(module.operation)
     
-print(module)
+    print(module)
+
+def testOp():
+    with Context() as ctx, Location.unknown():
+        module = Module.create()
+        tensor_type = RankedTensorType.get((1, 64, 64), IntegerType.get_signless(8))
+        alloc_op = furiosa.AllocOp(tensor_type)
+    
+    print(alloc_op)
+
+def testType():
+    with Context() as ctx, Location.unknown():
+        module = Module.create()
+        buffer_type = furiosa.BufferType.get()
+    
+    print(buffer_type)

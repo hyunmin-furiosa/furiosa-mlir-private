@@ -1,5 +1,7 @@
 include(AddMLIRPython)
 
+add_compile_definitions("MLIR_PYTHON_PACKAGE_PREFIX=furiosa_mlir.")
+
 ################################################################################
 # Structural groupings.
 ################################################################################
@@ -11,6 +13,11 @@ declare_mlir_python_sources(FuriosaMLIRPythonSources.Dialects
 ################################################################################
 # Pure python sources and generated code
 ################################################################################
+
+declare_mlir_python_sources(FuriosaMLIRPythonCAPI.HeaderSources
+  ROOT_DIR "${FURIOSA_MLIR_SOURCE_DIR}/include"
+  SOURCES_GLOB "furiosa-mlir-c/*.h"
+)
 
 ################################################################################
 # Dialect bindings
@@ -95,10 +102,9 @@ add_mlir_python_common_capi_library(FuriosaMLIRPythonCAPI
   OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/python_packages/furiosa-mlir/_mlir_libs"
   RELATIVE_INSTALL_ROOT ".."
   DECLARED_HEADERS
-    MLIRPythonCAPI.HeaderSources
+    FuriosaMLIRPythonCAPI.HeaderSources
   DECLARED_SOURCES
     MLIRPythonSources
-    MLIRPythonExtension.Core
     FuriosaMLIRPythonSources
     FuriosaMLIRPythonExtension.RegisterEverything
 )
@@ -113,7 +119,6 @@ add_mlir_python_modules(FuriosaMLIRPythonModules
   INSTALL_PREFIX "python_packages/furiosa-mlir"
   DECLARED_SOURCES
     MLIRPythonSources
-    MLIRPythonExtension.Core
     FuriosaMLIRPythonSources
     FuriosaMLIRPythonExtension.RegisterEverything
   COMMON_CAPI_LINK_LIBS

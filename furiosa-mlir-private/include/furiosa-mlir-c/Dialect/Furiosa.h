@@ -19,6 +19,16 @@ extern "C" {
 
 MLIR_DECLARE_CAPI_DIALECT_REGISTRATION(Furiosa, furiosa);
 
+//===---------------------------------------------------------------------===//
+// BufferType
+//===---------------------------------------------------------------------===//
+
+MLIR_CAPI_EXPORTED bool mlirTypeIsAFuriosaBufferType(MlirType type);
+
+MLIR_CAPI_EXPORTED MlirTypeID mlirFuriosaBufferTypeGetTypeID(void);
+
+MLIR_CAPI_EXPORTED MlirType mlirFuriosaBufferTypeGet(MlirContext ctx);
+
 #ifdef __cplusplus
 }
 #endif
