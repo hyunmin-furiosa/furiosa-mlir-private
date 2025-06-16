@@ -9,7 +9,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
-#include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
+#include "furiosa-mlir/ExecutionEngine/RenegadeRuntime.h"
 #include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 using namespace mlir;
@@ -126,7 +126,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto &buffer =
       llvm::any_cast<byte_array_t &>(context.getValue(op.getBinary()));
   pe_program_t programs;
-  programs.push_back(furiosa_torch::pe_program_load_inst(
+  programs.push_back(device_runtime::pe_program_load_inst(
       dram_address, spm_address, buffer.size()));
   context.createValue(op->getResult(0), llvm::Any(programs));
 
@@ -141,7 +141,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   for (auto operand : op.getOperands()) {
     operands.push_back(dyn_cast_or_null<IntegerAttr>(operand).getInt());
   }
-  programs.push_back(furiosa_torch::pe_program_launch(
+  programs.push_back(device_runtime::pe_program_launch(
       spm_address, 0, 0, 0, operands.data(), operands.size()));
   context.createValue(op->getResult(0), llvm::Any(programs));
 
@@ -159,7 +159,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   }
   pe_program_t merged_programs;
   merged_programs.push_back(
-      furiosa_torch::pe_program_seq(program_list.data(), program_list.size()));
+      device_runtime::pe_program_seq(program_list.data(), program_list.size()));
   context.createValue(op->getResult(0), llvm::Any(merged_programs));
 
   return success();
@@ -171,7 +171,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto &buffer =
       llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
   hal_program_t programs;
-  programs.push_back(furiosa_torch::hal_program_write_at(
+  programs.push_back(device_runtime::hal_program_write_at(
       reinterpret_cast<std::uint64_t>(buffer.data()), dram_address,
       buffer.size()));
   context.createValue(op->getResult(0), llvm::Any(programs));
@@ -185,7 +185,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto &buffer =
       llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
   hal_program_t programs;
-  programs.push_back(furiosa_torch::hal_program_read_at(
+  programs.push_back(device_runtime::hal_program_read_at(
       dram_address, reinterpret_cast<std::uint64_t>(buffer.data()),
       buffer.size()));
   context.createValue(op->getResult(0), llvm::Any(programs));
@@ -199,7 +199,7 @@ LogicalResult executeOperation(ExecutionContext &context,
       llvm::any_cast<pe_program_t &>(context.getValue(op.getPeProgram()));
   hal_program_t programs;
   assert(pe_program.size() == 1);
-  programs.push_back(furiosa_torch::hal_program_execute(pe_program[0]));
+  programs.push_back(device_runtime::hal_program_execute(pe_program[0]));
   context.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
@@ -215,8 +215,8 @@ LogicalResult executeOperation(ExecutionContext &context,
     program_list.insert(program_list.end(), program.begin(), program.end());
   }
   hal_program_t merged_programs;
-  merged_programs.push_back(
-      furiosa_torch::hal_program_seq(program_list.data(), program_list.size()));
+  merged_programs.push_back(device_runtime::hal_program_seq(
+      program_list.data(), program_list.size()));
   context.createValue(op->getResult(0), llvm::Any(merged_programs));
 
   return success();
@@ -228,7 +228,7 @@ LogicalResult executeOperation(ExecutionContext &context,
   auto npu = target.getNpu();
   auto pe_begin = target.getPeBegin();
   auto pe_end = target.getPeEnd();
-  device_t device = furiosa_torch::device_new(npu, pe_begin, pe_end);
+  device_t device = device_runtime::device_new(npu, pe_begin, pe_end);
   context.createValue(op->getResult(0), llvm::Any(device));
 
   return success();
@@ -240,7 +240,7 @@ LogicalResult executeOperation(ExecutionContext &context,
       llvm::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
   auto &device = llvm::any_cast<device_t &>(context.getValue(op.getDevice()));
   assert(hal_program.size() == 1);
-  auto execution = furiosa_torch::device_execute(device, hal_program[0]);
+  auto execution = device_runtime::device_execute(device, hal_program[0]);
   context.createValue(op->getResult(0), llvm::Any(execution));
 
   return success();
@@ -250,7 +250,7 @@ LogicalResult executeOperation(ExecutionContext &context,
                                furiosa::host::DeviceExecutionWaitOp op) {
   auto &execution =
       llvm::any_cast<execution_t &>(context.getValue(op.getExecution()));
-  if (!furiosa_torch::device_execution_wait(execution)) {
+  if (!device_runtime::device_execution_wait(execution)) {
     llvm::report_fatal_error(llvm::Twine("device execution wait failed"));
     return failure();
   }

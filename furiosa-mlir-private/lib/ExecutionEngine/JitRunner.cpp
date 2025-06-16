@@ -1,5 +1,5 @@
 #include "furiosa-mlir/ExecutionEngine/JitRunner.h"
-#include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
+#include "furiosa-mlir/ExecutionEngine/RenegadeRuntime.h"
 
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/ExecutionEngine/ExecutionEngine.h"
