@@ -1,5 +1,5 @@
 add_mlir_library(FuriosaMLIRExecutionEngine
-  DeviceRuntime.cpp
+  RenegadeRuntime.cpp
   JitRunner.cpp
 
   DEPENDS
@@ -7,5 +7,5 @@ add_mlir_library(FuriosaMLIRExecutionEngine
 )
 
 target_link_libraries(FuriosaMLIRExecutionEngine PRIVATE
-  furiosa_torch
+  device_runtime
 )

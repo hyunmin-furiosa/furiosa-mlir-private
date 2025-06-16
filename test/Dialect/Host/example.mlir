@@ -37,7 +37,6 @@ module {
     furiosa_host.device_execution_wait %exec
     %comp = furiosa_host.compare %arg0 %res0
     furiosa_host.print %comp : i1
-    furiosa_host.print %res0 : !furiosa_host.buffer
     return
   }
 }
