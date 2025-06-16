@@ -40,8 +40,9 @@ LogicalResult convertArmCToObject(llvm::Twine filepath_in,
   // Compile the C code
   auto invocation = std::make_shared<clang::CompilerInvocation>();
   const char *args[] = {""}; // -v to make verbose
+  auto options = clang::DiagnosticOptions();
   auto diags = clang::CompilerInstance::createDiagnostics(
-      *llvm::vfs::getRealFileSystem(), new clang::DiagnosticOptions());
+      *llvm::vfs::getRealFileSystem(), options);
   clang::CompilerInvocation::CreateFromArgs(*invocation, args, *diags);
   invocation->getTargetOpts().Triple =
       "aarch64-unknown-none-elf"; // -triple aarch64-unknown-none-elf
