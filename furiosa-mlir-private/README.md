@@ -19,7 +19,7 @@ Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform)
 make renegade DEFAULT_PERT_PATH=<device-runtime>/target/aarch64-unknown-none-softfloat/release/pert
 ```
 
-Build [llvm-project](https://github.com/llvm/llvm-project) at [5b91756](https://github.com/llvm/llvm-project/commit/5b91756c0ca7ef4d75c33c2617bfd0f9719907dc).
+Build [llvm-project](https://github.com/llvm/llvm-project) at [cf679e6](https://github.com/llvm/llvm-project/commit/cf679e66fade71220535775cca895628bf7692af).
 ```shell
 cmake -G Ninja -B build llvm \
   -DCMAKE_BUILD_TYPE=Release \
