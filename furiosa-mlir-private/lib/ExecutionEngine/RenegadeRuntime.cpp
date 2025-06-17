@@ -31,11 +31,11 @@ public:
   }
 };
 
-LogicalResult executeOperation(ExecutionContext &context, func::ReturnOp op) {
+LogicalResult executeOperation(ExecutionEngine &engine, func::ReturnOp op) {
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::AllocOp op) {
   byte_array_t data_buffer;
   auto size = op.getSize();
@@ -45,7 +45,7 @@ LogicalResult executeOperation(ExecutionContext &context,
       // seed is fixed for testing
       data_buffer.resize(size);
       std::generate(data_buffer.begin(), data_buffer.end(), [&]() {
-        return static_cast<std::uint8_t>(context.getRandomNumber() % 256);
+        return static_cast<std::uint8_t>(engine.getRandomNumber() % 256);
       });
     } else {
       for (auto d : data) {
@@ -61,16 +61,16 @@ LogicalResult executeOperation(ExecutionContext &context,
   }
   data_buffer.resize(size);
   data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
-  context.createValue(op->getResult(0), llvm::Any(data_buffer));
+  engine.createValue(op->getResult(0), llvm::Any(data_buffer));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::FuncAllocOp op) {
   auto name = op.getFunction();
   auto function = dyn_cast_or_null<func::FuncOp>(
-      SymbolTable::lookupSymbolIn(context.getModule(), name));
+      SymbolTable::lookupSymbolIn(engine.getModule(), name));
   if (!function || function.empty()) {
     llvm::report_fatal_error(llvm::Twine("entry point not found"));
     return failure();
@@ -85,26 +85,26 @@ LogicalResult executeOperation(ExecutionContext &context,
     data_buffer.push_back(reinterpret_cast<std::uint8_t &>(d));
   }
   data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
-  context.createValue(op->getResult(0), llvm::Any(data_buffer));
+  engine.createValue(op->getResult(0), llvm::Any(data_buffer));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::CompareOp op) {
   auto &buffer0 =
-      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer0()));
+      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBuffer0()));
   auto &buffer1 =
-      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer1()));
-  context.createValue(op->getResult(0), llvm::Any(buffer0 == buffer1));
+      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBuffer1()));
+  engine.createValue(op->getResult(0), llvm::Any(buffer0 == buffer1));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::PrintOp op) {
   auto buffer = op.getBuffer();
-  auto &buffer_any = context.getValue(buffer);
+  auto &buffer_any = engine.getValue(buffer);
   if (llvm::any_cast<bool>(&buffer_any)) {
     auto &buffer_data = llvm::any_cast<bool &>(buffer_any);
     Printer::print(buffer_data);
@@ -119,21 +119,21 @@ LogicalResult executeOperation(ExecutionContext &context,
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::PeProgramLoadInstOp op) {
   auto dram_address = op.getDramAddress();
   auto spm_address = op.getSpmAddress();
   auto &buffer =
-      llvm::any_cast<byte_array_t &>(context.getValue(op.getBinary()));
+      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBinary()));
   pe_program_t programs;
   programs.push_back(device_runtime::pe_program_load_inst(
       dram_address, spm_address, buffer.size()));
-  context.createValue(op->getResult(0), llvm::Any(programs));
+  engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::PeProgramLaunchOp op) {
   auto spm_address = op.getSpmAddress();
   pe_program_t programs;
@@ -143,113 +143,112 @@ LogicalResult executeOperation(ExecutionContext &context,
   }
   programs.push_back(device_runtime::pe_program_launch(
       spm_address, 0, 0, 0, operands.data(), operands.size()));
-  context.createValue(op->getResult(0), llvm::Any(programs));
+  engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::PeProgramSeqOp op) {
   auto pe_programs = op.getPePrograms();
   pe_program_t program_list;
   for (auto pe_program : pe_programs) {
-    auto &program =
-        llvm::any_cast<pe_program_t &>(context.getValue(pe_program));
+    auto &program = llvm::any_cast<pe_program_t &>(engine.getValue(pe_program));
     program_list.insert(program_list.end(), program.begin(), program.end());
   }
   pe_program_t merged_programs;
   merged_programs.push_back(
       device_runtime::pe_program_seq(program_list.data(), program_list.size()));
-  context.createValue(op->getResult(0), llvm::Any(merged_programs));
+  engine.createValue(op->getResult(0), llvm::Any(merged_programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::HalProgramWriteAtOp op) {
   auto dram_address = op.getDramAddress();
   auto &buffer =
-      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
+      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(device_runtime::hal_program_write_at(
       reinterpret_cast<std::uint64_t>(buffer.data()), dram_address,
       buffer.size()));
-  context.createValue(op->getResult(0), llvm::Any(programs));
+  engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::HalProgramReadAtOp op) {
   auto dram_address = op.getDramAddress();
   auto &buffer =
-      llvm::any_cast<byte_array_t &>(context.getValue(op.getBuffer()));
+      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(device_runtime::hal_program_read_at(
       dram_address, reinterpret_cast<std::uint64_t>(buffer.data()),
       buffer.size()));
-  context.createValue(op->getResult(0), llvm::Any(programs));
+  engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::HalProgramExecuteOp op) {
   auto &pe_program =
-      llvm::any_cast<pe_program_t &>(context.getValue(op.getPeProgram()));
+      llvm::any_cast<pe_program_t &>(engine.getValue(op.getPeProgram()));
   hal_program_t programs;
   assert(pe_program.size() == 1);
   programs.push_back(device_runtime::hal_program_execute(pe_program[0]));
-  context.createValue(op->getResult(0), llvm::Any(programs));
+  engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::HalProgramSeqOp op) {
   auto hal_programs = op.getHalPrograms();
   hal_program_t program_list;
   for (auto hal_program : hal_programs) {
     auto &program =
-        llvm::any_cast<hal_program_t &>(context.getValue(hal_program));
+        llvm::any_cast<hal_program_t &>(engine.getValue(hal_program));
     program_list.insert(program_list.end(), program.begin(), program.end());
   }
   hal_program_t merged_programs;
   merged_programs.push_back(device_runtime::hal_program_seq(
       program_list.data(), program_list.size()));
-  context.createValue(op->getResult(0), llvm::Any(merged_programs));
+  engine.createValue(op->getResult(0), llvm::Any(merged_programs));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::DeviceNewOp op) {
   auto target = op.getTarget();
   auto npu = target.getNpu();
   auto pe_begin = target.getPeBegin();
   auto pe_end = target.getPeEnd();
   device_t device = device_runtime::device_new(npu, pe_begin, pe_end);
-  context.createValue(op->getResult(0), llvm::Any(device));
+  engine.createValue(op->getResult(0), llvm::Any(device));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::DeviceExecuteOp op) {
   auto &hal_program =
-      llvm::any_cast<hal_program_t &>(context.getValue(op.getHalProgram()));
-  auto &device = llvm::any_cast<device_t &>(context.getValue(op.getDevice()));
+      llvm::any_cast<hal_program_t &>(engine.getValue(op.getHalProgram()));
+  auto &device = llvm::any_cast<device_t &>(engine.getValue(op.getDevice()));
   assert(hal_program.size() == 1);
   auto execution = device_runtime::device_execute(device, hal_program[0]);
-  context.createValue(op->getResult(0), llvm::Any(execution));
+  engine.createValue(op->getResult(0), llvm::Any(execution));
 
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context,
+LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::DeviceExecutionWaitOp op) {
   auto &execution =
-      llvm::any_cast<execution_t &>(context.getValue(op.getExecution()));
+      llvm::any_cast<execution_t &>(engine.getValue(op.getExecution()));
   if (!device_runtime::device_execution_wait(execution)) {
     llvm::report_fatal_error(llvm::Twine("device execution wait failed"));
     return failure();
@@ -258,11 +257,11 @@ LogicalResult executeOperation(ExecutionContext &context,
   return success();
 }
 
-LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
+LogicalResult executeOperation(ExecutionEngine &engine, Operation &op) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
           .Case<func::ReturnOp>(
-              [&](auto op) { return executeOperation(context, op); })
+              [&](auto op) { return executeOperation(engine, op); })
           .Case<furiosa::host::AllocOp, furiosa::host::FuncAllocOp,
                 furiosa::host::CompareOp, furiosa::host::PrintOp,
                 furiosa::host::PeProgramLoadInstOp,
@@ -273,7 +272,7 @@ LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
                 furiosa::host::HalProgramSeqOp, furiosa::host::DeviceNewOp,
                 furiosa::host::DeviceExecuteOp,
                 furiosa::host::DeviceExecutionWaitOp>(
-              [&](auto op) { return executeOperation(context, op); })
+              [&](auto op) { return executeOperation(engine, op); })
           .Default([&](Operation *) {
             return op.emitOpError("unable to find executor for op");
           });
@@ -284,10 +283,9 @@ LogicalResult executeOperation(ExecutionContext &context, Operation &op) {
   return success();
 }
 
-LogicalResult executeFunction(Operation *module, StringRef entry_point,
+LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point,
                               StringRef entry_point_type) {
-  ExecutionContext context = ExecutionContext(module);
-
+  auto module = engine.getModule();
   auto main_function = dyn_cast_or_null<func::FuncOp>(
       SymbolTable::lookupSymbolIn(module, entry_point));
   if (!main_function || main_function.empty()) {
@@ -298,7 +296,7 @@ LogicalResult executeFunction(Operation *module, StringRef entry_point,
   // Emit the body of the function.
   for (Block &block : main_function.getBlocks()) {
     for (Operation &op : block.getOperations()) {
-      if (failed(executeOperation(context, op)))
+      if (failed(executeOperation(engine, op)))
         return failure();
     }
   }

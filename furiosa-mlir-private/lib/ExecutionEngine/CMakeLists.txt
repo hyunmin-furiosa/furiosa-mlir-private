@@ -1,6 +1,7 @@
 add_mlir_library(FuriosaMLIRExecutionEngine
-  RenegadeRuntime.cpp
+  ExecutionEngine.cpp
   JitRunner.cpp
+  RenegadeRuntime.cpp
 
   DEPENDS
   FuriosaMLIRTargetC

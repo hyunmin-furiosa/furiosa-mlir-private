@@ -107,7 +107,13 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
     return 1;
   }
 
-  if (failed(executeFunction(m.get(), options.mainFuncName.getValue(),
+  auto engine = ExecutionEngine::create(m.get());
+  if (!engine) {
+    llvm::errs() << "could not create execution engine: "
+                 << llvm::toString(engine.takeError()) << "\n";
+    return 1;
+  }
+  if (failed(executeFunction(**engine, options.mainFuncName.getValue(),
                              options.mainFuncType.getValue()))) {
     llvm::errs() << "could not execute the input IR\n";
     return 1;
