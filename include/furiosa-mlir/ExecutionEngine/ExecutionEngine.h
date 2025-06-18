@@ -18,8 +18,12 @@ public:
   ExecutionEngine(Operation *module)
       : module(module), randomNumberGenerator(), distribution() {}
 
+  // execution engine functions for python binding
   static llvm::Expected<std::unique_ptr<ExecutionEngine>>
   create(Operation *module);
+
+  llvm::Error invokePacked(StringRef func_name,
+                           MutableArrayRef<void *> args = std::nullopt);
 
   llvm::Error invoke(StringRef func_name, StringRef func_type);
 
