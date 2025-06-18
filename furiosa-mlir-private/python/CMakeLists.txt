@@ -14,6 +14,13 @@ declare_mlir_python_sources(FuriosaMLIRPythonSources.Dialects
 # Pure python sources and generated code
 ################################################################################
 
+declare_mlir_python_sources(FuriosaMLIRPythonSources.ExecutionEngine
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/furiosa-mlir"
+  ADD_TO_PARENT FuriosaMLIRPythonSources
+  SOURCES
+    execution_engine.py
+)
+
 declare_mlir_python_sources(FuriosaMLIRPythonCAPI.HeaderSources
   ROOT_DIR "${FURIOSA_MLIR_SOURCE_DIR}/include"
   SOURCES_GLOB "furiosa-mlir-c/*.h"
@@ -127,6 +134,19 @@ declare_mlir_python_extension(FuriosaMLIRPythonExtension.FuriosaDialectPasses
     FuriosaMLIRCAPIFuriosa
 )
 
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.ExecutionEngine
+  MODULE_NAME _furiosaMlirExecutionEngine
+  ADD_TO_PARENT FuriosaMLIRPythonSources.ExecutionEngine
+  ROOT_DIR "${PYTHON_SOURCE_DIR}"
+  PYTHON_BINDINGS_LIBRARY nanobind
+  SOURCES
+    ExecutionEngineModule.cpp
+  PRIVATE_LINK_LIBS
+    LLVMSupport
+  EMBED_CAPI_LINK_LIBS
+    FuriosaMLIRCAPIExecutionEngine
+)
+
 ################################################################################
 # Common CAPI dependency DSO.
 # All python extensions must link through one DSO which exports the CAPI, and
@@ -162,7 +182,7 @@ add_mlir_python_modules(FuriosaMLIRPythonModules
   ROOT_PREFIX "${FURIOSA_MLIR_BINARY_DIR}/python_packages/furiosa_mlir"
   INSTALL_PREFIX "python_packages/furiosa-mlir"
   DECLARED_SOURCES
-    MLIRPythonSources
+    MLIRPythonSources.Core
     FuriosaMLIRPythonSources
     FuriosaMLIRPythonExtension.RegisterEverything
   COMMON_CAPI_LINK_LIBS
