@@ -11,8 +11,12 @@ class ExecutionEngine(_furiosa_execution_engine.ExecutionEngine):
         All arguments must be pointers.
         Raise a RuntimeError if the function isn't found.
         """
-        # func = self.lookup(name)
         # packed_args = (ctypes.c_void_p * len(ctypes_args))()
         # for argNum in range(len(ctypes_args)):
         #     packed_args[argNum] = ctypes.cast(ctypes_args[argNum], ctypes.c_void_p)
-        # func(packed_args)
+        # self.raw_invoke(name, packed_args)
+
+        packed_args = []
+        for argNum in range(len(ctypes_args)):
+            packed_args.append(ctypes.cast(ctypes_args[argNum], ctypes.c_void_p))
+        self.raw_invoke(name, packed_args)
