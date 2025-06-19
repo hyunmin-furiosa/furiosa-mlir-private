@@ -1,3 +1,5 @@
+#include <list>
+
 #include "mlir/Bindings/Python/Nanobind.h"
 #include "mlir/Bindings/Python/NanobindAdaptors.h"
 
@@ -77,12 +79,13 @@ NB_MODULE(_furiosaMlirExecutionEngine, m) {
       .def(MLIR_PYTHON_CAPI_FACTORY_ATTR, &PyExecutionEngine::createFromCapsule)
       .def(
           "raw_invoke",
-          [](PyExecutionEngine &self, const std::string &name, nb::list args) {
+          [](PyExecutionEngine &self, const std::string &name,
+             std::int64_t num_args, std::int64_t args) {
             MlirLogicalResult result = furiosaMlirExecutionEngineInvokePacked(
                 self.get(), mlirStringRefCreate(name.c_str(), name.size()),
-                nullptr);
+                num_args, reinterpret_cast<void **>(args));
             if (mlirLogicalResultIsFailure(result))
               throw std::runtime_error("Invocation failed.");
           },
-          nb::arg("name"), nb::arg("args") = nb::list());
+          nb::arg("name"), nb::arg("num_args"), nb::arg("args"));
 }

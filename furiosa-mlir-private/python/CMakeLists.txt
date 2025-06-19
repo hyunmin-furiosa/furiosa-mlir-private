@@ -19,6 +19,8 @@ declare_mlir_python_sources(FuriosaMLIRPythonSources.ExecutionEngine
   ADD_TO_PARENT FuriosaMLIRPythonSources
   SOURCES
     execution_engine.py
+  SOURCES_GLOB
+    runtime/*.py
 )
 
 declare_mlir_python_sources(FuriosaMLIRPythonCAPI.HeaderSources

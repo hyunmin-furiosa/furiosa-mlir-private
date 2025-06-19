@@ -16,7 +16,8 @@ class ExecutionEngine(_furiosa_execution_engine.ExecutionEngine):
         #     packed_args[argNum] = ctypes.cast(ctypes_args[argNum], ctypes.c_void_p)
         # self.raw_invoke(name, packed_args)
 
-        packed_args = []
+        packed_args = (ctypes.c_void_p * len(ctypes_args))()
         for argNum in range(len(ctypes_args)):
-            packed_args.append(ctypes.cast(ctypes_args[argNum], ctypes.c_void_p))
-        self.raw_invoke(name, packed_args)
+            packed_args[argNum] = ctypes.cast(ctypes_args[argNum], ctypes.c_void_p)
+        packed_args_ptr = ctypes.cast(packed_args, ctypes.c_void_p).value
+        self.raw_invoke(name, len(packed_args), packed_args_ptr)
