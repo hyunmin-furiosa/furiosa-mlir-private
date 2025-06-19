@@ -283,8 +283,7 @@ LogicalResult executeOperation(ExecutionEngine &engine, Operation &op) {
   return success();
 }
 
-LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point,
-                              StringRef entry_point_type) {
+LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point) {
   auto module = engine.getModule();
   auto main_function = dyn_cast_or_null<func::FuncOp>(
       SymbolTable::lookupSymbolIn(module, entry_point));

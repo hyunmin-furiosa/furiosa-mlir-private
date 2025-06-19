@@ -19,7 +19,6 @@ using hal_program_t = SmallVector<device_runtime::Program *>;
 using device_t = device_runtime::Device *;
 using execution_t = device_runtime::Execution *;
 
-LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point,
-                              StringRef entry_point_type);
+LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point);
 
 } // namespace mlir::furiosa

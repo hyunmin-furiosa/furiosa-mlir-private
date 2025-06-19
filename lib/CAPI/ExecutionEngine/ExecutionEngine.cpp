@@ -32,9 +32,8 @@ furiosaMlirExecutionEngineDestroy(FuriosaMlirExecutionEngine engine) {
 extern "C" MlirLogicalResult
 furiosaMlirExecutionEngineInvokePacked(FuriosaMlirExecutionEngine engine,
                                        MlirStringRef name, void **arguments) {
-  const std::string ifaceName = ("_furiosa_mlir_ciface_" + unwrap(name)).str();
   llvm::Error error = unwrap(engine)->invokePacked(
-      ifaceName, MutableArrayRef<void *>{arguments, (size_t)0});
+      unwrap(name).str(), MutableArrayRef<void *>{arguments, (size_t)0});
   if (error)
     return wrap(failure());
   return wrap(success());

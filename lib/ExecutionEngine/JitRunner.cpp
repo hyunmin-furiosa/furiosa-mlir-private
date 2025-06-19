@@ -85,7 +85,7 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
   // runner. This must come before the command line options are parsed.
   Options options;
   llvm::cl::ParseCommandLineOptions(argc, argv,
-                                    "Furiosa-MLIR CPU execution driver\n");
+                                    "Furiosa-MLIR execution driver\n");
 
   if (options.hostSupportsJit) {
     auto j = llvm::orc::LLJITBuilder().create();
@@ -113,8 +113,7 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
                  << llvm::toString(engine.takeError()) << "\n";
     return 1;
   }
-  if (failed(executeFunction(**engine, options.mainFuncName.getValue(),
-                             options.mainFuncType.getValue()))) {
+  if (failed(executeFunction(**engine, options.mainFuncName.getValue()))) {
     llvm::errs() << "could not execute the input IR\n";
     return 1;
   }

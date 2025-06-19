@@ -67,7 +67,22 @@ NB_MODULE(_furiosaMlirExecutionEngine, m) {
           [](PyExecutionEngine &self, MlirModule module) {
             FuriosaMlirExecutionEngine engine =
                 furiosaMlirExecutionEngineCreate(module);
+            if (furiosaMlirExecutionEngineIsNull(engine))
+              throw std::runtime_error(
+                  "Failure while creating the ExecutionEngine.");
             new (&self) PyExecutionEngine(engine);
           },
-          nb::arg("module"));
+          nb::arg("module"))
+      .def_prop_ro(MLIR_PYTHON_CAPI_PTR_ATTR, &PyExecutionEngine::getCapsule)
+      .def(MLIR_PYTHON_CAPI_FACTORY_ATTR, &PyExecutionEngine::createFromCapsule)
+      .def(
+          "raw_invoke",
+          [](PyExecutionEngine &self, const std::string &name, nb::list args) {
+            MlirLogicalResult result = furiosaMlirExecutionEngineInvokePacked(
+                self.get(), mlirStringRefCreate(name.c_str(), name.size()),
+                nullptr);
+            if (mlirLogicalResultIsFailure(result))
+              throw std::runtime_error("Invocation failed.");
+          },
+          nb::arg("name"), nb::arg("args") = nb::list());
 }

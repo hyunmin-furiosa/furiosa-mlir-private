@@ -10,11 +10,7 @@ ExecutionEngine::create(Operation *module) {
 
 llvm::Error ExecutionEngine::invokePacked(StringRef func_name,
                                           MutableArrayRef<void *> args) {
-  return llvm::Error::success();
-}
-
-llvm::Error ExecutionEngine::invoke(StringRef func_name, StringRef func_type) {
-  if (failed(executeFunction(*this, func_name, func_type))) {
+  if (failed(executeFunction(*this, func_name))) {
     return llvm::createStringError("Failed to execute function: " + func_name);
   } else {
     return llvm::Error::success();

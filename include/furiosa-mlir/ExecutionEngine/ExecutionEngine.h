@@ -25,8 +25,6 @@ public:
   llvm::Error invokePacked(StringRef func_name,
                            MutableArrayRef<void *> args = std::nullopt);
 
-  llvm::Error invoke(StringRef func_name, StringRef func_type);
-
   Operation *getModule() const { return module; }
 
   void createValue(Value val, llvm::Any data) {
