@@ -7,6 +7,7 @@ NINJA := Ninja
 # Paths and options
 BUILD_DIR ?= $(CURDIR)/build
 BUILD_TYPE ?= Release
+CXX_FLAGS := -Werror
 JOBS := 8
 LLVM_BUILD_DIR ?= $(LLVM_BUILD_DIR)
 TARGETS := $(shell find . -path ./build -prune -type f -o -iname "*.h" -o -iname "*.cpp" -o -iname "*.td")
@@ -30,6 +31,7 @@ FLAGS += -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 FLAGS += -DCMAKE_EXE_LINKER_FLAGS_INIT="--ld-path=ld.lld"
 FLAGS += -DCMAKE_MODULE_LINKER_FLAGS_INIT="--ld-path=ld.lld"
 FLAGS += -DCMAKE_SHARED_LINKER_FLAGS_INIT="--ld-path=ld.lld"
+FLAGS += -DCMAKE_CXX_FLAGS=$(CXX_FLAGS)
 FLAGS += -DMLIR_ENABLE_BINDINGS_PYTHON=ON
 
 furiosa-mlir: configure
