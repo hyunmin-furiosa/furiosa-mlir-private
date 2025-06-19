@@ -3,18 +3,14 @@ The Furiosa-MLIR project aims to provide a compilation flow that converts arbitr
 
 ## Building Furiosa-MLIR
 
-Build [furiosa-torch](https://github.com/furiosa-ai/furiosa-torch) at [a8c2503](https://github.com/furiosa-ai/furiosa-torch/commit/a8c2503cbe38be36014290df3e5c7f88ecf38218).
+Build [device-runtime](https://github.com/furiosa-ai/device-runtime/) and [pert](https://github.com/furiosa-ai/device-runtime/tree/main/pert) at [378a85a](https://github.com/furiosa-ai/device-runtime/commit/378a85ae5add5306c40b224d4fe061a542e21fc3).
 ```shell
-cargo build --release
-```
-
-Build pert in [device-runtime](https://github.com/furiosa-ai/device-runtime/) at [dcd26a8](https://github.com/furiosa-ai/device-runtime/commit/dcd26a83e9d8a6146163b9b513d3a0658bb291fc)
-```shell
+cargo build --release -p device-runtime-c # C bindings for device-runtime
 cd pert
 make pert
 ```
 
-Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [fdd1bd6](https://github.com/furiosa-ai/npu-virtual-platform/commit/fdd1bd6aa77b89c29e0d9b5b052eb94bc29b0140)
+Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [458185f](https://github.com/furiosa-ai/npu-virtual-platform/commit/458185f04bae900c347b730b9653cf45e5fe3314).
 ```shell
 make renegade DEFAULT_PERT_PATH=<device-runtime>/target/aarch64-unknown-none-softfloat/release/pert
 ```
@@ -41,27 +37,30 @@ cmake --build build -j 16
 
 Build Furiosa-MLIR project.
 ```shell
-LIBRARY_PATH=$LIBRARY_PATH:<furiosa-torch>/target/release \
-CPATH=$CPATH:<furiosa-torch>/cpp_extensions/include \
+LIBRARY_PATH=$LIBRARY_PATH:<device-runtime>/target/release \
+CPATH=$CPATH:<device-runtime>/target/release \
 make LLVM_BUILD_DIR=<llvm-project>/build
 ```
 
 ## Using Furiosa-MLIR
 
-Generated binaries are located in `build/bin`.
+Add required libraries and generated binaries to environment variables. 
+```shell
+export PATH=$PATH:<furiosa-mlir>/build/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<device-runtime>/target/release:<npu-virtual-platform>/build/renegade
+```
 
 Optimize and lower the example MLIR into furiosa host dialect. 
 ```shell
-furiosa-mlir-opt test/Dialect/Furiosa/example.mlir -convert-func-to-furiosa-host
+furiosa-mlir-opt test/Dialect/Furiosa/task.mlir -convert-func-to-furiosa-host
 ```
 
 Translate the example MLIR into ARM C code. 
 ```shell
-furiosa-mlir-translate test/Dialect/Furiosa/example.mlir -furiosa-to-arm-c
+furiosa-mlir-translate test/Dialect/Furiosa/task.mlir -furiosa-to-arm-c
 ```
 
 Run the example MLIR on target device. 
 ```shell
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<furiosa-torch>/target/release:<npu-virtual-platform>/build/renegade \
-furiosa-mlir-runner test/Dialect/Host/example.mlir
+furiosa-mlir-runner test/Dialect/Host/host.mlir
 ```
