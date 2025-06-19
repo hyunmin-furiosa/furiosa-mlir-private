@@ -22,8 +22,8 @@ public:
   static llvm::Expected<std::unique_ptr<ExecutionEngine>>
   create(Operation *module);
 
-  llvm::Error invokePacked(StringRef func_name,
-                           MutableArrayRef<void *> args = std::nullopt);
+  llvm::Error invokePacked(StringRef func_name, std::int64_t num_args,
+                           void **args);
 
   Operation *getModule() const { return module; }
 

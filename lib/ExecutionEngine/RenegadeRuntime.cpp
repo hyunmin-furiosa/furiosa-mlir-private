@@ -283,17 +283,17 @@ LogicalResult executeOperation(ExecutionEngine &engine, Operation &op) {
   return success();
 }
 
-LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point) {
-  auto module = engine.getModule();
-  auto main_function = dyn_cast_or_null<func::FuncOp>(
-      SymbolTable::lookupSymbolIn(module, entry_point));
-  if (!main_function || main_function.empty()) {
-    llvm::report_fatal_error(llvm::Twine("entry point not found"));
-    return failure();
-  }
+LogicalResult executeKernelFunction(ExecutionEngine &engine,
+                                    func::FuncOp function,
+                                    std::int64_t num_args, void **args) {
+  return success();
+}
+
+LogicalResult executeMainFunction(ExecutionEngine engine, func::FuncOp function,
+                                  std::int64_t num_args, void **args) {
 
   // Emit the body of the function.
-  for (Block &block : main_function.getBlocks()) {
+  for (Block &block : function.getBlocks()) {
     for (Operation &op : block.getOperations()) {
       if (failed(executeOperation(engine, op)))
         return failure();
@@ -301,6 +301,28 @@ LogicalResult executeFunction(ExecutionEngine &engine, StringRef entry_point) {
   }
 
   return success();
+}
+
+LogicalResult executeFunction(ExecutionEngine &engine, StringRef function_name,
+                              std::int64_t num_args, void **args) {
+  auto module = engine.getModule();
+  auto function_op = dyn_cast_or_null<func::FuncOp>(
+      SymbolTable::lookupSymbolIn(module, function_name));
+  if (!function_op || function_op.empty()) {
+    llvm::report_fatal_error(llvm::Twine("entry point not found"));
+    return failure();
+  }
+  auto num_arguments = function_op.getNumArguments();
+  auto num_results = function_op.getNumResults();
+  auto total = num_arguments + num_results;
+  assert(num_args == total &&
+         "number of arguments does not match the function signature");
+
+  if (function_op->hasAttr("target")) {
+    return executeKernelFunction(engine, function_op, num_args, args);
+  } else {
+    return executeMainFunction(engine, function_op, num_args, args);
+  }
 }
 
 } // namespace mlir::furiosa
