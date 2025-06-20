@@ -1,3 +1,4 @@
+#include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
@@ -8,6 +9,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
 #include "furiosa-mlir/ExecutionEngine/RenegadeRuntime.h"
 #include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
@@ -284,16 +286,51 @@ LogicalResult executeOperation(ExecutionEngine &engine, Operation &op) {
 }
 
 LogicalResult executeKernelFunction(ExecutionEngine &engine,
-                                    func::FuncOp function,
+                                    func::FuncOp function_op,
                                     std::int64_t num_args, void **args) {
+
+  auto module = engine.getModule();
+  auto builder = OpBuilder(module->getContext());
+  builder.setInsertionPointToEnd(
+      llvm::dyn_cast_or_null<ModuleOp>(module).getBody());
+  auto main_function = builder.create<func::FuncOp>(
+      module->getLoc(), "main",
+      builder.getFunctionType(mlir::TypeRange(), mlir::TypeRange()));
+  main_function.addEntryBlock();
+  builder.setInsertionPointToStart(&main_function.getBody().front());
+
+  auto types = SmallVector<Type>();
+  auto argument_types = function_op.getArgumentTypes();
+  auto result_types = function_op.getResultTypes();
+  types.append(argument_types.begin(), argument_types.end());
+  types.append(result_types.begin(), result_types.end());
+
+  SmallVector<Value> arg_values;
+  for (auto index_value : llvm::enumerate(types)) {
+    auto &arg_type = index_value.value();
+    auto index = index_value.index();
+    auto input_argument = args[index];
+    auto tensor_type = llvm::dyn_cast_or_null<RankedTensorType>(arg_type);
+    auto pointer = getTensorDataPointer(tensor_type, input_argument);
+    auto arg_value = builder.create<furiosa::AllocOp>(
+        module->getLoc(), tensor_type, IntegerAttr());
+    arg_value->setAttr("data_pointer", builder.getI64ArrayAttr(pointer));
+    arg_values.push_back(arg_value);
+  }
+
+  builder.create<func::CallOp>(module->getLoc(), function_op, arg_values);
+
+  module->dump();
+
   return success();
 }
 
-LogicalResult executeMainFunction(ExecutionEngine engine, func::FuncOp function,
+LogicalResult executeMainFunction(ExecutionEngine engine,
+                                  func::FuncOp function_op,
                                   std::int64_t num_args, void **args) {
 
   // Emit the body of the function.
-  for (Block &block : function.getBlocks()) {
+  for (Block &block : function_op.getBlocks()) {
     for (Operation &op : block.getOperations()) {
       if (failed(executeOperation(engine, op)))
         return failure();

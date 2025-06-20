@@ -110,32 +110,12 @@ module {
     %31 = furiosa_task.tuc.wait %30 {dma_tag_id = 0 : i32, target_context = false, type = true}
     return
   }
-  func.func @main() attributes {address_allocated} {
-    %0 = furiosa_host.func_alloc {function = @kernel}
-    %1 = furiosa_host.pe_program_load_inst %0 {dram_address = 0 : i64, spm_address = 0 : i64}
-    %2 = furiosa_host.pe_program_launch {operands = [4194304, 4456448, 4718592], spm_address = 0 : i64}
-    %3 = furiosa_host.hal_program_write_at %0 {dram_address = 0 : i64}
-    %4 = furiosa_host.alloc {size = 262144 : i64}
-    %5 = furiosa_host.hal_program_write_at %4 {dram_address = 4194304 : i64}
-    %6 = furiosa_host.alloc {size = 262144 : i64}
-    %7 = furiosa_host.hal_program_write_at %6 {dram_address = 4456448 : i64}
-    %8 = furiosa_host.alloc {size = 262144 : i64}
-    %9 = furiosa_host.hal_program_read_at %8 {dram_address = 4718592 : i64}
-    %10 = furiosa_host.pe_program_seq %1, %2
-    %11 = furiosa_host.hal_program_execute %10
-    %12 = furiosa_host.hal_program_seq %3, %5, %7, %11, %9
-    %13 = furiosa_host.device_new {target = #furiosa.target<npu 0 pe 0 : 0>}
-    %14 = furiosa_host.device_execute %13 %12
-    furiosa_host.device_execution_wait %14
-    return
-  }
 }
 """
         )
 
-        # execution_engine.invoke("main")
-        arr0 = np.zeros((64, 64, 64), dtype=np.int8)
-        arr1 = np.zeros((64, 64, 64), dtype=np.int8)
+        arr0 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
+        arr1 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr2 = np.zeros((64, 64, 64), dtype=np.int8)
         arr0_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr0))
         arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
@@ -144,5 +124,5 @@ module {
         execution_engine = ExecutionEngine(module)
         execution_engine.invoke("kernel", arr0_desc, arr1_desc, arr2_desc)
 
-test_execution_engine()
-# test_kernel_function()
+# test_execution_engine()
+test_kernel_function()

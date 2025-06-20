@@ -3,6 +3,7 @@
 #include "device_runtime.h"
 
 #include "furiosa-mlir/ExecutionEngine/ExecutionEngine.h"
+#include "furiosa-mlir/ExecutionEngine/TensorDescriptor.h"
 #include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
 
 namespace mlir::furiosa {
