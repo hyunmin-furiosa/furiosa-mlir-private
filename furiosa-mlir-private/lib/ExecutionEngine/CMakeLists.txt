@@ -2,6 +2,7 @@ add_mlir_library(FuriosaMLIRExecutionEngine
   ExecutionEngine.cpp
   JitRunner.cpp
   RenegadeRuntime.cpp
+  TensorDescriptor.cpp
 
   DEPENDS
   FuriosaMLIRTargetC
