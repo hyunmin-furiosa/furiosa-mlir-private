@@ -122,7 +122,9 @@ module {
         arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
 
         execution_engine = ExecutionEngine(module)
-        execution_engine.invoke("kernel", arr0_desc, arr1_desc, arr2_desc)
+        execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+        expected = np.einsum("nij,njk->nik", arr0, arr1)
+        print(np.array_equal(arr2, expected))
 
-# test_execution_engine()
+test_execution_engine()
 test_kernel_function()

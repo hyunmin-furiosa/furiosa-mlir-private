@@ -29,12 +29,11 @@ furiosaMlirExecutionEngineDestroy(FuriosaMlirExecutionEngine engine) {
   engine.ptr = nullptr;
 }
 
-extern "C" MlirLogicalResult
-furiosaMlirExecutionEngineInvokePacked(FuriosaMlirExecutionEngine engine,
-                                       MlirStringRef name,
-                                       std::int64_t num_args, void **args) {
-  llvm::Error error =
-      unwrap(engine)->invokePacked(unwrap(name).str(), num_args, args);
+extern "C" MlirLogicalResult furiosaMlirExecutionEngineInvokePacked(
+    FuriosaMlirExecutionEngine engine, MlirStringRef name,
+    std::int64_t num_args, std::int64_t num_inputs, void **args) {
+  llvm::Error error = unwrap(engine)->invokePacked(unwrap(name).str(), num_args,
+                                                   num_inputs, args);
   if (error)
     return wrap(failure());
   return wrap(success());

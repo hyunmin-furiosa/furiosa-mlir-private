@@ -19,8 +19,10 @@ using pe_program_t = SmallVector<device_runtime::Stmt *>;
 using hal_program_t = SmallVector<device_runtime::Program *>;
 using device_t = device_runtime::Device *;
 using execution_t = device_runtime::Execution *;
+using address_size_t = std::tuple<std::int64_t, std::int64_t>;
 
 LogicalResult executeFunction(ExecutionEngine &engine, StringRef function_name,
-                              std::int64_t num_args, void **args);
+                              std::int64_t num_args, std::int64_t num_inputs,
+                              void **args);
 
 } // namespace mlir::furiosa

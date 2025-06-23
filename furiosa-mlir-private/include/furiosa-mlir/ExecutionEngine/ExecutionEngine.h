@@ -23,7 +23,7 @@ public:
   create(Operation *module);
 
   llvm::Error invokePacked(StringRef func_name, std::int64_t num_args,
-                           void **args);
+                           std::int64_t num_inputs, void **args);
 
   Operation *getModule() const { return module; }
 

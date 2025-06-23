@@ -80,12 +80,14 @@ NB_MODULE(_furiosaMlirExecutionEngine, m) {
       .def(
           "raw_invoke",
           [](PyExecutionEngine &self, const std::string &name,
-             std::int64_t num_args, std::int64_t args) {
+             std::int64_t num_args, std::int64_t num_inputs,
+             std::int64_t args) {
             MlirLogicalResult result = furiosaMlirExecutionEngineInvokePacked(
                 self.get(), mlirStringRefCreate(name.c_str(), name.size()),
-                num_args, reinterpret_cast<void **>(args));
+                num_args, num_inputs, reinterpret_cast<void **>(args));
             if (mlirLogicalResultIsFailure(result))
               throw std::runtime_error("Invocation failed.");
           },
-          nb::arg("name"), nb::arg("num_args"), nb::arg("args"));
+          nb::arg("name"), nb::arg("num_args"), nb::arg("num_inputs"),
+          nb::arg("args"));
 }
