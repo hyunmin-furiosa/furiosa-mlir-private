@@ -9,8 +9,10 @@ ExecutionEngine::create(Operation *module) {
 }
 
 llvm::Error ExecutionEngine::invokePacked(StringRef func_name,
-                                          std::int64_t num_args, void **args) {
-  if (failed(executeFunction(*this, func_name, num_args, args))) {
+                                          std::int64_t num_args,
+                                          std::int64_t num_inputs,
+                                          void **args) {
+  if (failed(executeFunction(*this, func_name, num_args, num_inputs, args))) {
     return llvm::createStringError("Failed to execute function: " + func_name);
   } else {
     return llvm::Error::success();

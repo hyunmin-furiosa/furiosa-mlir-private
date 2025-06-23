@@ -1,5 +1,8 @@
 #include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/Bufferization/Transforms/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Pass/Pass.h"
+#include "mlir/Pass/PassManager.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/StringExtras.h"
@@ -9,7 +12,9 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include "furiosa-mlir/Conversion/Passes.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Host/IR/HostOps.h"
 #include "furiosa-mlir/ExecutionEngine/RenegadeRuntime.h"
 #include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
@@ -41,29 +46,38 @@ LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::AllocOp op) {
   byte_array_t data_buffer;
   auto size = op.getSize();
-  if (auto data = op->getAttrOfType<ArrayAttr>("data")) {
-    if (data.empty()) {
-      // randomize input when data is empty
-      // seed is fixed for testing
-      data_buffer.resize(size);
-      std::generate(data_buffer.begin(), data_buffer.end(), [&]() {
-        return static_cast<std::uint8_t>(engine.getRandomNumber() % 256);
-      });
-    } else {
-      for (auto d : data) {
-        data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
-      }
-      auto input_data_size = data_buffer.size();
-      data_buffer.reserve(CEIL(size, input_data_size));
-      for (auto i = 0u; i < CEIL(size, input_data_size); i += input_data_size) {
-        std::copy_n(data_buffer.begin(), input_data_size,
-                    std::back_inserter(data_buffer));
+  if (auto data_ptr = op->getAttrOfType<IntegerAttr>("data_ptr")) {
+    // use data allocated outside of the execution engine
+    auto address_size = address_size_t(data_ptr.getInt(), size);
+    engine.createValue(op->getResult(0), llvm::Any(address_size));
+  } else {
+    // allocate data inside the execution engine
+    if (auto data = op->getAttrOfType<ArrayAttr>("data")) {
+      // data is provided
+      if (data.empty()) {
+        // randomize input when data is empty
+        // seed is fixed for testing
+        data_buffer.resize(size);
+        std::generate(data_buffer.begin(), data_buffer.end(), [&]() {
+          return static_cast<std::uint8_t>(engine.getRandomNumber() % 256);
+        });
+      } else {
+        for (auto d : data) {
+          data_buffer.push_back(dyn_cast_or_null<IntegerAttr>(d).getInt());
+        }
+        auto input_data_size = data_buffer.size();
+        data_buffer.reserve(CEIL(size, input_data_size));
+        for (auto i = 0u; i < CEIL(size, input_data_size);
+             i += input_data_size) {
+          std::copy_n(data_buffer.begin(), input_data_size,
+                      std::back_inserter(data_buffer));
+        }
       }
     }
+    data_buffer.resize(size);
+    data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
+    engine.createValue(op->getResult(0), llvm::Any(data_buffer));
   }
-  data_buffer.resize(size);
-  data_buffer.resize(CEIL(data_buffer.size(), DRAM_ACCESS_WIDTH));
-  engine.createValue(op->getResult(0), llvm::Any(data_buffer));
 
   return success();
 }
@@ -166,15 +180,27 @@ LogicalResult executeOperation(ExecutionEngine &engine,
   return success();
 }
 
+address_size_t getAddressSize(llvm::Any &buffer) {
+  if (llvm::any_cast<address_size_t>(&buffer)) {
+    return llvm::any_cast<address_size_t &>(buffer);
+  } else if (llvm::any_cast<byte_array_t>(&buffer)) {
+    auto &buffer_data = llvm::any_cast<byte_array_t &>(buffer);
+    return std::make_tuple(reinterpret_cast<std::uint64_t>(buffer_data.data()),
+                           buffer_data.size());
+  }
+  llvm::report_fatal_error(
+      llvm::Twine("cannot get address and size from buffer"));
+  return std::make_tuple(0, 0);
+}
+
 LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::HalProgramWriteAtOp op) {
   auto dram_address = op.getDramAddress();
-  auto &buffer =
-      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBuffer()));
+  auto [buffer_address, buffer_size] =
+      getAddressSize(engine.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(device_runtime::hal_program_write_at(
-      reinterpret_cast<std::uint64_t>(buffer.data()), dram_address,
-      buffer.size()));
+      buffer_address, dram_address, buffer_size));
   engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
@@ -183,12 +209,11 @@ LogicalResult executeOperation(ExecutionEngine &engine,
 LogicalResult executeOperation(ExecutionEngine &engine,
                                furiosa::host::HalProgramReadAtOp op) {
   auto dram_address = op.getDramAddress();
-  auto &buffer =
-      llvm::any_cast<byte_array_t &>(engine.getValue(op.getBuffer()));
+  auto [buffer_address, buffer_size] =
+      getAddressSize(engine.getValue(op.getBuffer()));
   hal_program_t programs;
   programs.push_back(device_runtime::hal_program_read_at(
-      dram_address, reinterpret_cast<std::uint64_t>(buffer.data()),
-      buffer.size()));
+      dram_address, buffer_address, buffer_size));
   engine.createValue(op->getResult(0), llvm::Any(programs));
 
   return success();
@@ -285,49 +310,8 @@ LogicalResult executeOperation(ExecutionEngine &engine, Operation &op) {
   return success();
 }
 
-LogicalResult executeKernelFunction(ExecutionEngine &engine,
-                                    func::FuncOp function_op,
-                                    std::int64_t num_args, void **args) {
-
-  auto module = engine.getModule();
-  auto builder = OpBuilder(module->getContext());
-  builder.setInsertionPointToEnd(
-      llvm::dyn_cast_or_null<ModuleOp>(module).getBody());
-  auto main_function = builder.create<func::FuncOp>(
-      module->getLoc(), "main",
-      builder.getFunctionType(mlir::TypeRange(), mlir::TypeRange()));
-  main_function.addEntryBlock();
-  builder.setInsertionPointToStart(&main_function.getBody().front());
-
-  auto types = SmallVector<Type>();
-  auto argument_types = function_op.getArgumentTypes();
-  auto result_types = function_op.getResultTypes();
-  types.append(argument_types.begin(), argument_types.end());
-  types.append(result_types.begin(), result_types.end());
-
-  SmallVector<Value> arg_values;
-  for (auto index_value : llvm::enumerate(types)) {
-    auto &arg_type = index_value.value();
-    auto index = index_value.index();
-    auto input_argument = args[index];
-    auto tensor_type = llvm::dyn_cast_or_null<RankedTensorType>(arg_type);
-    auto pointer = getTensorDataPointer(tensor_type, input_argument);
-    auto arg_value = builder.create<furiosa::AllocOp>(
-        module->getLoc(), tensor_type, IntegerAttr());
-    arg_value->setAttr("data_pointer", builder.getI64ArrayAttr(pointer));
-    arg_values.push_back(arg_value);
-  }
-
-  builder.create<func::CallOp>(module->getLoc(), function_op, arg_values);
-
-  module->dump();
-
-  return success();
-}
-
 LogicalResult executeMainFunction(ExecutionEngine engine,
-                                  func::FuncOp function_op,
-                                  std::int64_t num_args, void **args) {
+                                  func::FuncOp function_op, void **args) {
 
   // Emit the body of the function.
   for (Block &block : function_op.getBlocks()) {
@@ -340,8 +324,76 @@ LogicalResult executeMainFunction(ExecutionEngine engine,
   return success();
 }
 
+LogicalResult executeKernelFunction(ExecutionEngine &engine,
+                                    func::FuncOp function_op,
+                                    std::int64_t num_args,
+                                    std::int64_t num_inputs, void **args) {
+  // Create a main function that calls the kernel function.
+  auto module = engine.getModule();
+  auto context = module->getContext();
+  auto builder = OpBuilder(context);
+  builder.setInsertionPointToEnd(
+      llvm::dyn_cast_or_null<ModuleOp>(module).getBody());
+  auto main_function = builder.create<func::FuncOp>(
+      module->getLoc(), "main",
+      builder.getFunctionType(mlir::TypeRange(), mlir::TypeRange()));
+  auto entry_block = main_function.addEntryBlock();
+  builder.setInsertionPointToStart(entry_block);
+  builder.create<func::ReturnOp>(module->getLoc());
+  builder.setInsertionPointToStart(entry_block);
+
+  // Create a call to the kernel function with the provided arguments.
+  auto types = SmallVector<Type>();
+  auto argument_types = function_op.getArgumentTypes();
+  auto result_types = function_op.getResultTypes();
+  types.append(argument_types.begin(), argument_types.end());
+  types.append(result_types.begin(), result_types.end());
+  SmallVector<Value> arg_values;
+  for (auto index_value : llvm::enumerate(types)) {
+    auto &arg_type = index_value.value();
+    auto index = index_value.index();
+    auto input_argument = args[index];
+    auto tensor_type = llvm::dyn_cast_or_null<RankedTensorType>(arg_type);
+    auto pointer = getTensorDataPointer(tensor_type, input_argument);
+    auto arg_value = builder.create<furiosa::AllocOp>(
+        module->getLoc(), tensor_type, IntegerAttr());
+    arg_value->setAttr("data_ptr", builder.getI64IntegerAttr(pointer));
+    if (index < static_cast<std::size_t>(num_inputs)) {
+      arg_value->setAttr("argument", builder.getUnitAttr());
+    } else {
+      arg_value->setAttr("result", builder.getUnitAttr());
+    }
+    arg_values.push_back(arg_value);
+  }
+  auto call_op =
+      builder.create<func::CallOp>(module->getLoc(), function_op, arg_values);
+  auto target_attr = furiosa::TargetAttr::get(context, 0, 0, 0);
+  call_op->setAttr("target", target_attr);
+
+  // Apply appropriate passes for converting to host dialect
+  PassManager pm(context);
+  pm.addPass(furiosa::createFuriosaDeallocationPass());
+  pm.addPass(bufferization::createOptimizeAllocationLivenessPass());
+  pm.addPass(furiosa::createFuriosaAllocateAddressPass());
+  pm.addPass(furiosa::createConvertFuncToFuriosaHostPass());
+  auto status = pm.run(main_function);
+  if (failed(status)) {
+    llvm::report_fatal_error(llvm::Twine("failed to run pass manager"));
+    return failure();
+  }
+
+  status = executeMainFunction(engine, main_function, args);
+  if (failed(status)) {
+    llvm::report_fatal_error(llvm::Twine("failed to execute main function"));
+    return failure();
+  }
+
+  return success();
+}
+
 LogicalResult executeFunction(ExecutionEngine &engine, StringRef function_name,
-                              std::int64_t num_args, void **args) {
+                              std::int64_t num_args, std::int64_t num_inputs,
+                              void **args) {
   auto module = engine.getModule();
   auto function_op = dyn_cast_or_null<func::FuncOp>(
       SymbolTable::lookupSymbolIn(module, function_name));
@@ -356,9 +408,12 @@ LogicalResult executeFunction(ExecutionEngine &engine, StringRef function_name,
          "number of arguments does not match the function signature");
 
   if (function_op->hasAttr("target")) {
-    return executeKernelFunction(engine, function_op, num_args, args);
+    return executeKernelFunction(engine, function_op, num_args, num_inputs,
+                                 args);
   } else {
-    return executeMainFunction(engine, function_op, num_args, args);
+    assert(num_arguments == 0 && num_inputs == 0 &&
+           "number of arguments must be zero for non-target functions");
+    return executeMainFunction(engine, function_op, args);
   }
 }
 

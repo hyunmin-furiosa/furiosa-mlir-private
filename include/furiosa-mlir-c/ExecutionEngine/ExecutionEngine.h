@@ -36,7 +36,7 @@ furiosaMlirExecutionEngineIsNull(FuriosaMlirExecutionEngine engine) {
 
 MLIR_CAPI_EXPORTED MlirLogicalResult furiosaMlirExecutionEngineInvokePacked(
     FuriosaMlirExecutionEngine engine, MlirStringRef name,
-    std::int64_t num_args, void **args);
+    std::int64_t num_args, std::int64_t num_inputs, void **args);
 
 DEFINE_C_API_PTR_METHODS(FuriosaMlirExecutionEngine,
                          mlir::furiosa::ExecutionEngine)

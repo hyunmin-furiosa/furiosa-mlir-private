@@ -33,7 +33,8 @@ def AllocOp : Host_Op<"alloc"> {
   let description = [{}];
   let arguments = (ins
       I64Attr:$size,
-      OptionalAttr<I64ArrayAttr>:$data
+      OptionalAttr<I64ArrayAttr>:$data,
+      OptionalAttr<I64Attr>:$data_ptr
   );
   let results = (outs
       BufferType:$buffer

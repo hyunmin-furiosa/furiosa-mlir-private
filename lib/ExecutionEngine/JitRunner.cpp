@@ -113,7 +113,7 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
                  << llvm::toString(engine.takeError()) << "\n";
     return 1;
   }
-  if (failed(executeFunction(**engine, options.mainFuncName.getValue(), 0,
+  if (failed(executeFunction(**engine, options.mainFuncName.getValue(), 0, 0,
                              nullptr))) {
     llvm::errs() << "could not execute the input IR\n";
     return 1;
