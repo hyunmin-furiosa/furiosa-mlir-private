@@ -1,0 +1,20 @@
+#include "furiosa-mlir/ExecutionEngine/ExecutionEngine.h"
+
+using namespace mlir;
+using namespace mlir::furiosa;
+
+llvm::Expected<std::unique_ptr<ExecutionEngine>>
+ExecutionEngine::create(ModuleOp module, Attribute target) {
+  return std::make_unique<ExecutionEngine>(module, target);
+}
+
+llvm::Error ExecutionEngine::invokePacked(StringRef func_name,
+                                          std::int64_t num_args,
+                                          std::int64_t num_inputs,
+                                          void **args) {
+  if (failed(executeFunction(*this, func_name, num_args, num_inputs, args))) {
+    return llvm::createStringError("Failed to execute function: " + func_name);
+  } else {
+    return llvm::Error::success();
+  }
+}

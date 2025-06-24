@@ -115,8 +115,19 @@ void AllocateAddress::runOnOperation() {
   RewritePatternSet patterns(&getContext());
   patterns.add<AddressAllocation>(patterns.getContext());
 
-  if (failed(applyPatternsGreedily(getOperation(), std::move(patterns))))
-    signalPassFailure();
+  // Apply the patterns greedily to the function or module.
+  // If the operation is a function, we apply the patterns to the function.
+  // Otherwise, we apply the patterns to all functions in the module.
+  auto op = getOperation();
+  if (llvm::isa<func::FuncOp>(op)) {
+    if (failed(applyOpPatternsGreedily(ArrayRef(op), std::move(patterns)))) {
+      signalPassFailure();
+    }
+  } else {
+    if (failed(applyPatternsGreedily(op, std::move(patterns)))) {
+      signalPassFailure();
+    }
+  }
 }
 
 } // namespace furiosa

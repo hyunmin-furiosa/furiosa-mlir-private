@@ -1,11 +1,13 @@
 add_mlir_library(FuriosaMLIRExecutionEngine
-  DeviceRuntime.cpp
+  ExecutionEngine.cpp
   JitRunner.cpp
+  RenegadeRuntime.cpp
+  TensorDescriptor.cpp
 
   DEPENDS
   FuriosaMLIRTargetC
 )
 
 target_link_libraries(FuriosaMLIRExecutionEngine PRIVATE
-  furiosa_torch
+  device_runtime
 )

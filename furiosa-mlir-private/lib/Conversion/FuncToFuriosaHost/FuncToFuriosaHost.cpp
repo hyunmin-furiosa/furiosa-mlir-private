@@ -105,8 +105,9 @@ LogicalResult CallOpLowering::matchAndRewrite(func::CallOp op,
                 tensor_type.getElementTypeBitWidth() / CHAR_BIT;
     auto size_attr = rewriter.getI64IntegerAttr(size);
     auto data_attr = defining_op->getAttrOfType<ArrayAttr>("data");
+    auto data_ptr_attr = defining_op->getAttrOfType<IntegerAttr>("data_ptr");
     auto alloc_op = rewriter.create<furiosa::host::AllocOp>(
-        op.getLoc(), size_attr, data_attr);
+        op.getLoc(), size_attr, data_attr, data_ptr_attr);
     rewriter.moveOpBefore(alloc_op, op);
     operand.replaceAllUsesWith(alloc_op);
     if (defining_op->hasAttr("argument") && !defining_op->hasAttr("result")) {

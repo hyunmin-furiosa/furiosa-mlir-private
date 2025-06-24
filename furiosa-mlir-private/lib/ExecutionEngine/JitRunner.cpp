@@ -1,5 +1,5 @@
 #include "furiosa-mlir/ExecutionEngine/JitRunner.h"
-#include "furiosa-mlir/ExecutionEngine/DeviceRuntime.h"
+#include "furiosa-mlir/ExecutionEngine/RenegadeRuntime.h"
 
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/ExecutionEngine/ExecutionEngine.h"
@@ -85,7 +85,7 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
   // runner. This must come before the command line options are parsed.
   Options options;
   llvm::cl::ParseCommandLineOptions(argc, argv,
-                                    "Furiosa-MLIR CPU execution driver\n");
+                                    "Furiosa-MLIR execution driver\n");
 
   if (options.hostSupportsJit) {
     auto j = llvm::orc::LLJITBuilder().create();
@@ -107,8 +107,15 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
     return 1;
   }
 
-  if (failed(executeFunction(m.get(), options.mainFuncName.getValue(),
-                             options.mainFuncType.getValue()))) {
+  auto engine =
+      ExecutionEngine::create(llvm::dyn_cast_or_null<ModuleOp>(m.get()));
+  if (!engine) {
+    llvm::errs() << "could not create execution engine: "
+                 << llvm::toString(engine.takeError()) << "\n";
+    return 1;
+  }
+  if (failed(executeFunction(**engine, options.mainFuncName.getValue(), 0, 0,
+                             nullptr))) {
     llvm::errs() << "could not execute the input IR\n";
     return 1;
   }
