@@ -72,7 +72,7 @@ module {
         execution_engine = ExecutionEngine(module)
         execution_engine.invoke("main")
 
-def test_kernel_function():
+def test_kernel_task():
     with Context() as ctx, Location.unknown():
         module = Module.parse(
 r"""
@@ -126,8 +126,112 @@ module {
         target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
         execution_engine = ExecutionEngine(module, target)
         execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+
         expected = np.einsum("nij,njk->nik", arr0, arr1)
         print(np.array_equal(arr2, expected))
 
-# test_execution_engine()
-test_kernel_function()
+def test_kernel_low_level():
+    with Context() as ctx, Location.unknown():
+        module = Module.parse(
+r"""
+#map = affine_map<(d0, d1, d2, d3) -> (d0, d1, d3)>
+#map1 = affine_map<(d0, d1, d2, d3) -> (d0, d3, d2)>
+#map2 = affine_map<(d0, d1, d2, d3) -> (d0, d1, d2)>
+module {
+  func.func @kernel(%arg0: tensor<64x64x64xi8>, %arg1: tensor<64x64x64xi8>, %arg2: tensor<64x64x64xi8>) attributes {address_allocated, target = #furiosa.target<npu 0 pe 0 : 0>} {
+    %0 = furiosa.alloc {address = 0 : i64} : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    furiosa.dma %arg0 -> %0 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.memory_type<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
+    %1 = furiosa.alloc {address = 0 : i64} : tensor<1x64x64xi8, #furiosa.memory_type<trf>>
+    furiosa.load_trf %0 -> %1 : tensor<1x64x64xi8, #furiosa.memory_type<sram>> -> tensor<1x64x64xi8, #furiosa.memory_type<trf>>
+    furiosa.dealloc %0 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    %2 = furiosa.alloc {address = 4096 : i64} : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    furiosa.dma %arg1 -> %2 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.memory_type<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
+    %3 = furiosa.alloc {address = 8192 : i64} : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    furiosa.dma %arg2 -> %3 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.memory_type<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
+    %4 = linalg.contract indexing_maps = [#map, #map1, #map2] {context_id = false} ins(%1, %2 : tensor<1x64x64xi8, #furiosa.memory_type<trf>>, tensor<1x64x64xi8, #furiosa.memory_type<sram>>) outs(%3 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>) -> tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    furiosa.dealloc %3 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    furiosa.dealloc %2 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
+    furiosa.dealloc %1 : tensor<1x64x64xi8, #furiosa.memory_type<trf>>
+    furiosa.dma %4 -> %arg2 : tensor<1x64x64xi8, #furiosa.memory_type<sram>> -> tensor<64x64x64xi8> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 0, 0, 4096], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 4194304, 4194304, 4194304]}
+    return
+  }
+}
+"""
+        )
+        pm = PassManager.parse("any(convert-furiosa-to-furiosa-task)")
+        pm.run(module.operation)
+
+        arr0 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
+        arr1 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
+        arr2 = np.zeros((64, 64, 64), dtype=np.int8)
+        arr0_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr0))
+        arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
+        arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
+
+        target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
+        execution_engine = ExecutionEngine(module, target)
+        execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+
+        expected = np.einsum("nij,njk->nik", arr0, arr1)
+        print(np.array_equal(arr2, expected))
+
+def test_kernel_high_level():
+    with Context() as ctx, Location.unknown():
+        kernel_module = Module.parse(
+r"""
+module {
+  func.func @kernel(%arg0: tensor<64x64x64xi8>, %arg1: tensor<64x64x64xi8>) -> (tensor<64x64x64xi8>) attributes { target = #furiosa.target<npu 0 pe 0:0> } {
+    %0 = tensor.empty() : tensor<64x64x64xi8>
+    %a_zp = "tosa.const"() <{values = dense<0> : tensor<1xi8>}> : () -> tensor<1xi8>
+    %b_zp = "tosa.const"() <{values = dense<0> : tensor<1xi8>}> : () -> tensor<1xi8>
+    %1 = tosa.matmul %arg0, %arg1, %a_zp, %b_zp : (tensor<64x64x64xi8>, tensor<64x64x64xi8>, tensor<1xi8>, tensor<1xi8>) -> tensor<64x64x64xi8>
+    return %1 : tensor<64x64x64xi8>
+  }
+}
+"""
+        )
+        pm = PassManager.parse("builtin.module(func.func(tosa-to-linalg-named),linalg-generalize-to-contract-ops)")
+        pm.run(kernel_module.operation)
+
+        transform_module = Module.parse(
+r"""
+module attributes {transform.with_named_sequence} {
+  transform.named_sequence @__transform_main(%arg1: !transform.any_op {transform.readonly}) {
+    %0 = transform.structured.match ops{["linalg.contract"]} in %arg1 : (!transform.any_op) -> !transform.any_op
+    %1, %loops:1 = transform.structured.tile_using_forall %0 num_threads [64] { mapping = [ #furiosa.mapping ] } : (!transform.any_op) -> (!transform.any_op, !transform.any_op)
+    transform.yield
+  }
+}
+"""
+        )
+
+        combined_module = Module.create()
+        combined_module.body.append(kernel_module.operation)
+        combined_module.body.append(transform_module.operation)
+
+        pm = PassManager.parse("builtin.module(transform-interpreter)")
+        pm.run(combined_module.operation)
+
+        module = Module.parse(combined_module.body.operations[0].get_asm())
+
+        pm = PassManager.parse("builtin.module(convert-linalg-to-furiosa,furiosa-promote-slice-partition-loop,func-results-to-params,furiosa-deallocation,func.func(optimize-allocation-liveness),furiosa-allocate-address,convert-furiosa-to-furiosa-task)")
+        pm.run(module.operation)
+
+        arr0 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
+        arr1 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
+        arr2 = np.zeros((64, 64, 64), dtype=np.int8)
+        arr0_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr0))
+        arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
+        arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
+
+        target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
+        execution_engine = ExecutionEngine(module, target)
+        execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+
+        expected = np.einsum("nij,njk->nik", arr0, arr1)
+        print(np.array_equal(arr2, expected))
+
+test_execution_engine()
+test_kernel_task()
+test_kernel_low_level()
+test_kernel_high_level()
