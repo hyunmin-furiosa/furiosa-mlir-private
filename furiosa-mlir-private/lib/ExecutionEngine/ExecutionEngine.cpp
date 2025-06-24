@@ -4,8 +4,8 @@ using namespace mlir;
 using namespace mlir::furiosa;
 
 llvm::Expected<std::unique_ptr<ExecutionEngine>>
-ExecutionEngine::create(Operation *module) {
-  return std::make_unique<ExecutionEngine>(module);
+ExecutionEngine::create(ModuleOp module, Attribute target) {
+  return std::make_unique<ExecutionEngine>(module, target);
 }
 
 llvm::Error ExecutionEngine::invokePacked(StringRef func_name,
