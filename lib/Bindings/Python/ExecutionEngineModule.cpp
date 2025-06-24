@@ -66,15 +66,15 @@ NB_MODULE(_furiosaMlirExecutionEngine, m) {
   nb::class_<PyExecutionEngine>(m, "ExecutionEngine")
       .def(
           "__init__",
-          [](PyExecutionEngine &self, MlirModule module) {
+          [](PyExecutionEngine &self, MlirModule module, MlirAttribute target) {
             FuriosaMlirExecutionEngine engine =
-                furiosaMlirExecutionEngineCreate(module);
+                furiosaMlirExecutionEngineCreate(module, target);
             if (furiosaMlirExecutionEngineIsNull(engine))
               throw std::runtime_error(
                   "Failure while creating the ExecutionEngine.");
             new (&self) PyExecutionEngine(engine);
           },
-          nb::arg("module"))
+          nb::arg("module"), nb::arg("target"))
       .def_prop_ro(MLIR_PYTHON_CAPI_PTR_ATTR, &PyExecutionEngine::getCapsule)
       .def(MLIR_PYTHON_CAPI_FACTORY_ATTR, &PyExecutionEngine::createFromCapsule)
       .def(

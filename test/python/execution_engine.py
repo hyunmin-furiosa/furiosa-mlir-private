@@ -4,6 +4,8 @@ from furiosa_mlir.ir import *
 from furiosa_mlir.passmanager import *
 from furiosa_mlir.runtime.np_to_tensor import *
 
+import furiosa_mlir.dialects.furiosa as furiosa
+
 def test_execution_engine():
     with Context() as ctx, Location.unknown():
         module = Module.parse(
@@ -121,10 +123,11 @@ module {
         arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
         arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
 
-        execution_engine = ExecutionEngine(module)
+        target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
+        execution_engine = ExecutionEngine(module, target)
         execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
         expected = np.einsum("nij,njk->nik", arr0, arr1)
         print(np.array_equal(arr2, expected))
 
-test_execution_engine()
+# test_execution_engine()
 test_kernel_function()

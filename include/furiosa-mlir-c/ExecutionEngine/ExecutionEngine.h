@@ -22,7 +22,7 @@ DEFINE_C_API_STRUCT(FuriosaMlirExecutionEngine, void);
 #undef DEFINE_C_API_STRUCT
 
 MLIR_CAPI_EXPORTED FuriosaMlirExecutionEngine
-furiosaMlirExecutionEngineCreate(MlirModule op);
+furiosaMlirExecutionEngineCreate(MlirModule module, MlirAttribute target);
 
 /// Destroy an ExecutionEngine instance.
 MLIR_CAPI_EXPORTED void

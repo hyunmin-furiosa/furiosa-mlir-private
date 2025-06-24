@@ -78,10 +78,10 @@ def make_nd_tensor_descriptor(rank, dtype):
         """Builds an empty descriptor for the given rank/dtype, where rank>0."""
 
         _fields_ = [
-            ("allocated", ctypes.c_longlong),
+            ("allocated", ctypes.c_int64),
             ("aligned", ctypes.POINTER(dtype)),
-            ("offset", ctypes.c_longlong),
-            ("shape", ctypes.c_longlong * rank),
+            ("offset", ctypes.c_int64),
+            ("shape", ctypes.c_int64 * rank),
         ]
 
     return TensorDescriptor
@@ -92,7 +92,7 @@ def get_ranked_tensor_descriptor(nparray):
     x = make_nd_tensor_descriptor(nparray.ndim, ctp)()
     x.allocated = nparray.ctypes.data
     x.aligned = nparray.ctypes.data_as(ctypes.POINTER(ctp))
-    x.offset = ctypes.c_longlong(0)
+    x.offset = ctypes.c_int64(0)
     x.shape = nparray.ctypes.shape
 
     return x

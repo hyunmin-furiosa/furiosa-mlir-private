@@ -332,8 +332,7 @@ LogicalResult executeKernelFunction(ExecutionEngine &engine,
   auto module = engine.getModule();
   auto context = module->getContext();
   auto builder = OpBuilder(context);
-  builder.setInsertionPointToEnd(
-      llvm::dyn_cast_or_null<ModuleOp>(module).getBody());
+  builder.setInsertionPointToEnd(module.getBody());
   auto main_function = builder.create<func::FuncOp>(
       module->getLoc(), "main",
       builder.getFunctionType(mlir::TypeRange(), mlir::TypeRange()));
@@ -367,8 +366,7 @@ LogicalResult executeKernelFunction(ExecutionEngine &engine,
   }
   auto call_op =
       builder.create<func::CallOp>(module->getLoc(), function_op, arg_values);
-  auto target_attr = furiosa::TargetAttr::get(context, 0, 0, 0);
-  call_op->setAttr("target", target_attr);
+  call_op->setAttr("target", engine.getTarget());
 
   // Apply appropriate passes for converting to host dialect
   PassManager pm(context);

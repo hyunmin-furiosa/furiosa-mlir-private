@@ -15,17 +15,20 @@ namespace mlir::furiosa {
 
 class ExecutionEngine {
 public:
-  ExecutionEngine(Operation *module)
-      : module(module), randomNumberGenerator(), distribution() {}
+  ExecutionEngine(ModuleOp module, Attribute target)
+      : module(module), target(target), randomNumberGenerator(),
+        distribution() {}
 
   // execution engine functions for python binding
   static llvm::Expected<std::unique_ptr<ExecutionEngine>>
-  create(Operation *module);
+  create(ModuleOp module, Attribute target = Attribute());
 
   llvm::Error invokePacked(StringRef func_name, std::int64_t num_args,
                            std::int64_t num_inputs, void **args);
 
-  Operation *getModule() const { return module; }
+  ModuleOp getModule() const { return module; }
+
+  Attribute getTarget() const { return target; }
 
   void createValue(Value val, llvm::Any data) {
     if (!valueMapper.count(val)) {
@@ -48,7 +51,8 @@ public:
 private:
   using ValueMapper = llvm::DenseMap<Value, llvm::Any>;
 
-  Operation *module;
+  ModuleOp module;
+  Attribute target;
 
   /// Map from value to its data
   ValueMapper valueMapper;

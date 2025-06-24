@@ -107,7 +107,8 @@ int JitRunnerMain(int argc, char **argv, const DialectRegistry &registry,
     return 1;
   }
 
-  auto engine = ExecutionEngine::create(m.get());
+  auto engine =
+      ExecutionEngine::create(llvm::dyn_cast_or_null<ModuleOp>(m.get()));
   if (!engine) {
     llvm::errs() << "could not create execution engine: "
                  << llvm::toString(engine.takeError()) << "\n";

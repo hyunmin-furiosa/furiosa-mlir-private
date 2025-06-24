@@ -11,8 +11,8 @@ using namespace mlir;
 using namespace mlir::furiosa;
 
 extern "C" FuriosaMlirExecutionEngine
-furiosaMlirExecutionEngineCreate(MlirModule module) {
-  auto engine = ExecutionEngine::create(unwrap(module));
+furiosaMlirExecutionEngineCreate(MlirModule module, MlirAttribute target) {
+  auto engine = ExecutionEngine::create(unwrap(module), unwrap(target));
   if (!engine) {
     consumeError(engine.takeError());
     return FuriosaMlirExecutionEngine{nullptr};
