@@ -15,8 +15,7 @@ include "mlir/Pass/PassBase.td"
 // FuncToFuriosaHost
 //===----------------------------------------------------------------------===//
 
-def ConvertFuncToFuriosaHostPass
-    : Pass<"convert-func-to-furiosa-host", "ModuleOp"> {
+def ConvertFuncToFuriosaHostPass : Pass<"convert-func-to-furiosa-host"> {
   let summary = "Convert func dialect to furiosa host dialect";
   let dependentDialects = ["func::FuncDialect", "furiosa::host::HostDialect"];
 }
@@ -25,7 +24,7 @@ def ConvertFuncToFuriosaHostPass
 // LinalgToFuriosa
 //===----------------------------------------------------------------------===//
 
-def ConvertLinalgToFuriosaPass : Pass<"convert-linalg-to-furiosa", "ModuleOp"> {
+def ConvertLinalgToFuriosaPass : Pass<"convert-linalg-to-furiosa"> {
   let summary = "Convert linalg dialect to furiosa dialect";
   let dependentDialects = ["bufferization::BufferizationDialect",
                            "scf::SCFDialect", "linalg::LinalgDialect",
@@ -36,8 +35,7 @@ def ConvertLinalgToFuriosaPass : Pass<"convert-linalg-to-furiosa", "ModuleOp"> {
 // FuriosaToFuriosaTask
 //===----------------------------------------------------------------------===//
 
-def ConvertFuriosaToFuriosaTaskPass
-    : Pass<"convert-furiosa-to-furiosa-task", "ModuleOp"> {
+def ConvertFuriosaToFuriosaTaskPass : Pass<"convert-furiosa-to-furiosa-task"> {
   let summary = "Convert linalg dialect to furiosa dialect";
   let dependentDialects = ["furiosa::FuriosaDialect",
                            "furiosa::task::TaskDialect"];

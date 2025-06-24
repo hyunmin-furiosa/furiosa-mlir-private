@@ -2,33 +2,33 @@
 
 #include <random>
 
-#include "furiosa_torch.h"
-
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/Operation.h"
 
 #include "llvm/ADT/Any.h"
 #include "llvm/ADT/ArrayRef.h"
+#include "llvm/Support/Error.h"
 
-#include "furiosa-mlir/Target/C/FuriosaTaskToC.h"
+#include "furiosa-mlir/ExecutionEngine/RenegadeRuntime.h"
 
 namespace mlir::furiosa {
 
-#define CEIL(a, b) (((a + b - 1) / b) * b)
-
-static constexpr auto MIN_BYTE_ARRAY_SIZE = 256;
-static constexpr auto DRAM_ACCESS_WIDTH = 256;
-using byte_array_t = SmallVector<std::uint8_t, MIN_BYTE_ARRAY_SIZE>;
-using pe_program_t = SmallVector<furiosa_torch::Stmt *>;
-using hal_program_t = SmallVector<furiosa_torch::Program *>;
-using device_t = furiosa_torch::Device *;
-using execution_t = furiosa_torch::Execution *;
-
-class ExecutionContext {
+class ExecutionEngine {
 public:
-  ExecutionContext(Operation *module)
-      : module(module), randomNumberGenerator(), distribution() {}
+  ExecutionEngine(ModuleOp module, Attribute target)
+      : module(module), target(target), randomNumberGenerator(),
+        distribution() {}
 
-  Operation *getModule() const { return module; }
+  // execution engine functions for python binding
+  static llvm::Expected<std::unique_ptr<ExecutionEngine>>
+  create(ModuleOp module, Attribute target = Attribute());
+
+  llvm::Error invokePacked(StringRef func_name, std::int64_t num_args,
+                           std::int64_t num_inputs, void **args);
+
+  ModuleOp getModule() const { return module; }
+
+  Attribute getTarget() const { return target; }
 
   void createValue(Value val, llvm::Any data) {
     if (!valueMapper.count(val)) {
@@ -51,7 +51,8 @@ public:
 private:
   using ValueMapper = llvm::DenseMap<Value, llvm::Any>;
 
-  Operation *module;
+  ModuleOp module;
+  Attribute target;
 
   /// Map from value to its data
   ValueMapper valueMapper;
@@ -60,8 +61,5 @@ private:
   std::mt19937 randomNumberGenerator;
   std::uniform_int_distribution<std::uint64_t> distribution;
 };
-
-LogicalResult executeFunction(Operation *module, StringRef entry_point,
-                              StringRef entry_point_type);
 
 } // namespace mlir::furiosa

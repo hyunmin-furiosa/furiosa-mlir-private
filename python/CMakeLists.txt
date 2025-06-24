@@ -1,5 +1,7 @@
 include(AddMLIRPython)
 
+add_compile_definitions("MLIR_PYTHON_PACKAGE_PREFIX=furiosa_mlir.")
+
 ################################################################################
 # Structural groupings.
 ################################################################################
@@ -11,6 +13,20 @@ declare_mlir_python_sources(FuriosaMLIRPythonSources.Dialects
 ################################################################################
 # Pure python sources and generated code
 ################################################################################
+
+declare_mlir_python_sources(FuriosaMLIRPythonSources.ExecutionEngine
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/furiosa-mlir"
+  ADD_TO_PARENT FuriosaMLIRPythonSources
+  SOURCES
+    execution_engine.py
+  SOURCES_GLOB
+    runtime/*.py
+)
+
+declare_mlir_python_sources(FuriosaMLIRPythonCAPI.HeaderSources
+  ROOT_DIR "${FURIOSA_MLIR_SOURCE_DIR}/include"
+  SOURCES_GLOB "furiosa-mlir-c/*.h"
+)
 
 ################################################################################
 # Dialect bindings
@@ -24,6 +40,22 @@ declare_mlir_dialect_python_bindings(
     dialects/furiosa.py
   DIALECT_NAME furiosa
   GEN_ENUM_BINDINGS)
+
+declare_mlir_dialect_python_bindings(
+  ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/furiosa-mlir"
+  TD_FILE dialects/HostOps.td
+  SOURCES
+    dialects/host.py
+  DIALECT_NAME furiosa_host)
+
+declare_mlir_dialect_python_bindings(
+  ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/furiosa-mlir"
+  TD_FILE dialects/TaskOps.td
+  SOURCES
+    dialects/task.py
+  DIALECT_NAME furiosa_task)
 
 ################################################################################
 # Python extensions.
@@ -63,6 +95,34 @@ declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Furiosa.Pybind
     FuriosaMLIRCAPIFuriosa
 )
 
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Host.Pybind
+  MODULE_NAME _furiosaMlirDialectsHost
+  ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects.furiosa_host
+  ROOT_DIR "${PYTHON_SOURCE_DIR}"
+  PYTHON_BINDINGS_LIBRARY nanobind
+  SOURCES
+    DialectHost.cpp
+  PRIVATE_LINK_LIBS
+    LLVMSupport
+  EMBED_CAPI_LINK_LIBS
+    MLIRCAPIIR
+    FuriosaMLIRCAPIFuriosa
+)
+
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.Dialects.Task.Pybind
+  MODULE_NAME _furiosaMlirDialectsTask
+  ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects.furiosa_task
+  ROOT_DIR "${PYTHON_SOURCE_DIR}"
+  PYTHON_BINDINGS_LIBRARY nanobind
+  SOURCES
+    DialectTask.cpp
+  PRIVATE_LINK_LIBS
+    LLVMSupport
+  EMBED_CAPI_LINK_LIBS
+    MLIRCAPIIR
+    FuriosaMLIRCAPIFuriosa
+)
+
 declare_mlir_python_extension(FuriosaMLIRPythonExtension.FuriosaDialectPasses
   MODULE_NAME _furiosaMlirFuriosaPasses
   ADD_TO_PARENT FuriosaMLIRPythonSources.Dialects.furiosa
@@ -74,6 +134,19 @@ declare_mlir_python_extension(FuriosaMLIRPythonExtension.FuriosaDialectPasses
     LLVMSupport
   EMBED_CAPI_LINK_LIBS
     FuriosaMLIRCAPIFuriosa
+)
+
+declare_mlir_python_extension(FuriosaMLIRPythonExtension.ExecutionEngine
+  MODULE_NAME _furiosaMlirExecutionEngine
+  ADD_TO_PARENT FuriosaMLIRPythonSources.ExecutionEngine
+  ROOT_DIR "${PYTHON_SOURCE_DIR}"
+  PYTHON_BINDINGS_LIBRARY nanobind
+  SOURCES
+    ExecutionEngineModule.cpp
+  PRIVATE_LINK_LIBS
+    LLVMSupport
+  EMBED_CAPI_LINK_LIBS
+    FuriosaMLIRCAPIExecutionEngine
 )
 
 ################################################################################
@@ -95,10 +168,9 @@ add_mlir_python_common_capi_library(FuriosaMLIRPythonCAPI
   OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/python_packages/furiosa-mlir/_mlir_libs"
   RELATIVE_INSTALL_ROOT ".."
   DECLARED_HEADERS
-    MLIRPythonCAPI.HeaderSources
+    FuriosaMLIRPythonCAPI.HeaderSources
   DECLARED_SOURCES
     MLIRPythonSources
-    MLIRPythonExtension.Core
     FuriosaMLIRPythonSources
     FuriosaMLIRPythonExtension.RegisterEverything
 )
@@ -112,8 +184,7 @@ add_mlir_python_modules(FuriosaMLIRPythonModules
   ROOT_PREFIX "${FURIOSA_MLIR_BINARY_DIR}/python_packages/furiosa_mlir"
   INSTALL_PREFIX "python_packages/furiosa-mlir"
   DECLARED_SOURCES
-    MLIRPythonSources
-    MLIRPythonExtension.Core
+    MLIRPythonSources.Core
     FuriosaMLIRPythonSources
     FuriosaMLIRPythonExtension.RegisterEverything
   COMMON_CAPI_LINK_LIBS

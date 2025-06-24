@@ -1,5 +1,4 @@
-#ifndef FURIOSA_MLIR_C_REGISTER_EVERYTHING_H
-#define FURIOSA_MLIR_C_REGISTER_EVERYTHING_H
+#pragma once
 
 #include "mlir-c/IR.h"
 #include "mlir-c/Support.h"
@@ -20,5 +19,3 @@ MLIR_CAPI_EXPORTED void furiosaMlirRegisterAllPasses(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // FURIOSA_MLIR_C_REGISTER_EVERYTHING_H
