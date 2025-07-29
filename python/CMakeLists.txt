@@ -18,6 +18,7 @@ declare_mlir_python_sources(FuriosaMLIRPythonSources.ExecutionEngine
   ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/furiosa-mlir"
   ADD_TO_PARENT FuriosaMLIRPythonSources
   SOURCES
+    compiler.py
     execution_engine.py
   SOURCES_GLOB
     runtime/*.py
