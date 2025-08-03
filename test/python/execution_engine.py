@@ -120,13 +120,10 @@ module {
         arr0 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr1 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr2 = np.zeros((64, 64, 64), dtype=np.int8)
-        arr0_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr0))
-        arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
-        arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
 
         target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
         execution_engine = ExecutionEngine(module, target)
-        execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+        execution_engine.invoke("kernel", [arr0, arr1], [arr2])
 
         expected = np.einsum("nij,njk->nik", arr0, arr1)
         print(np.array_equal(arr2, expected))
@@ -165,13 +162,10 @@ module {
         arr0 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr1 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr2 = np.zeros((64, 64, 64), dtype=np.int8)
-        arr0_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr0))
-        arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
-        arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
 
         target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
         execution_engine = ExecutionEngine(module, target)
-        execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+        execution_engine.invoke("kernel", [arr0, arr1], [arr2])
 
         expected = np.einsum("nij,njk->nik", arr0, arr1)
         print(np.array_equal(arr2, expected))
@@ -220,13 +214,10 @@ module {
         arr0 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr1 = np.random.randint(0, 2, size=(64, 64, 64), dtype=np.int8)
         arr2 = np.zeros((64, 64, 64), dtype=np.int8)
-        arr0_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr0))
-        arr1_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr1))
-        arr2_desc = ctypes.pointer(get_ranked_tensor_descriptor(arr2))
 
         target = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
         execution_engine = ExecutionEngine(module, target)
-        execution_engine.invoke("kernel", [arr0_desc, arr1_desc], [arr2_desc])
+        execution_engine.invoke("kernel", [arr0, arr1], [arr2])
 
         expected = np.einsum("nij,njk->nik", arr0, arr1)
         print(np.array_equal(arr2, expected))
