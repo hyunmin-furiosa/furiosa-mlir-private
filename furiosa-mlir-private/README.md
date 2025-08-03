@@ -3,19 +3,19 @@ The Furiosa-MLIR project aims to provide a compilation flow that converts arbitr
 
 ## Building Furiosa-MLIR
 
-Build [device-runtime](https://github.com/furiosa-ai/device-runtime/) and [pert](https://github.com/furiosa-ai/device-runtime/tree/main/pert) at [378a85a](https://github.com/furiosa-ai/device-runtime/commit/378a85ae5add5306c40b224d4fe061a542e21fc3).
+Build [device-runtime](https://github.com/furiosa-ai/device-runtime/) and [pert](https://github.com/furiosa-ai/device-runtime/tree/main/pert) at [22dd3fe](https://github.com/furiosa-ai/device-runtime/commit/22dd3fecea87965790f075cce12c19459e33ba78).
 ```shell
 cargo build --release -p device-runtime-c # C bindings for device-runtime
 cd pert
 make pert
 ```
 
-Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [458185f](https://github.com/furiosa-ai/npu-virtual-platform/commit/458185f04bae900c347b730b9653cf45e5fe3314).
+Build [npu-virtual-platform](https://github.com/furiosa-ai/npu-virtual-platform) at [9eba629](https://github.com/furiosa-ai/npu-virtual-platform/commit/9eba62989f72df68d5e755b227668e0f984dfd13).
 ```shell
 make renegade DEFAULT_PERT_PATH=<device-runtime>/target/aarch64-unknown-none-softfloat/release/pert
 ```
 
-Build [llvm-project](https://github.com/llvm/llvm-project) at [cf679e6](https://github.com/llvm/llvm-project/commit/cf679e66fade71220535775cca895628bf7692af).
+Build [llvm-project](https://github.com/llvm/llvm-project) at [779868d](https://github.com/llvm/llvm-project/commit/779868de6975f6fd0ea17bb9a8e929037d3752d7).
 ```shell
 cmake -G Ninja -B build llvm \
   -DCMAKE_BUILD_TYPE=Release \
