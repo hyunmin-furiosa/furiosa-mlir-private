@@ -1,7 +1,9 @@
 # The Furiosa-MLIR Project
 The Furiosa-MLIR project aims to provide a compilation flow that converts arbitrary MLIR code into optimized hardware code that can run on [FuriosaAI Renegade](https://furiosa.ai/rngd).  
 
-## Building Furiosa-MLIR
+## Preparing Furiosa-MLIR
+
+### Building from Source
 
 Build [device-runtime](https://github.com/furiosa-ai/device-runtime/) and [pert](https://github.com/furiosa-ai/device-runtime/tree/main/pert) at [22dd3fe](https://github.com/furiosa-ai/device-runtime/commit/22dd3fecea87965790f075cce12c19459e33ba78).
 ```shell
@@ -42,13 +44,37 @@ CPATH=$CPATH:<device-runtime>/target/release \
 make LLVM_BUILD_DIR=<llvm-project>/build
 ```
 
+Add generated libraries and binaries to environment variables. 
+```shell
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<device-runtime>/target/release:<npu-virtual-platform>/build/renegade
+export PATH=$PATH:<furiosa-mlir>/build/bin
+export PYTHONPATH=$PYTHONPATH:<furiosa-mlir>/build/python_packages # for python interface
+```
+
+### Using Prebuilt Binaries
+
+Download all assets except source code from release [v0.0.0](https://github.com/furiosa-ai/furiosa-mlir/releases/tag/v0.0.0).
+
+When using Python interface, untar Python package.
+```shell
+tar -xvf python_packages.tar.gz
+```
+
+Set appropriate environment variables to download folder.
+```shell
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<Downloads>
+export PATH=$PATH:<Downloads> # for command line interface
+export PYTHONPATH=$PYTHONPATH:<Downloads>/python_packages # for python interface
+```
+
+When using Furiosa-MLIR with NVP, set all `image_path` in `nvp_config.yml` to `<Downloads>/pert` and set environment variable for NVP configuration.
+```shell
+export NVP_CONFIG=<Downloads>/nvp_config.yml
+```
+
 ## Using Furiosa-MLIR
 
-Add required libraries and generated binaries to environment variables. 
-```shell
-export PATH=$PATH:<furiosa-mlir>/build/bin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<device-runtime>/target/release:<npu-virtual-platform>/build/renegade
-```
+### Command Line Interface
 
 Optimize and lower the example MLIR into furiosa host dialect. 
 ```shell
@@ -64,3 +90,12 @@ Run the example MLIR on target device.
 ```shell
 furiosa-mlir-runner test/Dialect/Host/host.mlir
 ```
+
+### Python Interface
+
+Run the example Python code on target device.
+```shell
+python3 test/python/compiler.py
+```
+
+
