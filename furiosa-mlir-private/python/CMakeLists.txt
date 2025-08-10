@@ -186,6 +186,7 @@ add_mlir_python_modules(FuriosaMLIRPythonModules
   INSTALL_PREFIX "python_packages/furiosa-mlir"
   DECLARED_SOURCES
     MLIRPythonSources.Core
+    MLIRPythonSources.Dialects
     FuriosaMLIRPythonSources
     FuriosaMLIRPythonExtension.RegisterEverything
   COMMON_CAPI_LINK_LIBS
