@@ -349,7 +349,7 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     sfr.reg_indexer_strides_element0 = 32;
     sfr.reg_indexer_strides_element1 = 2;
     sfr.reg_indexer_strides_element2 = 128;
-    sfr.reg_indexer_strides_element3 = 128 * dim_b / 32;
+    sfr.reg_indexer_strides_element3 = 128 * dim_b / 16;
     sfr.reg_indexer_strides_element4 = 0;
     sfr.reg_indexer_strides_element5 = 0;
     sfr.reg_indexer_strides_element6 = 0;
