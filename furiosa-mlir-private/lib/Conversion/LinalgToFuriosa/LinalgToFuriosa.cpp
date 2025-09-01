@@ -28,12 +28,6 @@ public:
   ForallOpLowering(MLIRContext *context)
       : OpRewritePattern<scf::ForallOp>(context) {}
 
-  // Mark the furiosa memory type of the tensors
-  LogicalResult markExtractSliceOp(tensor::ExtractSliceOp op,
-                                   PatternRewriter &rewriter) const;
-  LogicalResult markContractOp(linalg::ContractOp op,
-                               PatternRewriter &rewriter) const;
-
   // Convert operators to furiosa dialect
   LogicalResult replaceExtractSliceOp(tensor::ExtractSliceOp op,
                                       ValueMapper value_mapper,
@@ -66,163 +60,44 @@ public:
 } // namespace
 
 LogicalResult
-ForallOpLowering::markExtractSliceOp(tensor::ExtractSliceOp op,
-                                     PatternRewriter &rewriter) const {
-  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                furiosa::MemoryType::sram);
-  auto type = llvm::cast<RankedTensorType>(op.getType());
-  rewriter.modifyOpInPlace(
-      op, [&]() { op.getResult().setType(type.cloneWithEncoding(sram_attr)); });
-
-  return success();
-}
-
-LogicalResult
-ForallOpLowering::markContractOp(linalg::ContractOp op,
-                                 PatternRewriter &rewriter) const {
-  assert(op.getInputs().size() == 2);
-  assert(op.getOutputs().size() == 1);
-
-  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                furiosa::MemoryType::sram);
-  auto trf_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                               furiosa::MemoryType::trf);
-
-  auto in0_type = llvm::cast<RankedTensorType>(op.getInputs()[0].getType());
-  auto in0_op = llvm::dyn_cast_or_null<tensor::ExtractSliceOp>(
-      op.getInputs()[0].getDefiningOp());
-  rewriter.modifyOpInPlace(in0_op, [&]() {
-    in0_op.getResult().setType(in0_type.cloneWithEncoding(trf_attr));
-  });
-
-  auto type = llvm::cast<RankedTensorType>(op.getOutputs()[0].getType());
-  rewriter.modifyOpInPlace(op, [&]() {
-    op.getResult(0).setType(type.cloneWithEncoding(sram_attr));
-  });
-
-  return success();
-}
-
-LogicalResult
 ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
                                         ValueMapper value_mapper,
                                         PatternRewriter &rewriter) const {
+  assert(op.hasUnitStride());
+
   auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
                                                 furiosa::MemoryType::sram);
-  auto trf_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                               furiosa::MemoryType::trf);
-
-  auto source_type = op.getSourceType();
-  auto source_memory_type = furiosa::MemoryType::dram;
-  if (auto encoding = source_type.getEncoding()) {
-    source_memory_type =
-        llvm::dyn_cast_or_null<furiosa::MemoryTypeAttr>(encoding).getValue();
-  }
-  auto result_type = op.getResultType();
-  auto result_memory_type = furiosa::MemoryType::dram;
-  if (auto encoding = result_type.getEncoding()) {
-    result_memory_type =
-        llvm::dyn_cast_or_null<furiosa::MemoryTypeAttr>(encoding).getValue();
-  }
-
-  if (source_memory_type == furiosa::MemoryType::dram) {
-    if (result_memory_type == furiosa::MemoryType::dram) {
-      return failure();
-    } else if (result_memory_type == furiosa::MemoryType::sram) {
-      assert(op.hasUnitStride());
-      auto [source_indexer, result_indexer] = getIndexers(
-          source_type, result_type, op.getMixedOffsets(), value_mapper);
-      auto source_limits = rewriter.getI64ArrayAttr(source_indexer.first);
-      auto source_strides = rewriter.getI64ArrayAttr(source_indexer.second);
-      auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
-      auto destination_strides =
-          rewriter.getI64ArrayAttr(result_indexer.second);
-      auto alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
-          op, result_type.cloneWithEncoding(sram_attr), IntegerAttr());
-      rewriter.create<furiosa::DmaOp>(
-          op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
-          source_strides, destination_limits, destination_strides);
-      return success();
-    } else if (result_memory_type == furiosa::MemoryType::trf) {
-      assert(op.hasUnitStride());
-      auto [source_indexer, result_indexer] = getIndexers(
-          source_type, result_type, op.getMixedOffsets(), value_mapper);
-      auto source_limits = rewriter.getI64ArrayAttr(source_indexer.first);
-      auto source_strides = rewriter.getI64ArrayAttr(source_indexer.second);
-      auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
-      auto destination_strides =
-          rewriter.getI64ArrayAttr(result_indexer.second);
-      auto sram_alloc_op = rewriter.create<furiosa::AllocOp>(
-          op.getLoc(), result_type.cloneWithEncoding(sram_attr), IntegerAttr());
-      rewriter.create<furiosa::DmaOp>(
-          op.getLoc(), op.getSource(), sram_alloc_op.getResult(), source_limits,
-          source_strides, destination_limits, destination_strides);
-      auto trf_alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
-          op, result_type.cloneWithEncoding(trf_attr), IntegerAttr());
-      rewriter.create<furiosa::LoadTrfOp>(
-          op.getLoc(), sram_alloc_op.getResult(), trf_alloc_op.getResult());
-      return success();
-    } else if (result_memory_type == furiosa::MemoryType::vrf) {
-      return failure();
-    }
-  } else if (source_memory_type == furiosa::MemoryType::sram) {
-    return failure();
-  } else if (source_memory_type == furiosa::MemoryType::trf) {
-    return failure();
-  } else if (source_memory_type == furiosa::MemoryType::vrf) {
-    return failure();
-  }
-
-  return failure();
+  auto [source_indexer, result_indexer] =
+      getIndexers(op.getSourceType(), op.getResultType(), op.getMixedOffsets(),
+                  value_mapper);
+  auto source_limits = rewriter.getI64ArrayAttr(source_indexer.first);
+  auto source_strides = rewriter.getI64ArrayAttr(source_indexer.second);
+  auto destination_limits = rewriter.getI64ArrayAttr(result_indexer.first);
+  auto destination_strides = rewriter.getI64ArrayAttr(result_indexer.second);
+  auto alloc_op = rewriter.replaceOpWithNewOp<furiosa::AllocOp>(
+      op, op.getResultType().cloneWithEncoding(sram_attr), IntegerAttr());
+  rewriter.create<furiosa::DmaOp>(
+      op.getLoc(), op.getSource(), alloc_op.getResult(), source_limits,
+      source_strides, destination_limits, destination_strides);
+  return success();
 }
 
 LogicalResult ForallOpLowering::replaceParallelInsertSliceOp(
     tensor::ParallelInsertSliceOp op, ValueMapper value_mapper,
     PatternRewriter &rewriter) const {
-  auto source_type = op.getSourceType();
-  auto source_memory_type = furiosa::MemoryType::dram;
-  if (auto encoding = source_type.getEncoding()) {
-    source_memory_type =
-        llvm::dyn_cast_or_null<furiosa::MemoryTypeAttr>(encoding).getValue();
-  }
-  auto dest_type = op.getDestType();
-  auto dest_memory_type = furiosa::MemoryType::dram;
-  if (auto encoding = dest_type.getEncoding()) {
-    dest_memory_type =
-        llvm::dyn_cast_or_null<furiosa::MemoryTypeAttr>(encoding).getValue();
-  }
+  assert(op.hasUnitStride());
 
-  if (source_memory_type == furiosa::MemoryType::dram) {
-    return failure();
-  } else if (source_memory_type == furiosa::MemoryType::sram) {
-    if (dest_memory_type == furiosa::MemoryType::dram) {
-      assert(op.hasUnitStride());
-      auto [destination_indexer, source_indexer] = getIndexers(
-          dest_type, source_type, op.getMixedOffsets(), value_mapper);
-      auto source_limits = rewriter.getI64ArrayAttr(source_indexer.first);
-      auto source_strides = rewriter.getI64ArrayAttr(source_indexer.second);
-      auto destination_limits =
-          rewriter.getI64ArrayAttr(destination_indexer.first);
-      auto destination_strides =
-          rewriter.getI64ArrayAttr(destination_indexer.second);
-      rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
-          op, op.getSource(), op.getDest(), source_limits, source_strides,
-          destination_limits, destination_strides);
-      return success();
-    } else if (dest_memory_type == furiosa::MemoryType::sram) {
-      return failure();
-    } else if (dest_memory_type == furiosa::MemoryType::trf) {
-      return failure();
-    } else if (dest_memory_type == furiosa::MemoryType::vrf) {
-      return failure();
-    }
-  } else if (source_memory_type == furiosa::MemoryType::trf) {
-    return failure();
-  } else if (source_memory_type == furiosa::MemoryType::vrf) {
-    return failure();
-  }
-
-  return failure();
+  auto [destination_indexer, source_indexer] = getIndexers(
+      op.getDestType(), op.getSourceType(), op.getMixedOffsets(), value_mapper);
+  auto source_limits = rewriter.getI64ArrayAttr(source_indexer.first);
+  auto source_strides = rewriter.getI64ArrayAttr(source_indexer.second);
+  auto destination_limits = rewriter.getI64ArrayAttr(destination_indexer.first);
+  auto destination_strides =
+      rewriter.getI64ArrayAttr(destination_indexer.second);
+  rewriter.replaceOpWithNewOp<furiosa::DmaOp>(
+      op, op.getSource(), op.getDest(), source_limits, source_strides,
+      destination_limits, destination_strides);
+  return success();
 }
 
 LogicalResult
@@ -249,21 +124,20 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
     }
   }
 
-  // Mark the furiosa memory type of the tensors
-  WalkResult status = op.walk([&](tensor::ExtractSliceOp extract_op) {
-    if (failed(markExtractSliceOp(extract_op, rewriter))) {
-      return WalkResult::interrupt();
-    }
-    return WalkResult::advance();
-  });
-  if (status.wasInterrupted()) {
-    return failure();
-  }
-
-  status = op.walk([&](linalg::ContractOp contract_op) {
-    if (failed(markContractOp(contract_op, rewriter))) {
-      return WalkResult::interrupt();
-    }
+  // Mark all operands and results of contract op as SRAM
+  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
+                                                furiosa::MemoryType::sram);
+  WalkResult status = op.walk([&](linalg::ContractOp contract_op) {
+    rewriter.modifyOpInPlace(contract_op, [&]() {
+      for (auto operand : contract_op.getOperands()) {
+        auto type = llvm::cast<RankedTensorType>(operand.getType());
+        operand.setType(type.cloneWithEncoding(sram_attr));
+      }
+      for (auto result : contract_op.getResults()) {
+        auto type = llvm::cast<RankedTensorType>(result.getType());
+        result.setType(type.cloneWithEncoding(sram_attr));
+      }
+    });
     return WalkResult::advance();
   });
   if (status.wasInterrupted()) {
