@@ -56,6 +56,9 @@ module {
     def apply_furiosa_promote_slice_partition_loop_pass(self, module: Module):
         self.apply_passes(module, ["builtin.module(furiosa-promote-slice-partition-loop)"])
 
+    def apply_furiosa_load_tensor_register_file_pass(self, module: Module):
+        self.apply_passes(module, ["builtin.module(furiosa-load-tensor-register-file)"])
+
     def apply_func_results_to_params_pass(self, module: Module):
         self.apply_passes(module, ["builtin.module(func-results-to-params)"])
 
@@ -80,6 +83,7 @@ module {
         self.apply_transformations(module)
         self.apply_convert_linalg_to_furiosa_pass(module)
         self.apply_furiosa_promote_slice_partition_loop_pass(module)
+        self.apply_furiosa_load_tensor_register_file_pass(module)
         self.apply_func_results_to_params_pass(module)
         self.apply_furiosa_deallocation_pass(module)
         self.apply_optimize_allocation_liveness_pass(module)

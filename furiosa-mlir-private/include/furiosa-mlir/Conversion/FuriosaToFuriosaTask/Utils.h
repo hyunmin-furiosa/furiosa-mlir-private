@@ -1,6 +1,7 @@
 #pragma once
 
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
 #include "furiosa-mlir/Dialect/Task/IR/RenegadeSfr.h"
 #include "furiosa-mlir/Dialect/Task/IR/TaskOps.h"
 
@@ -70,19 +71,6 @@ FailureOr<std::int64_t> getAddress(Value value) {
     return alloc_op->getAttrOfType<IntegerAttr>("address").getInt();
   } else {
     return failure();
-  }
-}
-
-FailureOr<MemoryType> getMemoryType(Value value) {
-  auto tensor_type = llvm::dyn_cast_or_null<RankedTensorType>(value.getType());
-  if (!tensor_type) {
-    return failure();
-  }
-
-  if (auto encoding = tensor_type.getEncoding()) {
-    return llvm::dyn_cast_or_null<MemoryTypeAttr>(encoding).getValue();
-  } else {
-    return MemoryType::dram; // Default to DRAM if no encoding is specified
   }
 }
 

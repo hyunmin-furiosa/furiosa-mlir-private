@@ -28,4 +28,10 @@ def FuriosaAllocateAddressPass : Pass<"furiosa-allocate-address"> {
   let dependentDialects = ["furiosa::FuriosaDialect"];
 }
 
+def FuriosaLoadTensorRegisterFilePass
+    : Pass<"furiosa-load-tensor-register-file"> {
+  let summary = "Add load tensor register file operations";
+  let dependentDialects = ["furiosa::FuriosaDialect"];
+}
+
 #endif // FURIOSA_PASSES_TD

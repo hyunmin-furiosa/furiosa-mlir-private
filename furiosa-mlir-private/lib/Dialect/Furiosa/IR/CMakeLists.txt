@@ -1,5 +1,6 @@
 add_mlir_library(FuriosaMLIRFuriosaDialect
   FuriosaDialect.cpp
+  Utils.cpp
 
   DEPENDS
   FuriosaMLIRFuriosaOpsIncGen
