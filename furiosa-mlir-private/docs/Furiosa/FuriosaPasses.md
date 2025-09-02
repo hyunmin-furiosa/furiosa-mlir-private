@@ -8,6 +8,10 @@ _Allocate addresses for SRAM memory operations_
 
 _Insert deallocation operations for allocations_
 
+### `-furiosa-load-tensor-register-file`
+
+_Add load tensor register file operations_
+
 ### `-furiosa-promote-slice-partition-loop`
 
 _Promote slice partition loop to outer block_
