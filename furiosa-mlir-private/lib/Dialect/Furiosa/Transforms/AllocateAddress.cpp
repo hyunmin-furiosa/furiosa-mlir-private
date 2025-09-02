@@ -1,5 +1,6 @@
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/AllocateAddress.h"
 #include "furiosa-mlir/Dialect/Furiosa/IR/FuriosaOps.h"
+#include "furiosa-mlir/Dialect/Furiosa/IR/Utils.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Passes.h"
 #include "furiosa-mlir/Dialect/Furiosa/Transforms/Utils.h"
 
@@ -58,12 +59,7 @@ AddressAllocation::matchAndRewrite(func::FuncOp func_op,
               auto tensor_type = llvm::cast<RankedTensorType>(type);
               auto size = tensor_type.getNumElements() *
                           tensor_type.getElementTypeBitWidth() / CHAR_BIT;
-              auto memory_type = furiosa::MemoryType::dram;
-              if (auto encoding = tensor_type.getEncoding()) {
-                memory_type =
-                    llvm::dyn_cast_or_null<furiosa::MemoryTypeAttr>(encoding)
-                        .getValue();
-              }
+              auto memory_type = *getMemoryType(op);
               auto address = allocator.allocate(size, memory_type);
               auto address_attr = rewriter.getI64IntegerAttr(address);
               rewriter.modifyOpInPlace(
@@ -77,14 +73,7 @@ AddressAllocation::matchAndRewrite(func::FuncOp func_op,
               auto address =
                   alloc_op->template getAttrOfType<IntegerAttr>("address")
                       .getInt();
-              auto type = alloc_op.getType();
-              auto tensor_type = llvm::cast<RankedTensorType>(type);
-              auto memory_type = furiosa::MemoryType::dram;
-              if (auto encoding = tensor_type.getEncoding()) {
-                memory_type =
-                    llvm::dyn_cast_or_null<furiosa::MemoryTypeAttr>(encoding)
-                        .getValue();
-              }
+              auto memory_type = *getMemoryType(alloc_op);
               allocator.deallocate(address, memory_type);
 
               return success();

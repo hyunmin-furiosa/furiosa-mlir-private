@@ -65,8 +65,8 @@ ForallOpLowering::replaceExtractSliceOp(tensor::ExtractSliceOp op,
                                         PatternRewriter &rewriter) const {
   assert(op.hasUnitStride());
 
-  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                furiosa::MemoryType::sram);
+  auto sram_attr = furiosa::TensorAttr::get(
+      rewriter.getContext(), furiosa::MemoryType::sram, Attribute());
   auto [source_indexer, result_indexer] =
       getIndexers(op.getSourceType(), op.getResultType(), op.getMixedOffsets(),
                   value_mapper);
@@ -125,8 +125,8 @@ ForallOpLowering::matchAndRewrite(scf::ForallOp op,
   }
 
   // Mark all operands and results of contract op as SRAM
-  auto sram_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                                furiosa::MemoryType::sram);
+  auto sram_attr = furiosa::TensorAttr::get(
+      rewriter.getContext(), furiosa::MemoryType::sram, Attribute());
   WalkResult status = op.walk([&](linalg::ContractOp contract_op) {
     rewriter.modifyOpInPlace(contract_op, [&]() {
       for (auto operand : contract_op.getOperands()) {

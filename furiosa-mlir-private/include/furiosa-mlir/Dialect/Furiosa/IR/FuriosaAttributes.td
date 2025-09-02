@@ -60,10 +60,14 @@ def MemoryType
   let cppNamespace = "::mlir::furiosa";
 }
 
-def MemoryTypeAttr : EnumAttr<Furiosa_Dialect, MemoryType, "memory_type"> {
-  let summary = "Memory type attribute";
+def TensorAttr : Furiosa_Attr<"Tensor", "tensor"> {
+  let summary = "Tensor attribute";
   let description = [{}];
-  let assemblyFormat = "`<` $value `>`";
+  let parameters = (ins
+      "MemoryType":$memory_type,
+      OptionalParameter<"Attribute">:$memory_map
+  );
+  let assemblyFormat = "`<` $memory_type ( `,` $memory_map^)? `>`";
 }
 
 #endif // FURIOSA_ATTRIBUTES_TD

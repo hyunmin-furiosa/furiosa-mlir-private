@@ -10,7 +10,7 @@ FailureOr<MemoryType> mlir::furiosa::getMemoryType(Value value) {
   }
 
   if (auto encoding = tensor_type.getEncoding()) {
-    return llvm::dyn_cast_or_null<MemoryTypeAttr>(encoding).getValue();
+    return llvm::dyn_cast_or_null<TensorAttr>(encoding).getMemoryType();
   } else {
     return MemoryType::dram; // Default to DRAM if no encoding is specified
   }

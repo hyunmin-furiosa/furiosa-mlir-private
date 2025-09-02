@@ -47,8 +47,8 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp op,
   assert(op.getInputs().size() == 2);
   assert(op.getOutputs().size() == 1);
 
-  auto trf_attr = furiosa::MemoryTypeAttr::get(rewriter.getContext(),
-                                               furiosa::MemoryType::trf);
+  auto trf_attr = furiosa::TensorAttr::get(
+      rewriter.getContext(), furiosa::MemoryType::trf, Attribute());
   static constexpr auto TRF_INPUT_INDEX = 0;
   auto trf_input = op.getInputs()[TRF_INPUT_INDEX];
   auto trf_type = llvm::cast<RankedTensorType>(trf_input.getType())
