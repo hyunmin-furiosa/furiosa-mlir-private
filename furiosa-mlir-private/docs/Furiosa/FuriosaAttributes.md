@@ -7,24 +7,6 @@ _Mapping attribute_
 Syntax: `#furiosa.mapping`
 
 
-### MemoryTypeAttr
-
-_Memory type attribute_
-
-Syntax:
-
-```
-#furiosa.memory_type<
-  ::mlir::furiosa::MemoryType   # value
->
-```
-
-#### Parameters:
-
-| Parameter | C++ type | Description |
-| :-------: | :-------: | ----------- |
-| value | `::mlir::furiosa::MemoryType` | an enum of type MemoryType |
-
 ### TargetAttr
 
 _Target attribute_
@@ -46,3 +28,23 @@ Syntax:
 | npu | `uint64_t` |  |
 | pe_begin | `uint64_t` |  |
 | pe_end | `uint64_t` |  |
+
+### TensorAttr
+
+_Tensor attribute_
+
+Syntax:
+
+```
+#furiosa.tensor<
+  MemoryType,   # memory_type
+  Attribute   # memory_map
+>
+```
+
+#### Parameters:
+
+| Parameter | C++ type | Description |
+| :-------: | :-------: | ----------- |
+| memory_type | `MemoryType` |  |
+| memory_map | `Attribute` |  |
