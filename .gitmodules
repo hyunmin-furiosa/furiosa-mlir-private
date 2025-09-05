@@ -1,0 +1,3 @@
+[submodule "furiosa-mlir"]
+	path = furiosa-mlir
+	url = git@github.com:furiosa-ai/furiosa-mlir.git
