@@ -32,6 +32,35 @@ bool MappingAttr::isLinearMapping() { return false; }
 int64_t MappingAttr::getRelativeIndex() { return 0; }
 
 //===----------------------------------------------------------------------===//
+// Partition Map Attributes
+//===----------------------------------------------------------------------===//
+
+Attribute PartitionedMapAttr::parse(AsmParser &parser, Type type) {
+  if (failed(parser.parseLess())) {
+    return {};
+  }
+
+  AffineMap map;
+  if (failed(parser.parseAffineMap(map))) {
+    return {};
+  }
+
+  if (failed(parser.parseGreater())) {
+    return {};
+  }
+
+  return PartitionedMapAttr::get(parser.getContext(), map, {});
+}
+
+void PartitionedMapAttr::print(AsmPrinter &printer) const {
+  printer << "<";
+
+  getAffineMap().print(printer.getStream());
+
+  printer << ">";
+}
+
+//===----------------------------------------------------------------------===//
 // Register Dialect
 //===----------------------------------------------------------------------===//
 

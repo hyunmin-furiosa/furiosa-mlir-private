@@ -60,6 +60,17 @@ def MemoryType
   let cppNamespace = "::mlir::furiosa";
 }
 
+def PartitionedMapAttr : Furiosa_Attr<"PartitionedMap", "partitioned_map"> {
+  let summary = "Partitioned map attribute";
+  let description = [{}];
+  let parameters = (ins
+      "AffineMap":$affine_map,
+      ArrayRefParameter<"uint64_t">:$partitions
+  );
+  let hasCustomAssemblyFormat = 1;
+  let genMnemonicAlias = 1;
+}
+
 def TensorAttr : Furiosa_Attr<"Tensor", "tensor"> {
   let summary = "Tensor attribute";
   let description = [{}];
