@@ -46,16 +46,16 @@ MLIR_CAPI_EXPORTED MlirTypeID mlirFuriosaMappingAttrGetTypeID(void);
 MLIR_CAPI_EXPORTED MlirAttribute mlirFuriosaMappingAttrGet(MlirContext ctx);
 
 //===---------------------------------------------------------------------===//
-// MemoryTypeAttr
+// TensorAttr
 //===---------------------------------------------------------------------===//
 
-MLIR_CAPI_EXPORTED bool
-mlirAttributeIsAFuriosaMemoryTypeAttr(MlirAttribute attr);
+MLIR_CAPI_EXPORTED bool mlirAttributeIsAFuriosaTensorAttr(MlirAttribute attr);
 
-MLIR_CAPI_EXPORTED MlirTypeID mlirFuriosaMemoryTypeAttrGetTypeID(void);
+MLIR_CAPI_EXPORTED MlirTypeID mlirFuriosaTensorAttrGetTypeID(void);
 
 MLIR_CAPI_EXPORTED MlirAttribute
-mlirFuriosaMemoryTypeAttrGet(MlirContext ctx, mlir::furiosa::MemoryType value);
+mlirFuriosaTensorAttrGet(MlirContext ctx, mlir::furiosa::MemoryType memory_type,
+                         MlirAttribute memory_map);
 
 #ifdef __cplusplus
 }

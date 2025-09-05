@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "furiosa-mlir-c/Dialect/Furiosa.h"
 
 #include "mlir-c/IR.h"
@@ -52,14 +54,16 @@ NB_MODULE(_furiosaMlirDialectsFuriosa, m) {
       .value("trf", mlir::furiosa::MemoryType::trf)
       .value("vrf", mlir::furiosa::MemoryType::vrf);
 
-  mlir_attribute_subclass(m, "MemoryTypeAttr",
-                          mlirAttributeIsAFuriosaMemoryTypeAttr)
+  mlir_attribute_subclass(m, "TensorAttr", mlirAttributeIsAFuriosaTensorAttr)
       .def_classmethod(
           "get",
           [](const nb::object &cls, MlirContext context,
-             mlir::furiosa::MemoryType value) {
-            return cls(mlirFuriosaMemoryTypeAttrGet(context, value));
+             mlir::furiosa::MemoryType memory_type,
+             std::optional<MlirAttribute> memory_map) {
+            return cls(mlirFuriosaTensorAttrGet(
+                context, memory_type,
+                memory_map.has_value() ? *memory_map : MlirAttribute{nullptr}));
           },
           nb::arg("cls"), nb::arg("context").none() = nb::none(),
-          nb::arg("value"));
+          nb::arg("memory_type"), nb::arg("memory_map").none() = nb::none());
 }

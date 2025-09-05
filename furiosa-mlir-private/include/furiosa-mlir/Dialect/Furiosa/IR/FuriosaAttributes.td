@@ -60,10 +60,25 @@ def MemoryType
   let cppNamespace = "::mlir::furiosa";
 }
 
-def MemoryTypeAttr : EnumAttr<Furiosa_Dialect, MemoryType, "memory_type"> {
-  let summary = "Memory type attribute";
+def PartitionedMapAttr : Furiosa_Attr<"PartitionedMap", "partitioned_map"> {
+  let summary = "Partitioned map attribute";
   let description = [{}];
-  let assemblyFormat = "`<` $value `>`";
+  let parameters = (ins
+      "AffineMap":$affine_map,
+      ArrayRefParameter<"uint64_t">:$partitions
+  );
+  let hasCustomAssemblyFormat = 1;
+  let genMnemonicAlias = 1;
+}
+
+def TensorAttr : Furiosa_Attr<"Tensor", "tensor"> {
+  let summary = "Tensor attribute";
+  let description = [{}];
+  let parameters = (ins
+      "MemoryType":$memory_type,
+      OptionalParameter<"Attribute">:$memory_map
+  );
+  let assemblyFormat = "`<` $memory_type ( `,` $memory_map^)? `>`";
 }
 
 #endif // FURIOSA_ATTRIBUTES_TD

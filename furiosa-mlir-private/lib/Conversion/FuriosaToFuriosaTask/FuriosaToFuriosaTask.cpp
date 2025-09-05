@@ -185,16 +185,16 @@ LoadTrfOpLowering::matchAndRewrite(furiosa::LoadTrfOp load_trf_op,
     sfr.limits_element2 = dim_b / 32;
     sfr.limits_element3 = 2;
     sfr.limits_element4 = dim_a / 64;
-    sfr.limits_element5 = 8;
-    sfr.limits_element6 = 1;
+    sfr.limits_element5 = batch;
+    sfr.limits_element6 = 8;
     sfr.limits_element7 = 1;
     sfr.strides_element0 = 8;
     sfr.strides_element1 = dim_b * 16;
     sfr.strides_element2 = 32;
     sfr.strides_element3 = dim_b;
     sfr.strides_element4 = dim_b * 64;
-    sfr.strides_element5 = dim_b * 2;
-    sfr.strides_element6 = 0;
+    sfr.strides_element5 = dim_a * dim_b;
+    sfr.strides_element6 = dim_b * 2;
     sfr.strides_element7 = 0;
     sfr.flit_count = size / FLIT_SIZE;
     sfr.words_per_packet = SUB_FETCH_WORDS_PER_PACKET;
@@ -276,6 +276,7 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
          "contract op should have exactly one output");
   auto output_base = *getAddress(contract_op.getOutputs()[0]);
 
+  std::int64_t batch = weight_shape[0];
   std::int64_t dim_a = weight_shape[1];
   std::int64_t dim_b = input_shape[1];
   std::int64_t dim_c = input_shape[2];
@@ -305,7 +306,7 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     sfr.limits_element3 = 2;
     sfr.limits_element4 = dim_a / 64;
     sfr.limits_element5 = dim_c / 32;
-    sfr.limits_element6 = 1;
+    sfr.limits_element6 = batch;
     sfr.limits_element7 = 1;
     sfr.strides_element0 = dim_c;
     sfr.strides_element1 = 16;
@@ -313,9 +314,9 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     sfr.strides_element3 = 0;
     sfr.strides_element4 = 0;
     sfr.strides_element5 = 32;
-    sfr.strides_element6 = 0;
+    sfr.strides_element6 = dim_b * dim_c;
     sfr.strides_element7 = 0;
-    sfr.flit_count = dim_a * dim_b * dim_c / 32 / FLIT_SIZE;
+    sfr.flit_count = batch * dim_a * dim_b * dim_c / 32 / FLIT_SIZE;
     sfr.words_per_packet = 4;
 
     auto sfr_op = createSfrMainFetchUnitOp(rewriter, contract_op.getLoc(), sfr);
@@ -343,15 +344,15 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     sfr.iter_seq_limits_element2 = dim_b / 16;
     sfr.iter_seq_limits_element3 = dim_a / 64;
     sfr.iter_seq_limits_element4 = dim_c / 32;
-    sfr.iter_seq_limits_element5 = 1;
+    sfr.iter_seq_limits_element5 = batch;
     sfr.iter_seq_limits_element6 = 1;
     sfr.iter_seq_limits_element7 = 1;
     sfr.reg_indexer_strides_element0 = 32;
     sfr.reg_indexer_strides_element1 = 2;
     sfr.reg_indexer_strides_element2 = 128;
-    sfr.reg_indexer_strides_element3 = 128 * dim_b / 32;
+    sfr.reg_indexer_strides_element3 = 128 * dim_b / 16;
     sfr.reg_indexer_strides_element4 = 0;
-    sfr.reg_indexer_strides_element5 = 0;
+    sfr.reg_indexer_strides_element5 = dim_a * dim_b / MAC_ROWS;
     sfr.reg_indexer_strides_element6 = 0;
     sfr.reg_indexer_strides_element7 = 0;
     sfr.acc_indexer_strides_element0 = 1;
@@ -405,7 +406,7 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     sfr.limits_element2 = 2;
     sfr.limits_element3 = dim_a / 64;
     sfr.limits_element4 = dim_c / 32;
-    sfr.limits_element5 = 1;
+    sfr.limits_element5 = batch;
     sfr.limits_element6 = 1;
     sfr.limits_element7 = 1;
     sfr.strides_element0 = dim_c * 2;
@@ -413,7 +414,7 @@ ContractOpLowering::matchAndRewrite(linalg::ContractOp contract_op,
     sfr.strides_element2 = dim_c;
     sfr.strides_element3 = dim_c * 64;
     sfr.strides_element4 = 32;
-    sfr.strides_element5 = 0;
+    sfr.strides_element5 = dim_a * dim_c;
     sfr.strides_element6 = 0;
     sfr.strides_element7 = 0;
     sfr.commit_unit_slice_enable_bitmap0 = 0xffffffffffffffff;

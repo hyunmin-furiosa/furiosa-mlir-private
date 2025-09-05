@@ -18,6 +18,7 @@ Interfaces: `InferTypeOpInterface`
 <tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
 <tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 <tr><td><code>data</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>data_ptr</code></td><td>::mlir::IntegerAttr</td><td>64-bit signless integer attribute</td></tr>
 </table>
 
 #### Results:

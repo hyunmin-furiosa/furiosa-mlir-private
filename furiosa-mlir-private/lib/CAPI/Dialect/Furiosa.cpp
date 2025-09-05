@@ -62,18 +62,20 @@ MlirAttribute mlirFuriosaMappingAttrGet(MlirContext ctx) {
 }
 
 //===---------------------------------------------------------------------===//
-// MemoryTypeAttr
+// TensorAttr
 //===---------------------------------------------------------------------===//
 
-bool mlirAttributeIsAFuriosaMemoryTypeAttr(MlirAttribute attr) {
-  return isa<furiosa::MemoryTypeAttr>(unwrap(attr));
+bool mlirAttributeIsAFuriosaTensorAttr(MlirAttribute attr) {
+  return isa<furiosa::TensorAttr>(unwrap(attr));
 }
 
-MlirTypeID mlirFuriosaMemoryTypeAttrGetTypeID(void) {
-  return wrap(furiosa::MemoryTypeAttr::getTypeID());
+MlirTypeID mlirFuriosaTensorAttrGetTypeID(void) {
+  return wrap(furiosa::TensorAttr::getTypeID());
 }
 
-MlirAttribute mlirFuriosaMemoryTypeAttrGet(MlirContext ctx,
-                                           mlir::furiosa::MemoryType value) {
-  return wrap(furiosa::MemoryTypeAttr::get(unwrap(ctx), value));
+MlirAttribute mlirFuriosaTensorAttrGet(MlirContext ctx,
+                                       mlir::furiosa::MemoryType memory_type,
+                                       MlirAttribute memory_map) {
+  return wrap(
+      furiosa::TensorAttr::get(unwrap(ctx), memory_type, unwrap(memory_map)));
 }

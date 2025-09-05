@@ -14,20 +14,20 @@ def testPass():
 #map2 = affine_map<(d0, d1, d2, d3) -> (d0, d1, d2)>
 module {
   func.func @kernel(%arg0: tensor<64x64x64xi8>, %arg1: tensor<64x64x64xi8>, %arg2: tensor<64x64x64xi8>) attributes {target = #furiosa.target<npu 0 pe 0 : 0>} {
-    %0 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    furiosa.dma %arg0 -> %0 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.memory_type<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
-    %1 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.memory_type<trf>>
-    furiosa.load_trf %0 -> %1 : tensor<1x64x64xi8, #furiosa.memory_type<sram>> -> tensor<1x64x64xi8, #furiosa.memory_type<trf>>
-    furiosa.dealloc %0 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    %2 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    furiosa.dma %arg1 -> %2 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.memory_type<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
-    %3 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    furiosa.dma %arg2 -> %3 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.memory_type<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
-    %4 = linalg.contract indexing_maps = [#map, #map1, #map2] ins(%1, %2 : tensor<1x64x64xi8, #furiosa.memory_type<trf>>, tensor<1x64x64xi8, #furiosa.memory_type<sram>>) outs(%3 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>) -> tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    furiosa.dealloc %3 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    furiosa.dealloc %2 : tensor<1x64x64xi8, #furiosa.memory_type<sram>>
-    furiosa.dealloc %1 : tensor<1x64x64xi8, #furiosa.memory_type<trf>>
-    furiosa.dma %4 -> %arg2 : tensor<1x64x64xi8, #furiosa.memory_type<sram>> -> tensor<64x64x64xi8> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 0, 0, 4096], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 4194304, 4194304, 4194304]}
+    %0 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    furiosa.dma %arg0 -> %0 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.tensor<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
+    %1 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.tensor<trf>>
+    furiosa.load_trf %0 -> %1 : tensor<1x64x64xi8, #furiosa.tensor<sram>> -> tensor<1x64x64xi8, #furiosa.tensor<trf>>
+    furiosa.dealloc %0 : tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    %2 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    furiosa.dma %arg1 -> %2 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.tensor<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
+    %3 = furiosa.alloc : tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    furiosa.dma %arg2 -> %3 : tensor<64x64x64xi8> -> tensor<1x64x64xi8, #furiosa.tensor<sram>> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 4194304, 4194304, 4194304], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 0, 0, 4096]}
+    %4 = linalg.contract indexing_maps = [#map, #map1, #map2] ins(%1, %2 : tensor<1x64x64xi8, #furiosa.tensor<trf>>, tensor<1x64x64xi8, #furiosa.tensor<sram>>) outs(%3 : tensor<1x64x64xi8, #furiosa.tensor<sram>>) -> tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    furiosa.dealloc %3 : tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    furiosa.dealloc %2 : tensor<1x64x64xi8, #furiosa.tensor<sram>>
+    furiosa.dealloc %1 : tensor<1x64x64xi8, #furiosa.tensor<trf>>
+    furiosa.dma %4 -> %arg2 : tensor<1x64x64xi8, #furiosa.tensor<sram>> -> tensor<64x64x64xi8> {destination_limits = [64, 64, 1, 1, 1, 64], destination_strides = [1, 64, 4096, 0, 0, 4096], source_limits = [64, 64, 1, 1, 1, 64], source_strides = [1, 64, 4096, 4194304, 4194304, 4194304]}
     return
   }
   func.func @main() {
@@ -69,11 +69,11 @@ def testAttribute():
         module = Module.create()
         target_attr = furiosa.TargetAttr.get(npu=0, pe_begin=0, pe_end=0)
         mapping_attr = furiosa.MappingAttr.get()
-        memory_type_attr = furiosa.MemoryTypeAttr.get(value=furiosa.MemoryType.dram)
+        tensor_attr = furiosa.TensorAttr.get(memory_type=furiosa.MemoryType.dram)
     
     print(target_attr)
     print(mapping_attr)
-    print(memory_type_attr)
+    print(tensor_attr)
 
 testPass()
 testOp()
